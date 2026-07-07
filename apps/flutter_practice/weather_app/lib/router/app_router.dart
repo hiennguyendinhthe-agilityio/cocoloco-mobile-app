@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:weather_app/router/routes.dart';
 
+import 'package:weather_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:weather_app/features/weather/presentation/screens/home_screen.dart';
 import 'package:weather_app/features/weather/presentation/screens/splash_screen.dart';
 
@@ -34,13 +35,11 @@ final _router = GoRouter(
       name: AppRoutes.homeName,
       builder: (_, _) => const HomeScreen(),
     ),
-
-    // ── Future routes go here ──────────────────────────────────────────────
-    // GoRoute(
-    //   path: AppRoutes.searchPath,
-    //   name: AppRoutes.searchName,
-    //   builder: (_, __) => const SearchScreen(),
-    // ),
+    GoRoute(
+      path: AppRoutes.settingsPath,
+      name: AppRoutes.settingsName,
+      builder: (_, _) => const SettingsScreen(),
+    ),
   ],
 );
 

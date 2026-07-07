@@ -8,10 +8,10 @@ import 'package:weather_app/features/weather/data/models/location_model.dart';
 
 abstract interface class WeatherRemoteDatasource {
   /// Fetches current weather for a specific city.
-  Future<CurrentWeatherModel> getCurrentWeather(String city);
+  Future<CurrentWeatherModel> getCurrentWeather(String city, {required String lang});
 
   /// Fetches 5-day / 3-hour forecast for a specific city.
-  Future<ForecastModel> getForecast(String city);
+  Future<ForecastModel> getForecast(String city, {required String lang});
 
   /// Searches for cities matching a query.
   Future<List<LocationModel>> searchLocation(String query);

@@ -1,0 +1,20 @@
+{
+  "@@locale": "vi",
+  "searchCityHint": "Sẵn sàng kiểm tra thời tiết chưa?",
+  "feelsLike": "Cảm giác như",
+  "humidity": "Độ ẩm",
+  "wind": "Gió",
+  "low": "Thấp",
+  "high": "Cao",
+  "noWeatherSearchPrompt": "Chưa có dữ liệu. Vui lòng tìm kiếm một thành phố.",
+  "tryAnotherSearch": "Thử tìm kiếm khác.",
+  "home": "Trang chủ",
+  "profile": "Hồ sơ",
+  "settings": "Cài đặt",
+  "logout": "Đăng xuất",
+  "language": "Ngôn ngữ",
+  "theme": "Giao diện tối",
+  "unknown": "Không rõ",
+  "weatherToday": "Thời tiết hôm nay",
+  "tapToSearch": "Nhấn 🔍 để tìm kiếm\nthành phố của bạn"
+}

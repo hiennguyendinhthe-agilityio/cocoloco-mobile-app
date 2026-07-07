@@ -26,22 +26,22 @@ class WeatherRemoteDatasourceImpl implements WeatherRemoteDatasource {
   WeatherRemoteDatasourceImpl(this._weatherApi, this._geocodingApi);
 
   @override
-  Future<CurrentWeatherModel> getCurrentWeather(String city) {
+  Future<CurrentWeatherModel> getCurrentWeather(String city, {required String lang}) {
     return _weatherApi.getCurrentWeatherByCity(
       city: city,
       apiKey: AppEnv.owmApiKey,
       units: AppEnv.defaultUnits,
-      lang: AppEnv.defaultLang,
+      lang: lang,
     );
   }
 
   @override
-  Future<ForecastModel> getForecast(String city) {
+  Future<ForecastModel> getForecast(String city, {required String lang}) {
     return _weatherApi.getForecastByCity(
       city: city,
       apiKey: AppEnv.owmApiKey,
       units: AppEnv.defaultUnits,
-      lang: AppEnv.defaultLang,
+      lang: lang,
     );
   }
 

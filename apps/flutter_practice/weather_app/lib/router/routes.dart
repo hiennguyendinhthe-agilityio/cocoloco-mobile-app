@@ -24,6 +24,6 @@ abstract final class AppRoutes {
   // static const String searchPath = 'search';
   // static const String searchName = 'search';
   //
-  // static const String settingsPath = 'settings';
-  // static const String settingsName = 'settings';
+  static const String settingsPath = '/settings';
+  static const String settingsName = 'settings';
 }

@@ -8,9 +8,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:weather_app/core/localization/locale_provider.dart';
 import 'package:weather_app/router/app_router.dart';
 import 'package:weather_app/theme/app_theme.dart';
 import 'package:weather_app/theme/providers/theme_provider.dart';
+import 'package:weather_app/l10n/app_localizations.dart';
+
+import 'package:device_preview/device_preview.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -19,10 +23,16 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'Weather App',
       debugShowCheckedModeBanner: false,
+      builder: DevicePreview.appBuilder, // Connect DevicePreview
+      // ── Localization ───────────────────────────────────────────────────────
+      locale: DevicePreview.locale(context) ?? locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       // ── Theme ──────────────────────────────────────────────────────────────
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),

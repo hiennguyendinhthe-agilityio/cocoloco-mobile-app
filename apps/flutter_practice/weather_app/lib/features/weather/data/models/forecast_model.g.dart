@@ -26,6 +26,7 @@ _ForecastItem _$ForecastItemFromJson(Map<String, dynamic> json) =>
           .toList(),
       wind: ForecastWindModel.fromJson(json['wind'] as Map<String, dynamic>),
       dtTxt: json['dt_txt'] as String,
+      pop: (json['pop'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$ForecastItemToJson(_ForecastItem instance) =>
@@ -35,6 +36,7 @@ Map<String, dynamic> _$ForecastItemToJson(_ForecastItem instance) =>
       'weather': instance.weather,
       'wind': instance.wind,
       'dt_txt': instance.dtTxt,
+      'pop': instance.pop,
     };
 
 _ForecastMainModel _$ForecastMainModelFromJson(Map<String, dynamic> json) =>

@@ -49,6 +49,9 @@ abstract class ForecastItem with _$ForecastItem {
 
     /// ISO datetime string, e.g. "2024-07-04 12:00:00"
     @JsonKey(name: 'dt_txt') required String dtTxt,
+
+    /// Probability of precipitation
+    @Default(0.0) double pop,
   }) = _ForecastItem;
 
   factory ForecastItem.fromJson(Map<String, dynamic> json) =>

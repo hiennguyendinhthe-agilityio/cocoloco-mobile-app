@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:weather_app/core/extensions/l10n_extension.dart';
+import 'package:weather_app/features/weather/presentation/providers/forecast_provider.dart';
 import 'package:weather_app/features/weather/presentation/providers/weather_provider.dart';
 import 'package:weather_app/theme/theme_context_ext.dart';
 
@@ -29,6 +31,7 @@ class _WeatherSearchBarState extends ConsumerState<WeatherSearchBar> {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
       ref.read(weatherProvider.notifier).fetchWeather(text);
+      ref.read(forecastProvider.notifier).fetchForecast(text);
       FocusScope.of(context).unfocus();
       widget.onSubmitted?.call();
     }
@@ -56,7 +59,7 @@ class _WeatherSearchBarState extends ConsumerState<WeatherSearchBar> {
                   textInputAction: TextInputAction.search,
                   style: TextStyle(color: context.glass.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Ready to check the weather?',
+                    hintText: context.l10n.searchCityHint,
                     hintStyle: TextStyle(color: context.glass.textSecondary),
                     prefixIcon: Icon(
                       Icons.search_rounded,

@@ -8,10 +8,26 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/app.dart';
+import 'package:weather_app/core/storage/preferences_service.dart';
 
-void main() {
+import 'package:device_preview/device_preview.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  final sharedPrefs = await SharedPreferences.getInstance();
 
-  runApp(const ProviderScope(child: App()));
+  runApp(
+    DevicePreview(
+      enabled: true, // You can toggle this based on debug mode if you want
+      builder: (context) => ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+        ],
+        child: const App(),
+      ),
+    ),
+  );
 }

@@ -1,0 +1,20 @@
+{
+  "@@locale": "en",
+  "searchCityHint": "Ready to check the weather?",
+  "feelsLike": "Feels like",
+  "humidity": "Humidity",
+  "wind": "Wind",
+  "low": "Low",
+  "high": "High",
+  "noWeatherSearchPrompt": "No weather data. Search for a city to get started.",
+  "tryAnotherSearch": "Try another search.",
+  "home": "Home",
+  "profile": "Profile",
+  "settings": "Settings",
+  "logout": "Logout",
+  "language": "Language",
+  "theme": "Dark Theme",
+  "unknown": "Unknown",
+  "weatherToday": "Weather Today",
+  "tapToSearch": "Tap 🔍 to search\nfor your city"
+}

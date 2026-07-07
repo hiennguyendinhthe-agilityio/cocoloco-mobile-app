@@ -11,27 +11,45 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:weather_app/core/storage/preferences_service.dart';
 
 /// Notifier that owns and mutates the app's [ThemeMode].
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
-  ThemeMode build() => ThemeMode.system; // Default: follow OS
+  ThemeMode build() {
+    final prefs = ref.watch(preferencesServiceProvider);
+    final savedMode = prefs.getThemeMode();
+    if (savedMode == 'light') return ThemeMode.light;
+    if (savedMode == 'dark') return ThemeMode.dark;
+    return ThemeMode.system; // Default: follow OS
+  }
 
   /// Cycle through: system → light → dark → system.
   void cycle() {
-    state = switch (state) {
+    final nextMode = switch (state) {
       ThemeMode.system => ThemeMode.light,
       ThemeMode.light => ThemeMode.dark,
       ThemeMode.dark => ThemeMode.system,
     };
+    setMode(nextMode);
   }
 
   /// Set an explicit [ThemeMode].
-  void setMode(ThemeMode mode) => state = mode;
+  Future<void> setMode(ThemeMode mode) async {
+    state = mode;
+    final prefs = ref.read(preferencesServiceProvider);
+    final modeStr = switch (mode) {
+      ThemeMode.light => 'light',
+      ThemeMode.dark => 'dark',
+      ThemeMode.system => 'system',
+    };
+    await prefs.saveThemeMode(modeStr);
+  }
 
   /// Toggle between light and dark (ignores system).
   void toggleLightDark() {
-    state = state == ThemeMode.light ? ThemeMode.light : ThemeMode.dark;
+    final nextMode = state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    setMode(nextMode);
   }
 }
 

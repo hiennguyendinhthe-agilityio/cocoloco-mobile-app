@@ -315,7 +315,8 @@ mixin _$ForecastItem {
  ForecastMainModel get main;/// Weather conditions (normally 1 item)
  List<ForecastWeatherDesc> get weather;/// Wind
  ForecastWindModel get wind;/// ISO datetime string, e.g. "2024-07-04 12:00:00"
-@JsonKey(name: 'dt_txt') String get dtTxt;
+@JsonKey(name: 'dt_txt') String get dtTxt;/// Probability of precipitation
+ double get pop;
 /// Create a copy of ForecastItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -328,16 +329,16 @@ $ForecastItemCopyWith<ForecastItem> get copyWith => _$ForecastItemCopyWithImpl<F
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ForecastItem&&(identical(other.dt, dt) || other.dt == dt)&&(identical(other.main, main) || other.main == main)&&const DeepCollectionEquality().equals(other.weather, weather)&&(identical(other.wind, wind) || other.wind == wind)&&(identical(other.dtTxt, dtTxt) || other.dtTxt == dtTxt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ForecastItem&&(identical(other.dt, dt) || other.dt == dt)&&(identical(other.main, main) || other.main == main)&&const DeepCollectionEquality().equals(other.weather, weather)&&(identical(other.wind, wind) || other.wind == wind)&&(identical(other.dtTxt, dtTxt) || other.dtTxt == dtTxt)&&(identical(other.pop, pop) || other.pop == pop));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,dt,main,const DeepCollectionEquality().hash(weather),wind,dtTxt);
+int get hashCode => Object.hash(runtimeType,dt,main,const DeepCollectionEquality().hash(weather),wind,dtTxt,pop);
 
 @override
 String toString() {
-  return 'ForecastItem(dt: $dt, main: $main, weather: $weather, wind: $wind, dtTxt: $dtTxt)';
+  return 'ForecastItem(dt: $dt, main: $main, weather: $weather, wind: $wind, dtTxt: $dtTxt, pop: $pop)';
 }
 
 
@@ -348,7 +349,7 @@ abstract mixin class $ForecastItemCopyWith<$Res>  {
   factory $ForecastItemCopyWith(ForecastItem value, $Res Function(ForecastItem) _then) = _$ForecastItemCopyWithImpl;
 @useResult
 $Res call({
- int dt, ForecastMainModel main, List<ForecastWeatherDesc> weather, ForecastWindModel wind,@JsonKey(name: 'dt_txt') String dtTxt
+ int dt, ForecastMainModel main, List<ForecastWeatherDesc> weather, ForecastWindModel wind,@JsonKey(name: 'dt_txt') String dtTxt, double pop
 });
 
 
@@ -365,14 +366,15 @@ class _$ForecastItemCopyWithImpl<$Res>
 
 /// Create a copy of ForecastItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? dt = null,Object? main = null,Object? weather = null,Object? wind = null,Object? dtTxt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? dt = null,Object? main = null,Object? weather = null,Object? wind = null,Object? dtTxt = null,Object? pop = null,}) {
   return _then(_self.copyWith(
 dt: null == dt ? _self.dt : dt // ignore: cast_nullable_to_non_nullable
 as int,main: null == main ? _self.main : main // ignore: cast_nullable_to_non_nullable
 as ForecastMainModel,weather: null == weather ? _self.weather : weather // ignore: cast_nullable_to_non_nullable
 as List<ForecastWeatherDesc>,wind: null == wind ? _self.wind : wind // ignore: cast_nullable_to_non_nullable
 as ForecastWindModel,dtTxt: null == dtTxt ? _self.dtTxt : dtTxt // ignore: cast_nullable_to_non_nullable
-as String,
+as String,pop: null == pop ? _self.pop : pop // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 /// Create a copy of ForecastItem
@@ -475,10 +477,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int dt,  ForecastMainModel main,  List<ForecastWeatherDesc> weather,  ForecastWindModel wind, @JsonKey(name: 'dt_txt')  String dtTxt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int dt,  ForecastMainModel main,  List<ForecastWeatherDesc> weather,  ForecastWindModel wind, @JsonKey(name: 'dt_txt')  String dtTxt,  double pop)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ForecastItem() when $default != null:
-return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt);case _:
+return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt,_that.pop);case _:
   return orElse();
 
 }
@@ -496,10 +498,10 @@ return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int dt,  ForecastMainModel main,  List<ForecastWeatherDesc> weather,  ForecastWindModel wind, @JsonKey(name: 'dt_txt')  String dtTxt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int dt,  ForecastMainModel main,  List<ForecastWeatherDesc> weather,  ForecastWindModel wind, @JsonKey(name: 'dt_txt')  String dtTxt,  double pop)  $default,) {final _that = this;
 switch (_that) {
 case _ForecastItem():
-return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt);case _:
+return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt,_that.pop);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -516,10 +518,10 @@ return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int dt,  ForecastMainModel main,  List<ForecastWeatherDesc> weather,  ForecastWindModel wind, @JsonKey(name: 'dt_txt')  String dtTxt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int dt,  ForecastMainModel main,  List<ForecastWeatherDesc> weather,  ForecastWindModel wind, @JsonKey(name: 'dt_txt')  String dtTxt,  double pop)?  $default,) {final _that = this;
 switch (_that) {
 case _ForecastItem() when $default != null:
-return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt);case _:
+return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt,_that.pop);case _:
   return null;
 
 }
@@ -531,7 +533,7 @@ return $default(_that.dt,_that.main,_that.weather,_that.wind,_that.dtTxt);case _
 @JsonSerializable()
 
 class _ForecastItem implements ForecastItem {
-  const _ForecastItem({required this.dt, required this.main, required final  List<ForecastWeatherDesc> weather, required this.wind, @JsonKey(name: 'dt_txt') required this.dtTxt}): _weather = weather;
+  const _ForecastItem({required this.dt, required this.main, required final  List<ForecastWeatherDesc> weather, required this.wind, @JsonKey(name: 'dt_txt') required this.dtTxt, this.pop = 0.0}): _weather = weather;
   factory _ForecastItem.fromJson(Map<String, dynamic> json) => _$ForecastItemFromJson(json);
 
 /// Unix UTC timestamp for this slot
@@ -551,6 +553,8 @@ class _ForecastItem implements ForecastItem {
 @override final  ForecastWindModel wind;
 /// ISO datetime string, e.g. "2024-07-04 12:00:00"
 @override@JsonKey(name: 'dt_txt') final  String dtTxt;
+/// Probability of precipitation
+@override@JsonKey() final  double pop;
 
 /// Create a copy of ForecastItem
 /// with the given fields replaced by the non-null parameter values.
@@ -565,16 +569,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ForecastItem&&(identical(other.dt, dt) || other.dt == dt)&&(identical(other.main, main) || other.main == main)&&const DeepCollectionEquality().equals(other._weather, _weather)&&(identical(other.wind, wind) || other.wind == wind)&&(identical(other.dtTxt, dtTxt) || other.dtTxt == dtTxt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ForecastItem&&(identical(other.dt, dt) || other.dt == dt)&&(identical(other.main, main) || other.main == main)&&const DeepCollectionEquality().equals(other._weather, _weather)&&(identical(other.wind, wind) || other.wind == wind)&&(identical(other.dtTxt, dtTxt) || other.dtTxt == dtTxt)&&(identical(other.pop, pop) || other.pop == pop));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,dt,main,const DeepCollectionEquality().hash(_weather),wind,dtTxt);
+int get hashCode => Object.hash(runtimeType,dt,main,const DeepCollectionEquality().hash(_weather),wind,dtTxt,pop);
 
 @override
 String toString() {
-  return 'ForecastItem(dt: $dt, main: $main, weather: $weather, wind: $wind, dtTxt: $dtTxt)';
+  return 'ForecastItem(dt: $dt, main: $main, weather: $weather, wind: $wind, dtTxt: $dtTxt, pop: $pop)';
 }
 
 
@@ -585,7 +589,7 @@ abstract mixin class _$ForecastItemCopyWith<$Res> implements $ForecastItemCopyWi
   factory _$ForecastItemCopyWith(_ForecastItem value, $Res Function(_ForecastItem) _then) = __$ForecastItemCopyWithImpl;
 @override @useResult
 $Res call({
- int dt, ForecastMainModel main, List<ForecastWeatherDesc> weather, ForecastWindModel wind,@JsonKey(name: 'dt_txt') String dtTxt
+ int dt, ForecastMainModel main, List<ForecastWeatherDesc> weather, ForecastWindModel wind,@JsonKey(name: 'dt_txt') String dtTxt, double pop
 });
 
 
@@ -602,14 +606,15 @@ class __$ForecastItemCopyWithImpl<$Res>
 
 /// Create a copy of ForecastItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? dt = null,Object? main = null,Object? weather = null,Object? wind = null,Object? dtTxt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? dt = null,Object? main = null,Object? weather = null,Object? wind = null,Object? dtTxt = null,Object? pop = null,}) {
   return _then(_ForecastItem(
 dt: null == dt ? _self.dt : dt // ignore: cast_nullable_to_non_nullable
 as int,main: null == main ? _self.main : main // ignore: cast_nullable_to_non_nullable
 as ForecastMainModel,weather: null == weather ? _self._weather : weather // ignore: cast_nullable_to_non_nullable
 as List<ForecastWeatherDesc>,wind: null == wind ? _self.wind : wind // ignore: cast_nullable_to_non_nullable
 as ForecastWindModel,dtTxt: null == dtTxt ? _self.dtTxt : dtTxt // ignore: cast_nullable_to_non_nullable
-as String,
+as String,pop: null == pop ? _self.pop : pop // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 

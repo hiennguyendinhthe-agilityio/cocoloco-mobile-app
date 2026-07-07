@@ -10,6 +10,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:weather_app/core/localization/locale_provider.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
 import 'package:weather_app/features/weather/domain/usecases/get_current_weather_usecase.dart';
 
@@ -23,8 +24,9 @@ class WeatherNotifier extends AsyncNotifier<WeatherEntity?> {
     state = const AsyncValue.loading();
 
     final useCase = ref.read(getCurrentWeatherUseCaseProvider);
+    final lang = ref.read(localeProvider).languageCode;
 
-    state = await AsyncValue.guard(() => useCase.execute(city: city));
+    state = await AsyncValue.guard(() => useCase.execute(city: city, lang: lang));
   }
 }
 
