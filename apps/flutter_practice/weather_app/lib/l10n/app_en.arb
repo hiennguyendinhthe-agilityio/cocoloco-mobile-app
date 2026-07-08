@@ -16,5 +16,25 @@
   "theme": "Dark Theme",
   "unknown": "Unknown",
   "weatherToday": "Weather Today",
-  "tapToSearch": "Tap 🔍 to search\nfor your city"
+  "tapToSearch": "Tap 🔍 to search\nfor your city",
+  "locations": "Locations",
+  "weatherAlerts": "Weather Alerts",
+  "helpSupport": "Help & Support",
+  "goPremium": "Go Premium",
+  "premiumSubtitle": "Unlock advanced weather insights & ad-free experience",
+  "currentLocation": "CURRENT LOCATION",
+  "recentSearches": "RECENT SEARCHES",
+  "popularCities": "POPULAR CITIES",
+  "clearBtn": "CLEAR",
+  "noResultsFound": "No results found",
+  "locating": "Locating...",
+  "tapToFindLocation": "Tap to find your location",
+  "couldNotAccessLocation": "Could not access location: {error}",
+  "@couldNotAccessLocation": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

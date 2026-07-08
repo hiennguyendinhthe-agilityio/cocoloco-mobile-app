@@ -14,6 +14,8 @@ import 'package:weather_app/features/weather/data/mappers/weather_mapper.dart';
 import 'package:weather_app/features/weather/domain/entities/forecast_entity.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
 import 'package:weather_app/features/weather/domain/repositories/weather_repository.dart';
+import 'package:weather_app/features/weather/domain/entities/location_entity.dart';
+import 'package:weather_app/features/weather/data/models/location_model.dart';
 
 class WeatherRepositoryImpl implements WeatherRepository {
   final WeatherRemoteDatasource _remoteDatasource;
@@ -29,9 +31,27 @@ class WeatherRepositoryImpl implements WeatherRepository {
   }
 
   @override
+  Future<WeatherEntity> getCurrentWeatherByCoord({required double lat, required double lon, required String lang}) async {
+    final model = await _remoteDatasource.getCurrentWeatherByCoord(lat, lon, lang: lang);
+    return WeatherMapper.toEntity(model);
+  }
+
+  @override
   Future<ForecastEntity> getForecast({required String city, required String lang}) async {
     final model = await _remoteDatasource.getForecast(city, lang: lang);
     return ForecastMapper.toEntity(model);
+  }
+
+  @override
+  Future<ForecastEntity> getForecastByCoord({required double lat, required double lon, required String lang}) async {
+    final model = await _remoteDatasource.getForecastByCoord(lat, lon, lang: lang);
+    return ForecastMapper.toEntity(model);
+  }
+
+  @override
+  Future<List<LocationEntity>> searchLocation(String query) async {
+    final models = await _remoteDatasource.searchLocation(query);
+    return models.map((e) => e.toEntity()).toList();
   }
 }
 

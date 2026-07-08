@@ -16,5 +16,18 @@
   "theme": "Giao diện tối",
   "unknown": "Không rõ",
   "weatherToday": "Thời tiết hôm nay",
-  "tapToSearch": "Nhấn 🔍 để tìm kiếm\nthành phố của bạn"
+  "tapToSearch": "Nhấn 🔍 để tìm kiếm\nthành phố của bạn",
+  "locations": "Địa điểm",
+  "weatherAlerts": "Cảnh báo thời tiết",
+  "helpSupport": "Trợ giúp & Hỗ trợ",
+  "goPremium": "Nâng cấp Premium",
+  "premiumSubtitle": "Mở khóa thông tin thời tiết nâng cao & trải nghiệm không quảng cáo",
+  "currentLocation": "VỊ TRÍ HIỆN TẠI",
+  "recentSearches": "TÌM KIẾM GẦN ĐÂY",
+  "popularCities": "THÀNH PHỐ PHỔ BIẾN",
+  "clearBtn": "XÓA",
+  "noResultsFound": "Không tìm thấy kết quả",
+  "locating": "Đang định vị...",
+  "tapToFindLocation": "Nhấn để tìm vị trí của bạn",
+  "couldNotAccessLocation": "Không thể lấy vị trí: {error}"
 }

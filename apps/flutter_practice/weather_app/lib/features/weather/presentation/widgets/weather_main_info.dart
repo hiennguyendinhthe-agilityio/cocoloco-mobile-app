@@ -34,6 +34,9 @@ class WeatherMainInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Extract the timezone offset without modifying the domain layer
+    final tzOffset = weather.localTime.difference(weather.lastUpdated.toUtc());
+
     return Padding(
       padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 48),
       child: ClipRect(
@@ -70,13 +73,22 @@ class WeatherMainInfo extends StatelessWidget {
               ),
             ).animate().fadeIn(delay: 300.ms),
             const SizedBox(height: 2),
-            Text(
-              _formatDate(weather.lastUpdated),
-              style: TextStyle(
-                color: context.glass.textSecondary,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
+            StreamBuilder(
+              stream: Stream.periodic(const Duration(seconds: 1)),
+              builder: (context, _) {
+                // Get the real-time UTC time, then apply the city's timezone offset
+                final nowUtc = DateTime.now().toUtc();
+                final targetCityTime = nowUtc.add(tzOffset);
+                
+                return Text(
+                  _formatDate(targetCityTime),
+                  style: TextStyle(
+                    color: context.glass.textSecondary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                );
+              },
             ).animate().fadeIn(delay: 400.ms),
           ],
         ),

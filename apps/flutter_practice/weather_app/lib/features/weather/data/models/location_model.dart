@@ -5,6 +5,7 @@
 // Freezed + JsonSerializable.
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:weather_app/features/weather/domain/entities/location_entity.dart';
 
 part 'location_model.freezed.dart';
 part 'location_model.g.dart';
@@ -30,4 +31,16 @@ abstract class LocationModel with _$LocationModel {
 
   factory LocationModel.fromJson(Map<String, dynamic> json) =>
       _$LocationModelFromJson(json);
+}
+
+extension LocationModelX on LocationModel {
+  LocationEntity toEntity() {
+    return LocationEntity(
+      name: name,
+      lat: lat,
+      lon: lon,
+      country: country,
+      state: state,
+    );
+  }
 }

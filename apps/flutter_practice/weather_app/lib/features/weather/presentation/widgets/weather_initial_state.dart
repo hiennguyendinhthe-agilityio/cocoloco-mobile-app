@@ -30,30 +30,34 @@ class WeatherInitialState extends StatelessWidget {
           ),
         ),
         Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.wb_sunny_outlined,
-                color: context.glass.iconSecondary,
-                size: 80,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                context.l10n.tapToSearch,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: context.glass.textSecondary,
-                  fontSize: 16,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ).animate().fadeIn(duration: 800.ms).scale(
-            begin: const Offset(0.8, 0.8),
-            duration: 800.ms,
-            curve: Curves.easeOut,
-          ),
+          child:
+              Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.wb_sunny_outlined,
+                        color: context.glass.iconSecondary,
+                        size: 80,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        context.l10n.tapToSearch,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: context.glass.textSecondary,
+                          fontSize: 16,
+                          height: 1.6,
+                        ),
+                      ),
+                    ],
+                  )
+                  .animate()
+                  .fadeIn(duration: 800.ms)
+                  .scale(
+                    begin: const Offset(0.8, 0.8),
+                    duration: 800.ms,
+                    curve: Curves.easeOut,
+                  ),
         ),
       ],
     );

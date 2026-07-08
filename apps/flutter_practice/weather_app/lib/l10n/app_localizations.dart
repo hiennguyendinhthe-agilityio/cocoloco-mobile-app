@@ -199,6 +199,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap 🔍 to search\nfor your city'**
   String get tapToSearch;
+
+  /// No description provided for @locations.
+  ///
+  /// In en, this message translates to:
+  /// **'Locations'**
+  String get locations;
+
+  /// No description provided for @weatherAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather Alerts'**
+  String get weatherAlerts;
+
+  /// No description provided for @helpSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpSupport;
+
+  /// No description provided for @goPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Premium'**
+  String get goPremium;
+
+  /// No description provided for @premiumSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock advanced weather insights & ad-free experience'**
+  String get premiumSubtitle;
+
+  /// No description provided for @currentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENT LOCATION'**
+  String get currentLocation;
+
+  /// No description provided for @recentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'RECENT SEARCHES'**
+  String get recentSearches;
+
+  /// No description provided for @popularCities.
+  ///
+  /// In en, this message translates to:
+  /// **'POPULAR CITIES'**
+  String get popularCities;
+
+  /// No description provided for @clearBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'CLEAR'**
+  String get clearBtn;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// No description provided for @locating.
+  ///
+  /// In en, this message translates to:
+  /// **'Locating...'**
+  String get locating;
+
+  /// No description provided for @tapToFindLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to find your location'**
+  String get tapToFindLocation;
+
+  /// No description provided for @couldNotAccessLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not access location: {error}'**
+  String couldNotAccessLocation(String error);
 }
 
 class _AppLocalizationsDelegate

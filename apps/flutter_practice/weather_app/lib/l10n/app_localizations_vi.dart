@@ -59,4 +59,46 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get tapToSearch => 'Nhấn 🔍 để tìm kiếm\nthành phố của bạn';
+
+  @override
+  String get locations => 'Địa điểm';
+
+  @override
+  String get weatherAlerts => 'Cảnh báo thời tiết';
+
+  @override
+  String get helpSupport => 'Trợ giúp & Hỗ trợ';
+
+  @override
+  String get goPremium => 'Nâng cấp Premium';
+
+  @override
+  String get premiumSubtitle =>
+      'Mở khóa thông tin thời tiết nâng cao & trải nghiệm không quảng cáo';
+
+  @override
+  String get currentLocation => 'VỊ TRÍ HIỆN TẠI';
+
+  @override
+  String get recentSearches => 'TÌM KIẾM GẦN ĐÂY';
+
+  @override
+  String get popularCities => 'THÀNH PHỐ PHỔ BIẾN';
+
+  @override
+  String get clearBtn => 'XÓA';
+
+  @override
+  String get noResultsFound => 'Không tìm thấy kết quả';
+
+  @override
+  String get locating => 'Đang định vị...';
+
+  @override
+  String get tapToFindLocation => 'Nhấn để tìm vị trí của bạn';
+
+  @override
+  String couldNotAccessLocation(String error) {
+    return 'Không thể lấy vị trí: $error';
+  }
 }

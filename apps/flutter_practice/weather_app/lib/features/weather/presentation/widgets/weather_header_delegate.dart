@@ -16,7 +16,7 @@ class WeatherHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get minExtent => kToolbarHeight + 47.0; // We'll compute this dynamically using MediaQuery if possible, but SliverPersistentHeaderDelegate doesn't easily have context in minExtent. Wait, usually we pass topPadding in!
+  double get minExtent => kToolbarHeight + 47.0;
 
   @override
   double get maxExtent => expandedHeight;
@@ -30,8 +30,6 @@ class WeatherHeaderDelegate extends SliverPersistentHeaderDelegate {
     final topPadding = MediaQuery.paddingOf(context).top;
     final maxExt = maxExtent;
     final minExt = kToolbarHeight + topPadding;
-
-    // 0.0 = fully expanded, 1.0 = fully collapsed
     final shrinkPercent = (shrinkOffset / (maxExt - minExt)).clamp(0.0, 1.0);
     final expandPercent = 1.0 - shrinkPercent;
 
@@ -39,7 +37,6 @@ class WeatherHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Layer 1: Weather main info — fades out as we scroll ──────
           Positioned(
             top: 0,
             left: 0,
@@ -58,8 +55,6 @@ class WeatherHeaderDelegate extends SliverPersistentHeaderDelegate {
               ),
             ),
           ),
-
-          // ── Layer 2: Blur — CRITICAL: restrict to top app bar area ────
           if (shrinkPercent > 0)
             Positioned(
               top: 0,
@@ -78,8 +73,6 @@ class WeatherHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ),
               ),
             ),
-
-          // ── Layer 3: Top action bar (always visible) ─────────────────
           Positioned(
             top: topPadding,
             left: 0,
@@ -102,15 +95,18 @@ class WeatherHeaderDelegate extends SliverPersistentHeaderDelegate {
                           size: 14,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          weather.cityName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            shadows: [
-                              Shadow(blurRadius: 6, color: Colors.black38),
-                            ],
+                        Flexible(
+                          child: Text(
+                            weather.cityName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              shadows: [
+                                Shadow(blurRadius: 6, color: Colors.black38),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),

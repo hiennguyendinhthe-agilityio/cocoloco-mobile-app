@@ -59,4 +59,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToSearch => 'Tap 🔍 to search\nfor your city';
+
+  @override
+  String get locations => 'Locations';
+
+  @override
+  String get weatherAlerts => 'Weather Alerts';
+
+  @override
+  String get helpSupport => 'Help & Support';
+
+  @override
+  String get goPremium => 'Go Premium';
+
+  @override
+  String get premiumSubtitle =>
+      'Unlock advanced weather insights & ad-free experience';
+
+  @override
+  String get currentLocation => 'CURRENT LOCATION';
+
+  @override
+  String get recentSearches => 'RECENT SEARCHES';
+
+  @override
+  String get popularCities => 'POPULAR CITIES';
+
+  @override
+  String get clearBtn => 'CLEAR';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get locating => 'Locating...';
+
+  @override
+  String get tapToFindLocation => 'Tap to find your location';
+
+  @override
+  String couldNotAccessLocation(String error) {
+    return 'Could not access location: $error';
+  }
 }

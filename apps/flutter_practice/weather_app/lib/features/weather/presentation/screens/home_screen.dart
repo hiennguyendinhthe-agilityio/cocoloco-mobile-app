@@ -14,8 +14,9 @@ import 'package:weather_app/features/weather/presentation/widgets/weather_header
 import 'package:weather_app/features/weather/presentation/widgets/weather_hourly_forecast_card.dart';
 import 'package:weather_app/features/weather/presentation/widgets/weather_initial_state.dart';
 import 'package:weather_app/features/weather/presentation/widgets/weather_loading_state.dart';
-import 'package:weather_app/features/weather/presentation/widgets/weather_search_bar.dart';
+import 'package:weather_app/features/weather/presentation/widgets/search/weather_search_overlay.dart';
 import 'package:weather_app/features/weather/presentation/widgets/weather_stats_card.dart';
+import 'package:weather_app/features/weather/presentation/widgets/shooting_star_overlay.dart';
 import 'package:weather_app/theme/theme_context_ext.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -59,102 +60,93 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       backgroundColor: context.colors.surface,
       extendBodyBehindAppBar: true,
       drawer: const AppDrawer(),
-      body: Stack(
-        children: [
-          // ── Layer 1: Landscape illustration ────────────────────────────
-          Positioned.fill(child: WeatherBackground(weather: weather)),
-
-          // ── Layer 2: Gradient overlay (top dark, bottom light) ─────────
-          Positioned.fill(child: WeatherGradientOverlay(weather: weather)),
-
-          // ── Layer 3: Main UI (Slivers) ─────────────────────────────────
-          SafeArea(
-            bottom: false,
-            child: weatherState.when(
-              data: (w) => w == null
-                  ? WeatherInitialState(onSearchPressed: _openSearch)
-                  : _buildWeatherLayout(w),
-              loading: () => const WeatherLoadingState(),
-              error: (e, _) => WeatherErrorState(onSearchPressed: _openSearch),
+      body: AnimatedBuilder(
+        animation: _searchAnimController,
+        child: SafeArea(
+          bottom: false,
+          child: weatherState.when(
+            data: (w) => w == null
+                ? WeatherInitialState(onSearchPressed: _openSearch)
+                : _buildWeatherLayout(w),
+            loading: () => const WeatherLoadingState(),
+            error: (e, _) => WeatherErrorState(
+              error: e,
+              onSearchPressed: _openSearch,
             ),
           ),
+        ),
+        builder: (context, child) {
+          final isSearching = !_searchAnimController.isDismissed;
+          // Scale from 1.0 to 0.96 (a bit less extreme than 0.98 for visual clarity)
+          final scale = 1.0 - (_searchAnimController.value * 0.04);
+          final overlayOpacity = _searchAnimController.value;
 
-          // ── Layer 4: Tap outside to close ──────────────────────────────
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _searchAnimController,
-              builder: (context, child) {
-                if (_searchAnimController.isDismissed) {
-                  return const SizedBox.shrink();
-                }
-                return GestureDetector(
-                  onTap: _closeSearch,
-                  behavior: HitTestBehavior.translucent,
-                  child: Container(color: Colors.transparent),
-                );
-              },
-            ),
-          ),
+          return Stack(
+            children: [
+              // ── Layer 1: Background (Fixed, NO SCALE) ───────────────────
+              Positioned.fill(child: WeatherBackground(weather: weather)),
+              Positioned.fill(child: WeatherGradientOverlay(weather: weather)),
 
-          // ── Layer 5: Search overlay (Animated) ─────────────────────────
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: AnimatedBuilder(
-              animation: _searchAnimController,
-              builder: (context, child) {
-                return IgnorePointer(
-                  ignoring: _searchAnimController.isDismissed,
-                  child: child,
-                );
-              },
-              child: Animate(
-                controller: _searchAnimController,
-                autoPlay: false,
-                effects: [
-                  SlideEffect(
-                    begin: const Offset(0, -1),
-                    end: Offset.zero,
-                    duration: 350.ms,
-                    curve: Curves.easeOutCubic,
-                  ),
-                ],
-                child: ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                    child: Container(
-                      color: Colors.black.withAlpha(150),
-                      child: SafeArea(
-                        bottom: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: WeatherSearchBar(
-                                  onSubmitted: _closeSearch,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.close,
-                                  color: context.glass.iconPrimary,
-                                ),
-                                onPressed: _closeSearch,
-                              ),
-                            ],
-                          ),
+              // ── Layer 1.5: Shooting Stars (Only at night) ───────────────────
+              if (weather != null && weather.iconCode.endsWith('n'))
+                const Positioned.fill(
+                  child: ShootingStarOverlay(),
+                ),
+
+              // ── Layer 2: Main UI (Scaled) ───────────────────────────────
+              Transform.scale(
+                scale: scale,
+                alignment: Alignment.center,
+                child: child!, // Use the pre-built child to avoid rebuilding every frame
+              ),
+
+              // ── Layer 3: Dark Frosted Glass Overlay ────────────────────
+              if (isSearching)
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: overlayOpacity,
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: GestureDetector(
+                        onTap: _closeSearch,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.3), // slightly darker for better contrast
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
+
+              // ── Layer 4: New Search UI (Smooth transition) ─────────────
+              if (isSearching)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Opacity(
+                    opacity: overlayOpacity,
+                    child: IgnorePointer(
+                      ignoring: _searchAnimController.isDismissed,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.03), // Slide up gently from below
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: _searchAnimController,
+                          curve: Curves.easeOutCubic,
+                        )),
+                        child: WeatherSearchOverlay(
+                          onCancel: _closeSearch,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

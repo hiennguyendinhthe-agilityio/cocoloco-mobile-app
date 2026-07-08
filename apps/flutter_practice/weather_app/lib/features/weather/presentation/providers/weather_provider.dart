@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:weather_app/core/localization/locale_provider.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
+import 'package:weather_app/features/weather/domain/usecases/get_current_weather_by_coord_usecase.dart';
 import 'package:weather_app/features/weather/domain/usecases/get_current_weather_usecase.dart';
 
 class WeatherNotifier extends AsyncNotifier<WeatherEntity?> {
@@ -26,7 +27,28 @@ class WeatherNotifier extends AsyncNotifier<WeatherEntity?> {
     final useCase = ref.read(getCurrentWeatherUseCaseProvider);
     final lang = ref.read(localeProvider).languageCode;
 
-    state = await AsyncValue.guard(() => useCase.execute(city: city, lang: lang));
+    state = await AsyncValue.guard(
+      () => useCase.execute(city: city, lang: lang),
+    );
+  }
+
+  Future<void> fetchWeatherByCoord(
+    double lat,
+    double lon, {
+    String? cityNameOverride,
+  }) async {
+    state = const AsyncValue.loading();
+
+    final useCase = ref.read(getCurrentWeatherByCoordUseCaseProvider);
+    final lang = ref.read(localeProvider).languageCode;
+
+    state = await AsyncValue.guard(() async {
+      final entity = await useCase.execute(lat: lat, lon: lon, lang: lang);
+      if (cityNameOverride != null && cityNameOverride.isNotEmpty) {
+        return entity.copyWith(cityName: cityNameOverride);
+      }
+      return entity;
+    });
   }
 }
 

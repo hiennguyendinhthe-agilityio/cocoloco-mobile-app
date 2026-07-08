@@ -8,13 +8,15 @@
 //   - Base URLs
 //   - Feature flags per environment
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 abstract final class AppEnv {
   AppEnv._();
 
   // ── OpenWeatherMap ─────────────────────────────────────────────────────────
 
   /// API key from https://openweathermap.org/api
-  static const String owmApiKey = '62bfee1e75714c0218898348181ff573';
+  static String get owmApiKey => dotenv.env['OWM_API_KEY'] ?? '';
 
   /// Base URL — current weather + forecast
   static const String owmBaseUrl = 'https://api.openweathermap.org/data/2.5';

@@ -8,7 +8,12 @@
 import 'package:weather_app/features/weather/domain/entities/forecast_entity.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
 
+import 'package:weather_app/features/weather/domain/entities/location_entity.dart';
+
 abstract interface class WeatherRepository {
   Future<WeatherEntity> getCurrentWeather({required String city, required String lang});
+  Future<WeatherEntity> getCurrentWeatherByCoord({required double lat, required double lon, required String lang});
   Future<ForecastEntity> getForecast({required String city, required String lang});
+  Future<ForecastEntity> getForecastByCoord({required double lat, required double lon, required String lang});
+  Future<List<LocationEntity>> searchLocation(String query);
 }

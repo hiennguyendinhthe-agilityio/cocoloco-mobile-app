@@ -12,11 +12,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/app.dart';
 import 'package:weather_app/core/storage/preferences_service.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'package:device_preview/device_preview.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  await dotenv.load(fileName: ".env");
+
   final sharedPrefs = await SharedPreferences.getInstance();
 
   runApp(
