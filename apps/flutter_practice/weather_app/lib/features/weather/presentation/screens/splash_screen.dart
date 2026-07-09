@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:weather_app/core/extensions/l10n_extension.dart';
 import 'package:weather_app/router/routes.dart';
 import 'package:weather_app/theme/theme_context_ext.dart';
 
@@ -45,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
             const SizedBox(height: 24),
             Text(
-                  'Weather App',
+                  context.l10n.appTitle,
                   style: context.text.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: context.colors.onSurface,

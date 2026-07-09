@@ -30,7 +30,7 @@ class App extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       builder: DevicePreview.appBuilder, // Connect DevicePreview
       // ── Localization ───────────────────────────────────────────────────────
-      locale: DevicePreview.locale(context) ?? locale,
+      locale: locale, // Always use our app's locale from Settings
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       // ── Theme ──────────────────────────────────────────────────────────────

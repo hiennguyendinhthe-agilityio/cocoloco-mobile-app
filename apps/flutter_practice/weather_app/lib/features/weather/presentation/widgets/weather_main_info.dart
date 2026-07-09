@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
 import 'package:weather_app/theme/theme_context_ext.dart';
 
@@ -8,23 +9,9 @@ class WeatherMainInfo extends StatelessWidget {
 
   const WeatherMainInfo({super.key, required this.weather});
 
-  String _formatDate(DateTime dt) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${days[dt.weekday - 1]}, ${months[dt.month - 1]} ${dt.day}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime dt, BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return DateFormat('E, d MMM  HH:mm', locale).format(dt);
   }
 
   String _toTitleCase(String s) => s
@@ -81,7 +68,7 @@ class WeatherMainInfo extends StatelessWidget {
                 final targetCityTime = nowUtc.add(tzOffset);
                 
                 return Text(
-                  _formatDate(targetCityTime),
+                  _formatDate(targetCityTime, context),
                   style: TextStyle(
                     color: context.glass.textSecondary,
                     fontSize: 16,

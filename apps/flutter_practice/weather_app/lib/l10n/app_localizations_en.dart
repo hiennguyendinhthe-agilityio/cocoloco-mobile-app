@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchCityHint => 'Ready to check the weather?';
 
   @override
+  String get searchCityPlaceholder => 'Search city...';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
   String get feelsLike => 'Feels like';
 
   @override
@@ -101,4 +107,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String couldNotAccessLocation(String error) {
     return 'Could not access location: $error';
   }
+
+  @override
+  String get noInternetConnection =>
+      'No internet connection. Please check your network and try again.';
+
+  @override
+  String get searchCityBtn => 'Search City';
+
+  @override
+  String get viewAll => 'View all';
+
+  @override
+  String get couldNotLoadForecast => 'Could not load forecast';
+
+  @override
+  String get sevenDayForecast => '7-Day Forecast';
+
+  @override
+  String get now => 'Now';
+
+  @override
+  String get appTitle => 'Weather App';
+
+  @override
+  String get london => 'London';
+
+  @override
+  String get tokyo => 'Tokyo';
+
+  @override
+  String get newYork => 'New York';
 }

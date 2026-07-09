@@ -1,5 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:weather_app/core/extensions/l10n_extension.dart';
+import 'package:weather_app/theme/theme_context_ext.dart';
 
 class PremiumSearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -17,88 +18,91 @@ class PremiumSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detect if the app is currently in dark mode to adjust Google-style colors
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Google style colors
+    final bgColor = isDark ? const Color(0xFF303134) : Colors.white;
+    final textColor = isDark
+        ? const Color(0xFFE8EAED)
+        : const Color(0xFF202124);
+    final hintColor = isDark
+        ? const Color(0xFF9AA0A6)
+        : const Color(0xFF5F6368);
+    final iconColor = isDark
+        ? const Color(0xFF9AA0A6)
+        : const Color(0xFF5F6368);
+
     return Row(
       children: [
         Expanded(
           child: Container(
-            height: 52,
+            height: 48, // Google search bars are usually 48px high
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.10),
-                width: 1,
-              ),
+              color: bgColor,
+              borderRadius: BorderRadius.circular(
+                24,
+              ), // Pill shape is signature Google
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withAlpha(isDark ? 50 : 20),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  onChanged: onChanged,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Search city...',
-                    hintStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 18,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: Colors.white.withValues(alpha: 0.7),
-                      size: 24,
-                    ),
-                    suffixIcon: controller.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.cancel,
-                              color: Colors.white.withValues(alpha: 0.7),
-                              size: 20,
-                            ),
-                            onPressed: () {
-                              controller.clear();
-                              onChanged('');
-                            },
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 20,
-                    ),
-                  ),
-                  cursorColor: Colors.white,
+            child: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              onChanged: onChanged,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              decoration: InputDecoration(
+                hintText: context.l10n.searchCityPlaceholder,
+                hintStyle: TextStyle(color: hintColor, fontSize: 16),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(Icons.search, color: iconColor, size: 22),
+                ),
+                suffixIcon: controller.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.close, // Google uses 'close' not 'cancel'
+                          color: iconColor,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          controller.clear();
+                          onChanged('');
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 13,
+                  horizontal: 16,
                 ),
               ),
+              cursorColor:
+                  context.colors.primary, // Use app primary color for cursor
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         TextButton(
           onPressed: onCancel,
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            foregroundColor: context
+                .glass
+                .textPrimary, // Keep cancel button white/glass-matching
           ),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-            ),
+          child: Text(
+            context.l10n.cancel,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
       ],

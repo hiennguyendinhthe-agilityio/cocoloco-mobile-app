@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_app/core/extensions/l10n_extension.dart';
 import 'package:weather_app/features/weather/domain/entities/forecast_entity.dart';
 import 'package:weather_app/features/weather/presentation/providers/forecast_provider.dart';
 import 'package:weather_app/features/weather/presentation/widgets/glass_card.dart';
@@ -131,7 +132,7 @@ class WeatherDailyForecastCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '7-Day Forecast',
+                    context.l10n.sevenDayForecast,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 16,
@@ -141,7 +142,7 @@ class WeatherDailyForecastCard extends ConsumerWidget {
                   Row(
                     children: [
                       Text(
-                        'View all',
+                        context.l10n.viewAll,
                         style: TextStyle(
                           color: Colors.blue[300],
                           fontSize: 13,
@@ -176,12 +177,12 @@ class WeatherDailyForecastCard extends ConsumerWidget {
             child: CircularProgressIndicator(color: Colors.white),
           ),
         ),
-        error: (err, _) => const Center(
+        error: (err, _) => Center(
           child: Padding(
-            padding: EdgeInsets.all(32.0),
+            padding: const EdgeInsets.all(32.0),
             child: Text(
-              'Could not load forecast',
-              style: TextStyle(color: Colors.white70),
+              context.l10n.couldNotLoadForecast,
+              style: const TextStyle(color: Colors.white70),
             ),
           ),
         ),

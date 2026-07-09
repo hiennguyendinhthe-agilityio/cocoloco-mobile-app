@@ -7,45 +7,89 @@ void main() {
   group('WeatherMapper', () {
     test('should map CurrentWeatherModel to WeatherEntity correctly', () {
       // Arrange
-      final model = CurrentWeatherModel(
-        weather: const [WeatherConditionModel(id: 800, main: 'Clear', description: 'clear sky', icon: '01d')],
-        main: const CurrentMainModel(
-          temp: 30.0,
-          feelsLike: 32.0,
-          tempMin: 29.0,
-          tempMax: 31.0,
-          pressure: 1010,
-          humidity: 70,
-        ),
-        wind: const WindModel(speed: 3.5, deg: 180),
-        dt: 1625097600, // UTC: 2021-07-01 00:00:00
-        sys: const SysModel(
-          country: 'VN',
-          sunrise: 1625090000,
-          sunset: 1625140000,
-        ),
-        timezone: 25200, // UTC+7
-        id: 1581130,
-        name: 'Hanoi',
+      const tWeatherCondition = WeatherConditionModel(
+        id: 804,
+        main: 'Clouds',
+        description: 'Mây đen u ám', // Simulate Vietnamese response
+        icon: '04d',
+      );
+
+      const tMain = CurrentMainModel(
+        temp: 25.5,
+        feelsLike: 27.0,
+        tempMin: 24.0,
+        tempMax: 26.0,
+        pressure: 1012,
+        humidity: 80,
+      );
+
+      const tWind = WindModel(speed: 3.5, deg: 180);
+
+      const tSys = SysModel(
+        country: 'VN',
+        sunrise: 1672531200, // 2023-01-01 00:00:00 UTC
+        sunset: 1672574400, // 2023-01-01 12:00:00 UTC
+      );
+
+      const tModel = CurrentWeatherModel(
+        name: 'Ho Chi Minh City',
+        weather: [tWeatherCondition],
+        main: tMain,
+        wind: tWind,
+        sys: tSys,
+        dt: 1672560000, // 2023-01-01 08:00:00 UTC
+        timezone: 25200, // +7 hours in seconds
+        id: 1566083,
       );
 
       // Act
-      final result = WeatherMapper.toEntity(model);
+      final result = WeatherMapper.toEntity(tModel);
 
       // Assert
       expect(result, isA<WeatherEntity>());
-      expect(result.cityName, 'Hanoi');
+      expect(result.cityName, 'Ho Chi Minh City');
       expect(result.countryCode, 'VN');
-      expect(result.temperature, 30.0);
-      expect(result.feelsLike, 32.0);
-      expect(result.condition, 'clear sky');
-      expect(result.iconCode, '01d');
-      expect(result.humidity, 70);
+      expect(result.temperature, 25.5);
+      expect(result.condition, 'Mây đen u ám'); // Maps the localized description
+      expect(result.iconCode, '04d');
+      expect(result.humidity, 80);
       expect(result.windSpeed, 3.5);
-      
-      // Timezone check: 1625097600 (UTC 00:00) + 25200 (7 hours) = 07:00 local time
-      expect(result.localTime.hour, 7);
-      expect(result.localTime.minute, 0);
+
+      // Check timezone shifting logic
+      // UTC time of dt is 08:00:00. Shifted by +7 hours = 15:00:00
+      final expectedLocalTime = DateTime.fromMillisecondsSinceEpoch(
+        (1672560000 + 25200) * 1000,
+        isUtc: true,
+      );
+      expect(result.localTime, expectedLocalTime);
+    });
+
+    test('should provide safe defaults if weather array is empty', () {
+      // Arrange
+      const tModel = CurrentWeatherModel(
+        name: 'Empty City',
+        weather: [], // Empty
+        main: CurrentMainModel(
+          temp: 0,
+          feelsLike: 0,
+          tempMin: 0,
+          tempMax: 0,
+          pressure: 0,
+          humidity: 0,
+        ),
+        wind: WindModel(speed: 0, deg: 0),
+        sys: SysModel(country: 'US', sunrise: 0, sunset: 0),
+        dt: 0,
+        timezone: 0,
+        id: 1,
+      );
+
+      // Act
+      final result = WeatherMapper.toEntity(tModel);
+
+      // Assert
+      expect(result.condition, 'Unknown');
+      expect(result.iconCode, '01d');
     });
   });
 }

@@ -5,6 +5,7 @@ import 'package:weather_app/features/weather/domain/entities/forecast_entity.dar
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
 import 'package:weather_app/features/weather/presentation/providers/forecast_provider.dart';
 import 'package:weather_app/features/weather/presentation/providers/weather_provider.dart';
+import 'package:weather_app/core/extensions/l10n_extension.dart';
 import 'package:weather_app/features/weather/presentation/widgets/glass_card.dart';
 import 'package:weather_app/theme/theme_context_ext.dart';
 
@@ -28,6 +29,7 @@ class WeatherHourlyForecastCard extends ConsumerWidget {
   List<_HourlyDisplayData> _generateHourlyData(
     WeatherEntity current,
     ForecastEntity forecast,
+    BuildContext context,
   ) {
     final List<_HourlyDisplayData> result = [];
     final now = current.localTime;
@@ -35,7 +37,7 @@ class WeatherHourlyForecastCard extends ConsumerWidget {
     // 1. Add "Now"
     result.add(
       _HourlyDisplayData(
-        time: 'Now',
+        time: context.l10n.now,
         iconCode: current.iconCode,
         temperature: current.temperature,
         isNow: true,
@@ -89,9 +91,20 @@ class WeatherHourlyForecastCard extends ConsumerWidget {
         interpolatedTemp = tempBefore + (tempAfter - tempBefore) * ratio;
       }
 
-      final iconCode = (targetDiff > totalDiff / 2)
+      var iconCode = (targetDiff > totalDiff / 2)
           ? after.iconCode
           : iconBefore;
+
+      // Ensure day/night suffix matches actual time of day
+      final isNightTime = () {
+        final t = targetTime.hour * 60 + targetTime.minute;
+        final sr = current.sunriseTime.hour * 60 + current.sunriseTime.minute;
+        final ss = current.sunsetTime.hour * 60 + current.sunsetTime.minute;
+        return t < sr || t > ss;
+      }();
+
+      final baseIcon = iconCode.substring(0, 2);
+      iconCode = '$baseIcon${isNightTime ? 'n' : 'd'}';
 
       result.add(
         _HourlyDisplayData(
@@ -121,7 +134,7 @@ class WeatherHourlyForecastCard extends ConsumerWidget {
               return const SizedBox();
             }
 
-            final items = _generateHourlyData(currentWeather, forecast);
+            final items = _generateHourlyData(currentWeather, forecast, context);
 
             return ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -145,7 +158,7 @@ class WeatherHourlyForecastCard extends ConsumerWidget {
           ),
           error: (err, _) => Center(
             child: Text(
-              'Could not load forecast',
+              context.l10n.couldNotLoadForecast,
               style: TextStyle(color: context.glass.textSecondary),
             ),
           ),

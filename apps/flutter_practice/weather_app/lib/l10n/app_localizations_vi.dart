@@ -12,6 +12,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get searchCityHint => 'Sẵn sàng kiểm tra thời tiết chưa?';
 
   @override
+  String get searchCityPlaceholder => 'Tìm kiếm thành phố...';
+
+  @override
+  String get cancel => 'Hủy';
+
+  @override
   String get feelsLike => 'Cảm giác như';
 
   @override
@@ -101,4 +107,35 @@ class AppLocalizationsVi extends AppLocalizations {
   String couldNotAccessLocation(String error) {
     return 'Không thể lấy vị trí: $error';
   }
+
+  @override
+  String get noInternetConnection =>
+      'Không có kết nối mạng. Vui lòng kiểm tra lại.';
+
+  @override
+  String get searchCityBtn => 'Tìm kiếm';
+
+  @override
+  String get viewAll => 'Xem tất cả';
+
+  @override
+  String get couldNotLoadForecast => 'Không thể tải dự báo thời tiết';
+
+  @override
+  String get sevenDayForecast => 'Dự báo 7 ngày';
+
+  @override
+  String get now => 'Bây giờ';
+
+  @override
+  String get appTitle => 'Thời tiết';
+
+  @override
+  String get london => 'Luân Đôn';
+
+  @override
+  String get tokyo => 'Tokyo';
+
+  @override
+  String get newYork => 'New York';
 }

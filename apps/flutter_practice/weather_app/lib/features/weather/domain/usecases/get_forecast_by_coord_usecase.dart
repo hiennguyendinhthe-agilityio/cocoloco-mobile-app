@@ -12,11 +12,13 @@ class GetForecastByCoordUseCase {
     required double lat,
     required double lon,
     required String lang,
+    bool forceRefresh = false,
   }) {
     return _repository.getForecastByCoord(
       lat: lat,
       lon: lon,
       lang: lang,
+      forceRefresh: forceRefresh,
     );
   }
 }

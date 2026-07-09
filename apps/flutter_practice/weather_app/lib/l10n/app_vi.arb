@@ -1,6 +1,8 @@
 {
   "@@locale": "vi",
   "searchCityHint": "Sẵn sàng kiểm tra thời tiết chưa?",
+  "searchCityPlaceholder": "Tìm kiếm thành phố...",
+  "cancel": "Hủy",
   "feelsLike": "Cảm giác như",
   "humidity": "Độ ẩm",
   "wind": "Gió",
@@ -29,5 +31,15 @@
   "noResultsFound": "Không tìm thấy kết quả",
   "locating": "Đang định vị...",
   "tapToFindLocation": "Nhấn để tìm vị trí của bạn",
-  "couldNotAccessLocation": "Không thể lấy vị trí: {error}"
+  "couldNotAccessLocation": "Không thể lấy vị trí: {error}",
+  "noInternetConnection": "Không có kết nối mạng. Vui lòng kiểm tra lại.",
+  "searchCityBtn": "Tìm kiếm",
+  "viewAll": "Xem tất cả",
+  "couldNotLoadForecast": "Không thể tải dự báo thời tiết",
+  "sevenDayForecast": "Dự báo 7 ngày",
+  "now": "Bây giờ",
+  "appTitle": "Thời tiết",
+  "london": "Luân Đôn",
+  "tokyo": "Tokyo",
+  "newYork": "New York"
 }

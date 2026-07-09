@@ -7,6 +7,8 @@ import 'package:weather_app/features/weather/presentation/providers/weather_prov
 import 'package:weather_app/features/weather/presentation/providers/forecast_provider.dart';
 import 'package:weather_app/features/weather/presentation/widgets/search/city_list_item.dart';
 
+import 'package:weather_app/core/services/analytics_service.dart';
+
 class SearchActiveView extends ConsumerWidget {
   final VoidCallback onClose;
 
@@ -40,12 +42,16 @@ class SearchActiveView extends ConsumerWidget {
               weatherIcon: Icons.location_on_outlined,
               leadingIcon: null,
               onTap: () {
+                // Log to Firebase Analytics
+                AnalyticsService.instance.logSearchCity(location.name);
+
                 ref.read(recentSearchesProvider.notifier).addRecentSearch(location);
                 ref.read(weatherProvider.notifier).fetchWeather(location.name);
                 ref.read(forecastProvider.notifier).fetchForecast(location.name);
                 ref.read(searchQueryProvider.notifier).state = '';
                 onClose();
               },
+
             );
           },
         );

@@ -10,33 +10,55 @@ final forecastProvider = AsyncNotifierProvider<ForecastNotifier, ForecastEntity?
 );
 
 class ForecastNotifier extends AsyncNotifier<ForecastEntity?> {
+  String? _lastSearchedCity;
+  double? _lastLat;
+  double? _lastLon;
+  String? _lastCityNameOverride;
+
   @override
   FutureOr<ForecastEntity?> build() {
-    // We could automatically fetch forecast here if we wanted,
-    // but typically we wait for weatherProvider to succeed,
-    // or we fetch them concurrently.
-    // For now, we start with null.
+    ref.listen(localeProvider, (previous, next) {
+      if (previous != null && previous.languageCode != next.languageCode) {
+        _refetch();
+      }
+    });
     return null;
   }
 
-  Future<void> fetchForecast(String city) async {
+  void _refetch({bool forceRefresh = false}) {
+    if (_lastLat != null && _lastLon != null) {
+      fetchForecastByCoord(_lastLat!, _lastLon!, cityNameOverride: _lastCityNameOverride, forceRefresh: forceRefresh);
+    } else if (_lastSearchedCity != null) {
+      fetchForecast(_lastSearchedCity!, forceRefresh: forceRefresh);
+    }
+  }
+
+  Future<void> fetchForecast(String city, {bool forceRefresh = false}) async {
+    _lastSearchedCity = city;
+    _lastLat = null;
+    _lastLon = null;
+    _lastCityNameOverride = null;
     state = const AsyncValue.loading();
     try {
       final getForecast = ref.read(getForecastUseCaseProvider);
       final lang = ref.read(localeProvider).languageCode;
-      final forecast = await getForecast.execute(city: city, lang: lang);
+      final forecast = await getForecast.execute(city: city, lang: lang, forceRefresh: forceRefresh);
       state = AsyncValue.data(forecast);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  Future<void> fetchForecastByCoord(double lat, double lon, {String? cityNameOverride}) async {
+  Future<void> fetchForecastByCoord(double lat, double lon, {String? cityNameOverride, bool forceRefresh = false}) async {
+    _lastSearchedCity = null;
+    _lastLat = lat;
+    _lastLon = lon;
+    _lastCityNameOverride = cityNameOverride;
     state = const AsyncValue.loading();
     try {
       final getForecast = ref.read(getForecastByCoordUseCaseProvider);
       final lang = ref.read(localeProvider).languageCode;
-      var forecast = await getForecast.execute(lat: lat, lon: lon, lang: lang);
+      var forecast = await getForecast.execute(lat: lat, lon: lon, lang: lang, forceRefresh: forceRefresh);
       
       if (cityNameOverride != null && cityNameOverride.isNotEmpty) {
         forecast = forecast.copyWith(cityName: cityNameOverride);

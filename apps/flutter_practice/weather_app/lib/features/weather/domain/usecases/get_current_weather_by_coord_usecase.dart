@@ -12,11 +12,13 @@ class GetCurrentWeatherByCoordUseCase {
     required double lat,
     required double lon,
     required String lang,
+    bool forceRefresh = false,
   }) {
     return _repository.getCurrentWeatherByCoord(
       lat: lat,
       lon: lon,
       lang: lang,
+      forceRefresh: forceRefresh,
     );
   }
 }

@@ -18,12 +18,12 @@ class GetCurrentWeatherUseCase {
 
   /// Executes the use case.
   /// Throws exceptions if the repository fails (can be caught by the caller).
-  Future<WeatherEntity> execute({required String city, required String lang}) {
+  Future<WeatherEntity> execute({required String city, required String lang, bool forceRefresh = false}) {
     if (city.trim().isEmpty) {
       throw ArgumentError('City name cannot be empty.');
     }
 
-    return _repository.getCurrentWeather(city: city, lang: lang);
+    return _repository.getCurrentWeather(city: city, lang: lang, forceRefresh: forceRefresh);
   }
 }
 

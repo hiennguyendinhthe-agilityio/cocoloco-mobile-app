@@ -104,6 +104,18 @@ abstract class AppLocalizations {
   /// **'Ready to check the weather?'**
   String get searchCityHint;
 
+  /// No description provided for @searchCityPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search city...'**
+  String get searchCityPlaceholder;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
   /// No description provided for @feelsLike.
   ///
   /// In en, this message translates to:
@@ -277,6 +289,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not access location: {error}'**
   String couldNotAccessLocation(String error);
+
+  /// No description provided for @noInternetConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Please check your network and try again.'**
+  String get noInternetConnection;
+
+  /// No description provided for @searchCityBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Search City'**
+  String get searchCityBtn;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all'**
+  String get viewAll;
+
+  /// No description provided for @couldNotLoadForecast.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load forecast'**
+  String get couldNotLoadForecast;
+
+  /// No description provided for @sevenDayForecast.
+  ///
+  /// In en, this message translates to:
+  /// **'7-Day Forecast'**
+  String get sevenDayForecast;
+
+  /// No description provided for @now.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get now;
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather App'**
+  String get appTitle;
+
+  /// No description provided for @london.
+  ///
+  /// In en, this message translates to:
+  /// **'London'**
+  String get london;
+
+  /// No description provided for @tokyo.
+  ///
+  /// In en, this message translates to:
+  /// **'Tokyo'**
+  String get tokyo;
+
+  /// No description provided for @newYork.
+  ///
+  /// In en, this message translates to:
+  /// **'New York'**
+  String get newYork;
 }
 
 class _AppLocalizationsDelegate

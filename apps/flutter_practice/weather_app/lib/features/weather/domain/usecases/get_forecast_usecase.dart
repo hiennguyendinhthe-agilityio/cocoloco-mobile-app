@@ -13,7 +13,11 @@ class GetForecastUseCase {
 
   GetForecastUseCase(this._repository);
 
-  Future<ForecastEntity> execute({required String city, required String lang}) async {
-    return await _repository.getForecast(city: city, lang: lang);
+  Future<ForecastEntity> execute({required String city, required String lang, bool forceRefresh = false}) {
+    if (city.trim().isEmpty) {
+      throw ArgumentError('City name cannot be empty.');
+    }
+
+    return _repository.getForecast(city: city, lang: lang, forceRefresh: forceRefresh);
   }
 }

@@ -38,7 +38,12 @@ String _bgAsset(WeatherEntity? weather) {
     return 'assets/images/bg_rainy.png';
   }
 
-  // Default: sunny/cloudy day
+  // Cloudy/Overcast logic
+  if (['03d', '04d'].contains(iconCode)) {
+    return 'assets/images/bg_fog.png'; // Using fog bg without fog overlay for gloomy sky
+  }
+
+  // Default: sunny/clear day
   return 'assets/images/bg_sunny.png';
 }
 

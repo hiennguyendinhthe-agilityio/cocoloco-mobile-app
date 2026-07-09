@@ -123,14 +123,14 @@ class _SearchIdleViewState extends ConsumerState<SearchIdleView> {
         _buildSectionTitle(context.l10n.popularCities, null),
         const SizedBox(height: 12),
         CityListItem(
-          city: 'Tokyo',
+          city: context.l10n.tokyo,
           country: 'JP',
           temperature: '--',
           weatherIcon: Icons.star_border,
           onTap: () => _onLocationTap(
             ref,
-            const LocationEntity(
-              name: 'Tokyo',
+            LocationEntity(
+              name: context.l10n.tokyo,
               lat: 35.6895,
               lon: 139.6917,
               country: 'JP',
@@ -138,14 +138,14 @@ class _SearchIdleViewState extends ConsumerState<SearchIdleView> {
           ),
         ),
         CityListItem(
-          city: 'London',
+          city: context.l10n.london,
           country: 'GB',
           temperature: '--',
           weatherIcon: Icons.star_border,
           onTap: () => _onLocationTap(
             ref,
-            const LocationEntity(
-              name: 'London',
+            LocationEntity(
+              name: context.l10n.london,
               lat: 51.5072,
               lon: -0.1276,
               country: 'GB',
@@ -153,14 +153,14 @@ class _SearchIdleViewState extends ConsumerState<SearchIdleView> {
           ),
         ),
         CityListItem(
-          city: 'New York',
+          city: context.l10n.newYork,
           country: 'US',
           temperature: '--',
           weatherIcon: Icons.star_border,
           onTap: () => _onLocationTap(
             ref,
-            const LocationEntity(
-              name: 'New York',
+            LocationEntity(
+              name: context.l10n.newYork,
               lat: 40.7128,
               lon: -74.0060,
               country: 'US',

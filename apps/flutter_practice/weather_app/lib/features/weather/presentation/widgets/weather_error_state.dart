@@ -13,15 +13,17 @@ class WeatherErrorState extends StatelessWidget {
     required this.onSearchPressed,
   });
 
-  String _getUserFriendlyErrorMessage(Object error) {
+  String _getUserFriendlyError(BuildContext context, dynamic error) {
+    if (error == null) return context.l10n.unknown;
+
     // In a real app, you'd map exceptions to specific l10n strings
-    // For now, we clean up the Exception prefix for a better UI
+    // Here we do a simple check for common network errors
     final errStr = error.toString();
     if (errStr.contains('SocketException') || errStr.contains('Failed to host lookup')) {
-      return 'No internet connection. Please check your network and try again.';
+      return context.l10n.noInternetConnection;
     }
     if (errStr.startsWith('Exception: ')) {
-      return errStr.substring(11);
+      return errStr.replaceFirst('Exception: ', '');
     }
     return errStr;
   }
@@ -59,7 +61,7 @@ class WeatherErrorState extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  _getUserFriendlyErrorMessage(error),
+                  _getUserFriendlyError(context, error),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: context.glass.textPrimary,
@@ -81,7 +83,7 @@ class WeatherErrorState extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: onSearchPressed,
                   icon: const Icon(Icons.search),
-                  label: const Text('Search City'),
+                  label: Text(context.l10n.searchCityBtn),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.colors.primary.withValues(alpha: 0.8),
                     foregroundColor: Colors.white,
