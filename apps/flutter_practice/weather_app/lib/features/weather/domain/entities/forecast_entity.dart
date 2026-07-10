@@ -15,6 +15,7 @@ abstract class ForecastItemEntity with _$ForecastItemEntity {
   const factory ForecastItemEntity({
     required DateTime dateTime,
     required double temperature,
+    required double feelsLike,
     required double minTemp,
     required double maxTemp,
     required String condition,

@@ -280,7 +280,7 @@ as List<ForecastItemEntity>,
 /// @nodoc
 mixin _$ForecastItemEntity {
 
- DateTime get dateTime; double get temperature; double get minTemp; double get maxTemp; String get condition; String get iconCode; double get windSpeed; int get humidity; double get pop;
+ DateTime get dateTime; double get temperature; double get feelsLike; double get minTemp; double get maxTemp; String get condition; String get iconCode; double get windSpeed; int get humidity; double get pop;
 /// Create a copy of ForecastItemEntity
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -291,16 +291,16 @@ $ForecastItemEntityCopyWith<ForecastItemEntity> get copyWith => _$ForecastItemEn
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ForecastItemEntity&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.temperature, temperature) || other.temperature == temperature)&&(identical(other.minTemp, minTemp) || other.minTemp == minTemp)&&(identical(other.maxTemp, maxTemp) || other.maxTemp == maxTemp)&&(identical(other.condition, condition) || other.condition == condition)&&(identical(other.iconCode, iconCode) || other.iconCode == iconCode)&&(identical(other.windSpeed, windSpeed) || other.windSpeed == windSpeed)&&(identical(other.humidity, humidity) || other.humidity == humidity)&&(identical(other.pop, pop) || other.pop == pop));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ForecastItemEntity&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.temperature, temperature) || other.temperature == temperature)&&(identical(other.feelsLike, feelsLike) || other.feelsLike == feelsLike)&&(identical(other.minTemp, minTemp) || other.minTemp == minTemp)&&(identical(other.maxTemp, maxTemp) || other.maxTemp == maxTemp)&&(identical(other.condition, condition) || other.condition == condition)&&(identical(other.iconCode, iconCode) || other.iconCode == iconCode)&&(identical(other.windSpeed, windSpeed) || other.windSpeed == windSpeed)&&(identical(other.humidity, humidity) || other.humidity == humidity)&&(identical(other.pop, pop) || other.pop == pop));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dateTime,temperature,minTemp,maxTemp,condition,iconCode,windSpeed,humidity,pop);
+int get hashCode => Object.hash(runtimeType,dateTime,temperature,feelsLike,minTemp,maxTemp,condition,iconCode,windSpeed,humidity,pop);
 
 @override
 String toString() {
-  return 'ForecastItemEntity(dateTime: $dateTime, temperature: $temperature, minTemp: $minTemp, maxTemp: $maxTemp, condition: $condition, iconCode: $iconCode, windSpeed: $windSpeed, humidity: $humidity, pop: $pop)';
+  return 'ForecastItemEntity(dateTime: $dateTime, temperature: $temperature, feelsLike: $feelsLike, minTemp: $minTemp, maxTemp: $maxTemp, condition: $condition, iconCode: $iconCode, windSpeed: $windSpeed, humidity: $humidity, pop: $pop)';
 }
 
 
@@ -311,7 +311,7 @@ abstract mixin class $ForecastItemEntityCopyWith<$Res>  {
   factory $ForecastItemEntityCopyWith(ForecastItemEntity value, $Res Function(ForecastItemEntity) _then) = _$ForecastItemEntityCopyWithImpl;
 @useResult
 $Res call({
- DateTime dateTime, double temperature, double minTemp, double maxTemp, String condition, String iconCode, double windSpeed, int humidity, double pop
+ DateTime dateTime, double temperature, double feelsLike, double minTemp, double maxTemp, String condition, String iconCode, double windSpeed, int humidity, double pop
 });
 
 
@@ -328,10 +328,11 @@ class _$ForecastItemEntityCopyWithImpl<$Res>
 
 /// Create a copy of ForecastItemEntity
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? dateTime = null,Object? temperature = null,Object? minTemp = null,Object? maxTemp = null,Object? condition = null,Object? iconCode = null,Object? windSpeed = null,Object? humidity = null,Object? pop = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? dateTime = null,Object? temperature = null,Object? feelsLike = null,Object? minTemp = null,Object? maxTemp = null,Object? condition = null,Object? iconCode = null,Object? windSpeed = null,Object? humidity = null,Object? pop = null,}) {
   return _then(_self.copyWith(
 dateTime: null == dateTime ? _self.dateTime : dateTime // ignore: cast_nullable_to_non_nullable
 as DateTime,temperature: null == temperature ? _self.temperature : temperature // ignore: cast_nullable_to_non_nullable
+as double,feelsLike: null == feelsLike ? _self.feelsLike : feelsLike // ignore: cast_nullable_to_non_nullable
 as double,minTemp: null == minTemp ? _self.minTemp : minTemp // ignore: cast_nullable_to_non_nullable
 as double,maxTemp: null == maxTemp ? _self.maxTemp : maxTemp // ignore: cast_nullable_to_non_nullable
 as double,condition: null == condition ? _self.condition : condition // ignore: cast_nullable_to_non_nullable
@@ -424,10 +425,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime dateTime,  double temperature,  double minTemp,  double maxTemp,  String condition,  String iconCode,  double windSpeed,  int humidity,  double pop)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime dateTime,  double temperature,  double feelsLike,  double minTemp,  double maxTemp,  String condition,  String iconCode,  double windSpeed,  int humidity,  double pop)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ForecastItemEntity() when $default != null:
-return $default(_that.dateTime,_that.temperature,_that.minTemp,_that.maxTemp,_that.condition,_that.iconCode,_that.windSpeed,_that.humidity,_that.pop);case _:
+return $default(_that.dateTime,_that.temperature,_that.feelsLike,_that.minTemp,_that.maxTemp,_that.condition,_that.iconCode,_that.windSpeed,_that.humidity,_that.pop);case _:
   return orElse();
 
 }
@@ -445,10 +446,10 @@ return $default(_that.dateTime,_that.temperature,_that.minTemp,_that.maxTemp,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime dateTime,  double temperature,  double minTemp,  double maxTemp,  String condition,  String iconCode,  double windSpeed,  int humidity,  double pop)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime dateTime,  double temperature,  double feelsLike,  double minTemp,  double maxTemp,  String condition,  String iconCode,  double windSpeed,  int humidity,  double pop)  $default,) {final _that = this;
 switch (_that) {
 case _ForecastItemEntity():
-return $default(_that.dateTime,_that.temperature,_that.minTemp,_that.maxTemp,_that.condition,_that.iconCode,_that.windSpeed,_that.humidity,_that.pop);case _:
+return $default(_that.dateTime,_that.temperature,_that.feelsLike,_that.minTemp,_that.maxTemp,_that.condition,_that.iconCode,_that.windSpeed,_that.humidity,_that.pop);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -465,10 +466,10 @@ return $default(_that.dateTime,_that.temperature,_that.minTemp,_that.maxTemp,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime dateTime,  double temperature,  double minTemp,  double maxTemp,  String condition,  String iconCode,  double windSpeed,  int humidity,  double pop)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime dateTime,  double temperature,  double feelsLike,  double minTemp,  double maxTemp,  String condition,  String iconCode,  double windSpeed,  int humidity,  double pop)?  $default,) {final _that = this;
 switch (_that) {
 case _ForecastItemEntity() when $default != null:
-return $default(_that.dateTime,_that.temperature,_that.minTemp,_that.maxTemp,_that.condition,_that.iconCode,_that.windSpeed,_that.humidity,_that.pop);case _:
+return $default(_that.dateTime,_that.temperature,_that.feelsLike,_that.minTemp,_that.maxTemp,_that.condition,_that.iconCode,_that.windSpeed,_that.humidity,_that.pop);case _:
   return null;
 
 }
@@ -480,11 +481,12 @@ return $default(_that.dateTime,_that.temperature,_that.minTemp,_that.maxTemp,_th
 
 
 class _ForecastItemEntity implements ForecastItemEntity {
-  const _ForecastItemEntity({required this.dateTime, required this.temperature, required this.minTemp, required this.maxTemp, required this.condition, required this.iconCode, required this.windSpeed, required this.humidity, required this.pop});
+  const _ForecastItemEntity({required this.dateTime, required this.temperature, required this.feelsLike, required this.minTemp, required this.maxTemp, required this.condition, required this.iconCode, required this.windSpeed, required this.humidity, required this.pop});
   
 
 @override final  DateTime dateTime;
 @override final  double temperature;
+@override final  double feelsLike;
 @override final  double minTemp;
 @override final  double maxTemp;
 @override final  String condition;
@@ -503,16 +505,16 @@ _$ForecastItemEntityCopyWith<_ForecastItemEntity> get copyWith => __$ForecastIte
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ForecastItemEntity&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.temperature, temperature) || other.temperature == temperature)&&(identical(other.minTemp, minTemp) || other.minTemp == minTemp)&&(identical(other.maxTemp, maxTemp) || other.maxTemp == maxTemp)&&(identical(other.condition, condition) || other.condition == condition)&&(identical(other.iconCode, iconCode) || other.iconCode == iconCode)&&(identical(other.windSpeed, windSpeed) || other.windSpeed == windSpeed)&&(identical(other.humidity, humidity) || other.humidity == humidity)&&(identical(other.pop, pop) || other.pop == pop));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ForecastItemEntity&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.temperature, temperature) || other.temperature == temperature)&&(identical(other.feelsLike, feelsLike) || other.feelsLike == feelsLike)&&(identical(other.minTemp, minTemp) || other.minTemp == minTemp)&&(identical(other.maxTemp, maxTemp) || other.maxTemp == maxTemp)&&(identical(other.condition, condition) || other.condition == condition)&&(identical(other.iconCode, iconCode) || other.iconCode == iconCode)&&(identical(other.windSpeed, windSpeed) || other.windSpeed == windSpeed)&&(identical(other.humidity, humidity) || other.humidity == humidity)&&(identical(other.pop, pop) || other.pop == pop));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dateTime,temperature,minTemp,maxTemp,condition,iconCode,windSpeed,humidity,pop);
+int get hashCode => Object.hash(runtimeType,dateTime,temperature,feelsLike,minTemp,maxTemp,condition,iconCode,windSpeed,humidity,pop);
 
 @override
 String toString() {
-  return 'ForecastItemEntity(dateTime: $dateTime, temperature: $temperature, minTemp: $minTemp, maxTemp: $maxTemp, condition: $condition, iconCode: $iconCode, windSpeed: $windSpeed, humidity: $humidity, pop: $pop)';
+  return 'ForecastItemEntity(dateTime: $dateTime, temperature: $temperature, feelsLike: $feelsLike, minTemp: $minTemp, maxTemp: $maxTemp, condition: $condition, iconCode: $iconCode, windSpeed: $windSpeed, humidity: $humidity, pop: $pop)';
 }
 
 
@@ -523,7 +525,7 @@ abstract mixin class _$ForecastItemEntityCopyWith<$Res> implements $ForecastItem
   factory _$ForecastItemEntityCopyWith(_ForecastItemEntity value, $Res Function(_ForecastItemEntity) _then) = __$ForecastItemEntityCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime dateTime, double temperature, double minTemp, double maxTemp, String condition, String iconCode, double windSpeed, int humidity, double pop
+ DateTime dateTime, double temperature, double feelsLike, double minTemp, double maxTemp, String condition, String iconCode, double windSpeed, int humidity, double pop
 });
 
 
@@ -540,10 +542,11 @@ class __$ForecastItemEntityCopyWithImpl<$Res>
 
 /// Create a copy of ForecastItemEntity
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? dateTime = null,Object? temperature = null,Object? minTemp = null,Object? maxTemp = null,Object? condition = null,Object? iconCode = null,Object? windSpeed = null,Object? humidity = null,Object? pop = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? dateTime = null,Object? temperature = null,Object? feelsLike = null,Object? minTemp = null,Object? maxTemp = null,Object? condition = null,Object? iconCode = null,Object? windSpeed = null,Object? humidity = null,Object? pop = null,}) {
   return _then(_ForecastItemEntity(
 dateTime: null == dateTime ? _self.dateTime : dateTime // ignore: cast_nullable_to_non_nullable
 as DateTime,temperature: null == temperature ? _self.temperature : temperature // ignore: cast_nullable_to_non_nullable
+as double,feelsLike: null == feelsLike ? _self.feelsLike : feelsLike // ignore: cast_nullable_to_non_nullable
 as double,minTemp: null == minTemp ? _self.minTemp : minTemp // ignore: cast_nullable_to_non_nullable
 as double,maxTemp: null == maxTemp ? _self.maxTemp : maxTemp // ignore: cast_nullable_to_non_nullable
 as double,condition: null == condition ? _self.condition : condition // ignore: cast_nullable_to_non_nullable

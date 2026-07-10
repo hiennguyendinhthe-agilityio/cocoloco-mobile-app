@@ -349,6 +349,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New York'**
   String get newYork;
+
+  /// No description provided for @weatherConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather Conditions'**
+  String get weatherConditions;
+
+  /// No description provided for @celsius.
+  ///
+  /// In en, this message translates to:
+  /// **'Celsius (°C)'**
+  String get celsius;
+
+  /// No description provided for @actual.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual'**
+  String get actual;
+
+  /// No description provided for @feelsLikeWeather.
+  ///
+  /// In en, this message translates to:
+  /// **'Feels like'**
+  String get feelsLikeWeather;
+
+  /// No description provided for @actualTempDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual temperature.'**
+  String get actualTempDesc;
+
+  /// No description provided for @feelsLikeTempDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Feels like temperature.'**
+  String get feelsLikeTempDesc;
+
+  /// No description provided for @probabilityOfPrecip.
+  ///
+  /// In en, this message translates to:
+  /// **'Probability of precipitation'**
+  String get probabilityOfPrecip;
+
+  /// No description provided for @probabilityOnDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Probability of precipitation on {day}: {pop}%'**
+  String probabilityOnDay(String day, String pop);
 }
 
 class _AppLocalizationsDelegate

@@ -48,5 +48,23 @@
   "appTitle": "Weather App",
   "london": "London",
   "tokyo": "Tokyo",
-  "newYork": "New York"
+  "newYork": "New York",
+  "weatherConditions": "Weather Conditions",
+  "celsius": "Celsius (°C)",
+  "actual": "Actual",
+  "feelsLikeWeather": "Feels like",
+  "actualTempDesc": "Actual temperature.",
+  "feelsLikeTempDesc": "Feels like temperature.",
+  "probabilityOfPrecip": "Probability of precipitation",
+  "probabilityOnDay": "Probability of precipitation on {day}: {pop}%",
+  "@probabilityOnDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "pop": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -138,4 +138,30 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get newYork => 'New York';
+
+  @override
+  String get weatherConditions => 'Điều kiện thời tiết';
+
+  @override
+  String get celsius => 'Độ C (°C)';
+
+  @override
+  String get actual => 'Thực tế';
+
+  @override
+  String get feelsLikeWeather => 'Cảm nhận';
+
+  @override
+  String get actualTempDesc => 'Nhiệt độ thực tế.';
+
+  @override
+  String get feelsLikeTempDesc => 'Nhiệt độ cảm nhận.';
+
+  @override
+  String get probabilityOfPrecip => 'Khả năng có mưa';
+
+  @override
+  String probabilityOnDay(String day, String pop) {
+    return 'Khả năng có mưa vào thứ $day: $pop%';
+  }
 }

@@ -138,4 +138,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newYork => 'New York';
+
+  @override
+  String get weatherConditions => 'Weather Conditions';
+
+  @override
+  String get celsius => 'Celsius (°C)';
+
+  @override
+  String get actual => 'Actual';
+
+  @override
+  String get feelsLikeWeather => 'Feels like';
+
+  @override
+  String get actualTempDesc => 'Actual temperature.';
+
+  @override
+  String get feelsLikeTempDesc => 'Feels like temperature.';
+
+  @override
+  String get probabilityOfPrecip => 'Probability of precipitation';
+
+  @override
+  String probabilityOnDay(String day, String pop) {
+    return 'Probability of precipitation on $day: $pop%';
+  }
 }

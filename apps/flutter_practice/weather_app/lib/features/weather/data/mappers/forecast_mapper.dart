@@ -25,6 +25,7 @@ abstract final class ForecastMapper {
       return ForecastItemEntity(
         dateTime: getLocalTime(item.dt),
         temperature: item.main.temp,
+        feelsLike: item.main.feelsLike,
         minTemp: item.main.tempMin,
         maxTemp: item.main.tempMax,
         condition: weatherDesc,

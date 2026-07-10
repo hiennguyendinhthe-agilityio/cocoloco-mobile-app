@@ -41,5 +41,13 @@
   "appTitle": "Thời tiết",
   "london": "Luân Đôn",
   "tokyo": "Tokyo",
-  "newYork": "New York"
+  "newYork": "New York",
+  "weatherConditions": "Điều kiện thời tiết",
+  "celsius": "Độ C (°C)",
+  "actual": "Thực tế",
+  "feelsLikeWeather": "Cảm nhận",
+  "actualTempDesc": "Nhiệt độ thực tế.",
+  "feelsLikeTempDesc": "Nhiệt độ cảm nhận.",
+  "probabilityOfPrecip": "Khả năng có mưa",
+  "probabilityOnDay": "Khả năng có mưa vào thứ {day}: {pop}%"
 }

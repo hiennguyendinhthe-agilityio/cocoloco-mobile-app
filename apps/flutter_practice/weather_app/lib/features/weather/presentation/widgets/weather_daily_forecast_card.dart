@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:weather_app/core/extensions/l10n_extension.dart';
 import 'package:weather_app/features/weather/domain/entities/forecast_entity.dart';
 import 'package:weather_app/features/weather/presentation/providers/forecast_provider.dart';
+import 'package:weather_app/features/weather/presentation/widgets/daily_forecast_detail_sheet.dart';
 import 'package:weather_app/features/weather/presentation/widgets/glass_card.dart';
 
 class _DailyDisplayData {
@@ -129,8 +130,9 @@ class WeatherDailyForecastCard extends ConsumerWidget {
             children: [
               // Header
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Icon(Icons.format_list_bulleted_rounded, color: Colors.white),
+                  const SizedBox(width: 8),
                   Text(
                     context.l10n.sevenDayForecast,
                     style: TextStyle(
@@ -139,24 +141,6 @@ class WeatherDailyForecastCard extends ConsumerWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        context.l10n.viewAll,
-                        style: TextStyle(
-                          color: Colors.blue[300],
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.blue[300],
-                        size: 12,
-                      ),
-                    ],
-                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -164,7 +148,22 @@ class WeatherDailyForecastCard extends ConsumerWidget {
               // Daily Items
               ...dailyData.expand(
                 (day) => [
-                  _DailyItem(data: day, toTitleCase: _toTitleCase),
+                  _DailyItem(
+                    data: day,
+                    toTitleCase: _toTitleCase,
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        useSafeArea: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => DailyForecastDetailSheet(
+                          forecast: forecast,
+                          initialSelectedDate: day.date,
+                        ),
+                      );
+                    },
+                  ),
                   if (day != dailyData.last) const SizedBox(height: 20),
                 ],
               ),
@@ -200,157 +199,169 @@ class WeatherDailyForecastCard extends ConsumerWidget {
 class _DailyItem extends StatelessWidget {
   final _DailyDisplayData data;
   final String Function(String) toTitleCase;
+  final VoidCallback onTap;
 
-  const _DailyItem({required this.data, required this.toTitleCase});
+  const _DailyItem({
+    required this.data,
+    required this.toTitleCase,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final dayName = DateFormat('EEE').format(data.date);
     final monthDay = DateFormat('MMM d').format(data.date);
 
-    return Row(
-      children: [
-        // Date & Condition & POP
-        Expanded(
-          flex: 4,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$dayName, $monthDay',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                toTitleCase(data.condition),
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 13,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.water_drop_rounded,
-                    color: Colors.blue[400],
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${(data.pop * 100).toStringAsFixed(0)}%',
-                    style: TextStyle(
-                      color: Colors.blue[400],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Weather Icon
-        Expanded(
-          flex: 2,
-          child: Center(
-            child: Image.asset(
-              'assets/icons/${data.iconCode}.png',
-              width: 48,
-              height: 48,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.cloud_rounded,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
-          ),
-        ),
-
-        // Right side metrics (Temp, Wind, Humidity)
-        Expanded(
-          flex: 4,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Temp
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: [
+            // Date & Condition & POP
+            Expanded(
+              flex: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${data.maxTemp.toStringAsFixed(0)}°',
+                    '$dayName, $monthDay',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${data.minTemp.toStringAsFixed(0)}°',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    toTitleCase(data.condition),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.water_drop_rounded,
+                        color: Colors.blue[400],
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${(data.pop * 100).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          color: Colors.blue[400],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: 8),
-              // Wind & Humidity
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+            ),
+
+            // Weather Icon
+            Expanded(
+              flex: 2,
+              child: Center(
+                child: Image.asset(
+                  'assets/icons/${data.iconCode}.png',
+                  width: 48,
+                  height: 48,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.cloud_rounded,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+              ),
+            ),
+
+            // Right side metrics (Temp, Wind, Humidity)
+            Expanded(
+              flex: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Icon(
-                    Icons.air_rounded,
-                    color: Colors.white.withValues(alpha: 0.5),
-                    size: 14,
+                  // Temp
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        '${data.maxTemp.toStringAsFixed(0)}°',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${data.minTemp.toStringAsFixed(0)}°',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 2),
-                  Text(
-                    '${data.windSpeed.toStringAsFixed(0)}m/s',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '|',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Icon(
-                    Icons.water_drop_outlined,
-                    color: Colors.white.withValues(alpha: 0.5),
-                    size: 14,
-                  ),
-                  const SizedBox(width: 2),
-                  Text(
-                    '${data.humidity}%',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
-                    ),
+                  const SizedBox(height: 8),
+                  // Wind & Humidity
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Icon(
+                        Icons.air_rounded,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${data.windSpeed.toStringAsFixed(0)}m/s',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '|',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Icon(
+                        Icons.water_drop_outlined,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${data.humidity}%',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
