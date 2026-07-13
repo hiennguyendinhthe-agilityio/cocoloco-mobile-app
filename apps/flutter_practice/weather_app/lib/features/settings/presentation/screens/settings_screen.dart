@@ -48,7 +48,7 @@ class SettingsScreen extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
-            context.l10n.theme,
+            context.l10n.themeSection,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -57,7 +57,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         RadioListTile<ThemeMode>(
-          title: const Text('System Default'),
+          title: Text(context.l10n.systemDefault),
           value: ThemeMode.system,
           groupValue: settings.themeMode,
           onChanged: (mode) {
@@ -69,7 +69,7 @@ class SettingsScreen extends ConsumerWidget {
           },
         ),
         RadioListTile<ThemeMode>(
-          title: const Text('Light'),
+          title: Text(context.l10n.lightTheme),
           value: ThemeMode.light,
           groupValue: settings.themeMode,
           onChanged: (mode) {
@@ -80,7 +80,7 @@ class SettingsScreen extends ConsumerWidget {
           },
         ),
         RadioListTile<ThemeMode>(
-          title: const Text('Dark'),
+          title: Text(context.l10n.darkTheme),
           value: ThemeMode.dark,
           groupValue: settings.themeMode,
           onChanged: (mode) {
@@ -102,7 +102,7 @@ class SettingsScreen extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
-            'Temperature Unit',
+            context.l10n.temperatureUnit,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -111,7 +111,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         RadioListTile<TemperatureUnit>(
-          title: const Text('Celsius (°C)'),
+          title: Text(context.l10n.celsius),
           value: TemperatureUnit.celsius,
           groupValue: settings.temperatureUnit,
           onChanged: (unit) {
@@ -119,7 +119,7 @@ class SettingsScreen extends ConsumerWidget {
           },
         ),
         RadioListTile<TemperatureUnit>(
-          title: const Text('Fahrenheit (°F)'),
+          title: Text(context.l10n.fahrenheit),
           value: TemperatureUnit.fahrenheit,
           groupValue: settings.temperatureUnit,
           onChanged: (unit) {
@@ -147,7 +147,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         RadioListTile<Locale>(
-          title: const Text('Tiếng Việt'),
+          title: Text(context.l10n.vietnamese),
           value: const Locale('vi'),
           groupValue: settings.locale,
           onChanged: (locale) {
@@ -159,7 +159,7 @@ class SettingsScreen extends ConsumerWidget {
           },
         ),
         RadioListTile<Locale>(
-          title: const Text('English'),
+          title: Text(context.l10n.english),
           value: const Locale('en'),
           groupValue: settings.locale,
           onChanged: (locale) {

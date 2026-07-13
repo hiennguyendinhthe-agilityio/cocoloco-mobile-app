@@ -164,4 +164,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String probabilityOnDay(String day, String pop) {
     return 'Probability of precipitation on $day: $pop%';
   }
+
+  @override
+  String get themeSection => 'Theme';
+
+  @override
+  String get systemDefault => 'System Default';
+
+  @override
+  String get lightTheme => 'Light';
+
+  @override
+  String get darkTheme => 'Dark';
+
+  @override
+  String get temperatureUnit => 'Temperature Unit';
+
+  @override
+  String get fahrenheit => 'Fahrenheit (°F)';
+
+  @override
+  String get vietnamese => 'Tiếng Việt';
+
+  @override
+  String get english => 'English';
 }

@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:weather_app/core/localization/locale_provider.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
 import 'package:weather_app/features/weather/domain/usecases/get_current_weather_usecase.dart';
+import 'package:weather_app/features/weather/domain/usecases/get_current_weather_by_coord_usecase.dart';
 import 'package:weather_app/features/weather/presentation/providers/weather_provider.dart';
 
 import 'package:weather_app/core/storage/preferences_service.dart';
@@ -12,14 +13,19 @@ import 'package:weather_app/core/storage/preferences_service.dart';
 class MockGetCurrentWeatherUseCase extends Mock
     implements GetCurrentWeatherUseCase {}
 
+class MockGetCurrentWeatherByCoordUseCase extends Mock
+    implements GetCurrentWeatherByCoordUseCase {}
+
 class MockPreferencesService extends Mock implements PreferencesService {}
 
 void main() {
   late MockGetCurrentWeatherUseCase mockUseCase;
+  late MockGetCurrentWeatherByCoordUseCase mockByCoordUseCase;
   late MockPreferencesService mockPrefs;
 
   setUp(() {
     mockUseCase = MockGetCurrentWeatherUseCase();
+    mockByCoordUseCase = MockGetCurrentWeatherByCoordUseCase();
     mockPrefs = MockPreferencesService();
     
     // Stub saveLanguageCode
@@ -48,6 +54,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         getCurrentWeatherUseCaseProvider.overrideWithValue(useCase),
+        getCurrentWeatherByCoordUseCaseProvider.overrideWithValue(mockByCoordUseCase),
         preferencesServiceProvider.overrideWithValue(mockPrefs),
       ],
     );
@@ -124,6 +131,59 @@ void main() {
       
       // Assert: state should hold the updated localized weather
       expect(container.read(weatherProvider).value?.condition, 'Mây đen u ám');
+    });
+  });
+
+  group('WeatherNotifier - fetchWeatherByCoord', () {
+    const tLat = 10.7769;
+    const tLon = 106.7009;
+
+    test('emits data on success', () async {
+      final container = makeProviderContainer(mockUseCase);
+      when(() => mockByCoordUseCase.execute(lat: tLat, lon: tLon, lang: 'en'))
+          .thenAnswer((_) async => tWeather);
+
+      await container
+          .read(weatherProvider.notifier)
+          .fetchWeatherByCoord(tLat, tLon);
+
+      expect(container.read(weatherProvider).value?.cityName, 'London');
+    });
+
+    test('overrides cityName when cityNameOverride is non-empty', () async {
+      final container = makeProviderContainer(mockUseCase);
+      when(() => mockByCoordUseCase.execute(lat: tLat, lon: tLon, lang: 'en'))
+          .thenAnswer((_) async => tWeather);
+
+      await container
+          .read(weatherProvider.notifier)
+          .fetchWeatherByCoord(tLat, tLon, cityNameOverride: 'Sài Gòn');
+
+      expect(container.read(weatherProvider).value?.cityName, 'Sài Gòn');
+    });
+
+    test('does NOT override cityName when cityNameOverride is empty', () async {
+      final container = makeProviderContainer(mockUseCase);
+      when(() => mockByCoordUseCase.execute(lat: tLat, lon: tLon, lang: 'en'))
+          .thenAnswer((_) async => tWeather);
+
+      await container
+          .read(weatherProvider.notifier)
+          .fetchWeatherByCoord(tLat, tLon, cityNameOverride: '');
+
+      expect(container.read(weatherProvider).value?.cityName, 'London');
+    });
+
+    test('emits error on failure', () async {
+      final container = makeProviderContainer(mockUseCase);
+      when(() => mockByCoordUseCase.execute(lat: tLat, lon: tLon, lang: 'en'))
+          .thenThrow(Exception('No internet'));
+
+      await container
+          .read(weatherProvider.notifier)
+          .fetchWeatherByCoord(tLat, tLon);
+
+      expect(container.read(weatherProvider).hasError, isTrue);
     });
   });
 }

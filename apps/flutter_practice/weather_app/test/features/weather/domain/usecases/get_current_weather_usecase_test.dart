@@ -61,4 +61,40 @@ void main() {
     expect(() => call(city: tCity, lang: tLang), throwsA(isA<Exception>()));
     verify(() => mockWeatherRepository.getCurrentWeather(city: tCity, lang: tLang)).called(1);
   });
+
+  test('should throw ArgumentError when city is empty', () {
+    expect(
+      () => usecase.execute(city: '', lang: tLang),
+      throwsA(isA<ArgumentError>()),
+    );
+    verifyNever(() => mockWeatherRepository.getCurrentWeather(
+          city: any(named: 'city'),
+          lang: any(named: 'lang'),
+        ));
+  });
+
+  test('should throw ArgumentError when city is only whitespace', () {
+    expect(
+      () => usecase.execute(city: '   ', lang: tLang),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
+  test('passes forceRefresh=true to repository', () async {
+    when(() => mockWeatherRepository.getCurrentWeather(
+          city: tCity,
+          lang: tLang,
+          forceRefresh: true,
+        )).thenAnswer((_) async => tWeather);
+
+    final result = await usecase.execute(city: tCity, lang: tLang, forceRefresh: true);
+
+    expect(result, tWeather);
+    verify(() => mockWeatherRepository.getCurrentWeather(
+          city: tCity,
+          lang: tLang,
+          forceRefresh: true,
+        )).called(1);
+  });
 }
+

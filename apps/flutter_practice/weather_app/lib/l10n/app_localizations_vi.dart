@@ -164,4 +164,28 @@ class AppLocalizationsVi extends AppLocalizations {
   String probabilityOnDay(String day, String pop) {
     return 'Khả năng có mưa vào thứ $day: $pop%';
   }
+
+  @override
+  String get themeSection => 'Giao diện';
+
+  @override
+  String get systemDefault => 'Mặc định hệ thống';
+
+  @override
+  String get lightTheme => 'Sáng';
+
+  @override
+  String get darkTheme => 'Tối';
+
+  @override
+  String get temperatureUnit => 'Đơn vị nhiệt độ';
+
+  @override
+  String get fahrenheit => 'Độ F (°F)';
+
+  @override
+  String get vietnamese => 'Tiếng Việt';
+
+  @override
+  String get english => 'English';
 }

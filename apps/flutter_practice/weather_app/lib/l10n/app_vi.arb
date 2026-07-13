@@ -49,5 +49,13 @@
   "actualTempDesc": "Nhiệt độ thực tế.",
   "feelsLikeTempDesc": "Nhiệt độ cảm nhận.",
   "probabilityOfPrecip": "Khả năng có mưa",
-  "probabilityOnDay": "Khả năng có mưa vào thứ {day}: {pop}%"
+  "probabilityOnDay": "Khả năng có mưa vào thứ {day}: {pop}%",
+  "themeSection": "Giao diện",
+  "systemDefault": "Mặc định hệ thống",
+  "lightTheme": "Sáng",
+  "darkTheme": "Tối",
+  "temperatureUnit": "Đơn vị nhiệt độ",
+  "fahrenheit": "Độ F (°F)",
+  "vietnamese": "Tiếng Việt",
+  "english": "English"
 }

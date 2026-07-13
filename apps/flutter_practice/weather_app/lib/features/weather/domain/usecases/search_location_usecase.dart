@@ -9,6 +9,9 @@ class SearchLocationUseCase {
   SearchLocationUseCase(this.repository);
 
   Future<List<LocationEntity>> execute(String query) async {
+    if (query.trim().isEmpty) {
+      throw ArgumentError('Query cannot be empty');
+    }
     return await repository.searchLocation(query);
   }
 }

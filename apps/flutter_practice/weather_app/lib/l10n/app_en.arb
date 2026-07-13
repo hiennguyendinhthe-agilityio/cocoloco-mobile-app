@@ -66,5 +66,13 @@
         "type": "String"
       }
     }
-  }
+  },
+  "themeSection": "Theme",
+  "systemDefault": "System Default",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "temperatureUnit": "Temperature Unit",
+  "fahrenheit": "Fahrenheit (°F)",
+  "vietnamese": "Tiếng Việt",
+  "english": "English"
 }
