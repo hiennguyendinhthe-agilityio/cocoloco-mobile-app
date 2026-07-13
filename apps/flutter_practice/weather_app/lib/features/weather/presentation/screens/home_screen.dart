@@ -83,15 +83,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
           return Stack(
             children: [
-              // ── Layer 1: Background (Fixed, NO SCALE) ───────────────────
-              Positioned.fill(child: WeatherBackground(weather: weather)),
-              Positioned.fill(child: WeatherGradientOverlay(weather: weather)),
-
-              // ── Layer 1.5: Shooting Stars (Only at night) ───────────────────
-              if (weather != null && weather.iconCode.endsWith('n'))
-                const Positioned.fill(
-                  child: ShootingStarOverlay(),
+              // ── Layer 1: Background (Fixed, NO SCALE, RepaintBoundary) ───────────────────
+              Positioned.fill(
+                child: RepaintBoundary(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      WeatherBackground(weather: weather),
+                      WeatherGradientOverlay(weather: weather),
+                      // ── Layer 1.5: Shooting Stars (Only at night) ───────────────────
+                      if (weather != null && weather.iconCode.endsWith('n'))
+                        const ShootingStarOverlay(),
+                    ],
+                  ),
                 ),
+              ),
 
               // ── Layer 2: Main UI (Scaled) ───────────────────────────────
               Transform.scale(

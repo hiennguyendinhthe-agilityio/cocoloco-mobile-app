@@ -24,11 +24,13 @@ class DailyForecastDetailSheet extends StatefulWidget {
 class _DailyForecastDetailSheetState extends State<DailyForecastDetailSheet> {
   late DateTime _selectedDate;
   int _selectedSegment = 0; // 0 for Actual, 1 for Feels Like
+  late List<DateTime> _uniqueDays;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = widget.initialSelectedDate;
+    _uniqueDays = _getUniqueDays();
   }
 
   List<ForecastItemEntity> _getHourlyDataForSelectedDay() {
@@ -54,7 +56,6 @@ class _DailyForecastDetailSheetState extends State<DailyForecastDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final uniqueDays = _getUniqueDays();
     final hourlyData = _getHourlyDataForSelectedDay();
 
     if (hourlyData.isEmpty) return const SizedBox();
@@ -118,7 +119,7 @@ class _DailyForecastDetailSheetState extends State<DailyForecastDetailSheet> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _DateSelector(
-                      uniqueDays: uniqueDays,
+                      uniqueDays: _uniqueDays,
                       selectedDate: _selectedDate,
                       onDateSelected: (day) =>
                           setState(() => _selectedDate = day),
@@ -445,18 +446,20 @@ class _TemperatureChartContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        color: colorScheme.onSurface.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: WeatherLineChart(
-        temperatures: temperatures,
-        timeLabels: timeLabels,
-        iconCodes: iconCodes,
-        minTemp: minTemp,
-        maxTemp: maxTemp,
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: WeatherLineChart(
+          temperatures: temperatures,
+          timeLabels: timeLabels,
+          iconCodes: iconCodes,
+          minTemp: minTemp,
+          maxTemp: maxTemp,
+        ),
       ),
     );
   }
@@ -580,15 +583,17 @@ class _PrecipitationChartContainer extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-          decoration: BoxDecoration(
-            color: colorScheme.onSurface.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: PrecipitationChart(
-            popPercentages: popPercentages,
-            timeLabels: timeLabels,
+        RepaintBoundary(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            decoration: BoxDecoration(
+              color: colorScheme.onSurface.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: PrecipitationChart(
+              popPercentages: popPercentages,
+              timeLabels: timeLabels,
+            ),
           ),
         ),
       ],

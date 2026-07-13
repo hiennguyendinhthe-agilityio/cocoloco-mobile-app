@@ -37,12 +37,18 @@ class WeatherRepositoryImpl implements WeatherRepository {
     }
 
     // 2. If no cache or expired, fetch from remote
-    final model = await _remoteDatasource.getCurrentWeather(city, lang: lang);
-
-    // 3. Save to local cache
-    await _localDatasource.cacheCurrentWeather(cacheKey, model);
-
-    return WeatherMapper.toEntity(model);
+    try {
+      final model = await _remoteDatasource.getCurrentWeather(city, lang: lang);
+      await _localDatasource.cacheCurrentWeather(cacheKey, model);
+      return WeatherMapper.toEntity(model);
+    } catch (e) {
+      // 3. Fallback to expired cache if remote fails (e.g., no internet)
+      final fallbackModel = await _localDatasource.getCachedCurrentWeather(cacheKey, ignoreExpiration: true);
+      if (fallbackModel != null) {
+        return WeatherMapper.toEntity(fallbackModel);
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -56,10 +62,17 @@ class WeatherRepositoryImpl implements WeatherRepository {
       }
     }
 
-    final model = await _remoteDatasource.getCurrentWeatherByCoord(lat, lon, lang: lang);
-    await _localDatasource.cacheCurrentWeather(cacheKey, model);
-
-    return WeatherMapper.toEntity(model);
+    try {
+      final model = await _remoteDatasource.getCurrentWeatherByCoord(lat, lon, lang: lang);
+      await _localDatasource.cacheCurrentWeather(cacheKey, model);
+      return WeatherMapper.toEntity(model);
+    } catch (e) {
+      final fallbackModel = await _localDatasource.getCachedCurrentWeather(cacheKey, ignoreExpiration: true);
+      if (fallbackModel != null) {
+        return WeatherMapper.toEntity(fallbackModel);
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -73,10 +86,17 @@ class WeatherRepositoryImpl implements WeatherRepository {
       }
     }
 
-    final model = await _remoteDatasource.getForecast(city, lang: lang);
-    await _localDatasource.cacheForecast(cacheKey, model);
-
-    return ForecastMapper.toEntity(model);
+    try {
+      final model = await _remoteDatasource.getForecast(city, lang: lang);
+      await _localDatasource.cacheForecast(cacheKey, model);
+      return ForecastMapper.toEntity(model);
+    } catch (e) {
+      final fallbackModel = await _localDatasource.getCachedForecast(cacheKey, ignoreExpiration: true);
+      if (fallbackModel != null) {
+        return ForecastMapper.toEntity(fallbackModel);
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -90,10 +110,17 @@ class WeatherRepositoryImpl implements WeatherRepository {
       }
     }
 
-    final model = await _remoteDatasource.getForecastByCoord(lat, lon, lang: lang);
-    await _localDatasource.cacheForecast(cacheKey, model);
-
-    return ForecastMapper.toEntity(model);
+    try {
+      final model = await _remoteDatasource.getForecastByCoord(lat, lon, lang: lang);
+      await _localDatasource.cacheForecast(cacheKey, model);
+      return ForecastMapper.toEntity(model);
+    } catch (e) {
+      final fallbackModel = await _localDatasource.getCachedForecast(cacheKey, ignoreExpiration: true);
+      if (fallbackModel != null) {
+        return ForecastMapper.toEntity(fallbackModel);
+      }
+      rethrow;
+    }
   }
 
   @override

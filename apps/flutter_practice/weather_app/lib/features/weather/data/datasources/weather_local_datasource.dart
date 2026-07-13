@@ -5,10 +5,10 @@ import 'package:weather_app/features/weather/data/models/current_weather_model.d
 import 'package:weather_app/features/weather/data/models/forecast_model.dart';
 
 abstract interface class WeatherLocalDatasource {
-  Future<CurrentWeatherModel?> getCachedCurrentWeather(String key);
+  Future<CurrentWeatherModel?> getCachedCurrentWeather(String key, {bool ignoreExpiration = false});
   Future<void> cacheCurrentWeather(String key, CurrentWeatherModel model);
 
-  Future<ForecastModel?> getCachedForecast(String key);
+  Future<ForecastModel?> getCachedForecast(String key, {bool ignoreExpiration = false});
   Future<void> cacheForecast(String key, ForecastModel model);
 }
 
@@ -17,20 +17,20 @@ class WeatherLocalDatasourceImpl implements WeatherLocalDatasource {
   final Box _forecastBox;
 
   // Cache expiration duration
-  static const Duration _weatherExpiration = Duration(minutes: 30);
-  static const Duration _forecastExpiration = Duration(hours: 3);
+  static const Duration _weatherExpiration = Duration(hours: 2);
+  static const Duration _forecastExpiration = Duration(hours: 2);
 
   WeatherLocalDatasourceImpl(this._weatherBox, this._forecastBox);
 
   @override
-  Future<CurrentWeatherModel?> getCachedCurrentWeather(String key) async {
+  Future<CurrentWeatherModel?> getCachedCurrentWeather(String key, {bool ignoreExpiration = false}) async {
     final cachedData = _weatherBox.get(key);
     if (cachedData == null) return null;
 
     final timestamp = cachedData['timestamp'] as int;
     final saveTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
     
-    if (DateTime.now().difference(saveTime) > _weatherExpiration) {
+    if (!ignoreExpiration && DateTime.now().difference(saveTime) > _weatherExpiration) {
       // Cache expired
       await _weatherBox.delete(key);
       return null;
@@ -54,14 +54,14 @@ class WeatherLocalDatasourceImpl implements WeatherLocalDatasource {
   }
 
   @override
-  Future<ForecastModel?> getCachedForecast(String key) async {
+  Future<ForecastModel?> getCachedForecast(String key, {bool ignoreExpiration = false}) async {
     final cachedData = _forecastBox.get(key);
     if (cachedData == null) return null;
 
     final timestamp = cachedData['timestamp'] as int;
     final saveTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
     
-    if (DateTime.now().difference(saveTime) > _forecastExpiration) {
+    if (!ignoreExpiration && DateTime.now().difference(saveTime) > _forecastExpiration) {
       // Cache expired
       await _forecastBox.delete(key);
       return null;
