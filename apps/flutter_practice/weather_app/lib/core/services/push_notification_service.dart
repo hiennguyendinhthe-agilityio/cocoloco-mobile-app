@@ -7,7 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 // Top-level function for background message handling
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  log("Handling a background message: ${message.messageId}");
+  log('Handling a background message: ${message.messageId}');
   // Note: if you need to access Firebase services here, make sure to call Firebase.initializeApp() first.
 }
 
@@ -22,15 +22,16 @@ class PushNotificationService {
 
   Future<void> initialize() async {
     // 1. Request permissions (especially for iOS)
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+    final NotificationSettings settings = await _firebaseMessaging
+        .requestPermission(
+          alert: true,
+          announcement: false,
+          badge: true,
+          carPlay: false,
+          criticalAlert: false,
+          provisional: false,
+          sound: true,
+        );
 
     log('User granted permission: ${settings.authorizationStatus}');
 
@@ -82,15 +83,15 @@ class PushNotificationService {
     try {
       if (Platform.isIOS || Platform.isMacOS) {
         log('Waiting for APNs token...');
-        String? apnsToken = await _firebaseMessaging.getAPNSToken();
+        final String? apnsToken = await _firebaseMessaging.getAPNSToken();
         log('APNs Token: $apnsToken');
       }
 
-      String? token = await _firebaseMessaging.getToken();
-      log("FCM Token: $token");
+      final String? token = await _firebaseMessaging.getToken();
+      log('FCM Token: $token');
     } catch (e) {
       log(
-        "Error when getting FCM Token (often encountered on iOS Simulator): $e",
+        'Error when getting FCM Token (often encountered on iOS Simulator): $e',
       );
     }
   }

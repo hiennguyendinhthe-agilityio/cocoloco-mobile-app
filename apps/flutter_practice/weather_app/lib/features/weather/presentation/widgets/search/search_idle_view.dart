@@ -38,14 +38,14 @@ class _SearchIdleViewState extends ConsumerState<SearchIdleView> {
       );
 
       // Fetch weather by coordinates, overriding the display name if we found a better one
-      ref
+      await ref
           .read(weatherProvider.notifier)
           .fetchWeatherByCoord(
             position.latitude,
             position.longitude,
             cityNameOverride: niceCityName,
           );
-      ref
+      await ref
           .read(forecastProvider.notifier)
           .fetchForecastByCoord(
             position.latitude,

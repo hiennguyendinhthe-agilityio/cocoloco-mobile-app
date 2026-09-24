@@ -10,8 +10,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:weather_app/core/network/dio_client.dart';
-import 'package:weather_app/features/weather/data/sources/geocoding_api.dart';
-import 'package:weather_app/features/weather/data/sources/weather_api.dart';
+import 'package:weather_app/features/weather/data/datasources/remote/geocoding_api.dart';
+import 'package:weather_app/features/weather/data/datasources/remote/weather_api.dart';
 
 /// Provides a singleton instance of [Dio].
 final dioProvider = Provider<Dio>((ref) {

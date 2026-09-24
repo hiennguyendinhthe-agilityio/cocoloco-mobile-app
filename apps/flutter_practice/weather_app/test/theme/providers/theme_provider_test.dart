@@ -5,8 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:weather_app/core/storage/preferences_service.dart';
 import 'package:weather_app/theme/providers/theme_provider.dart';
 
-class MockPreferencesService extends Mock implements PreferencesService {}
-
+import '../../repository.mocks.dart';
+import '../../test_utils.dart';
 void main() {
   late MockPreferencesService mockPrefs;
 
@@ -16,9 +16,10 @@ void main() {
     when(() => mockPrefs.saveThemeMode(any())).thenAnswer((_) async {});
   });
 
+
   ProviderContainer makeContainer({String? savedTheme}) {
     when(() => mockPrefs.getThemeMode()).thenReturn(savedTheme);
-    return ProviderContainer(
+    return TestUtils.createContainer(
       overrides: [
         preferencesServiceProvider.overrideWithValue(mockPrefs),
       ],

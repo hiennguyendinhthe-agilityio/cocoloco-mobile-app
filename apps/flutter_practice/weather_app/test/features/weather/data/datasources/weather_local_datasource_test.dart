@@ -1,8 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:hive/hive.dart';
-import 'package:weather_app/features/weather/data/datasources/weather_local_datasource.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:weather_app/features/weather/data/datasources/weather_local_datasource_impl.dart';
 import 'package:weather_app/features/weather/data/models/current_weather_model.dart';
 import 'package:weather_app/features/weather/data/models/forecast_model.dart';
 
@@ -17,7 +18,14 @@ void main() {
   final tWeatherModel = const CurrentWeatherModel(
     name: 'London',
     weather: [],
-    main: CurrentMainModel(temp: 20.0, feelsLike: 21.0, tempMin: 18.0, tempMax: 22.0, pressure: 1012, humidity: 50),
+    main: CurrentMainModel(
+      temp: 20.0,
+      feelsLike: 21.0,
+      tempMin: 18.0,
+      tempMax: 22.0,
+      pressure: 1012,
+      humidity: 50,
+    ),
     wind: WindModel(speed: 5.0, deg: 180),
     sys: SysModel(country: 'GB', sunrise: 1672556400, sunset: 1672596000),
     dt: 1672570000,
@@ -27,7 +35,12 @@ void main() {
 
   final tForecastModel = ForecastModel(
     list: [],
-    city: const ForecastCityModel(id: 1, name: 'London', country: 'GB', timezone: 0),
+    city: const ForecastCityModel(
+      id: 1,
+      name: 'London',
+      country: 'GB',
+      timezone: 0,
+    ),
   );
 
   setUp(() {
@@ -84,7 +97,10 @@ void main() {
         'data': jsonEncode(tWeatherModel.toJson()),
       });
 
-      final result = await datasource.getCachedCurrentWeather('key_1', ignoreExpiration: true);
+      final result = await datasource.getCachedCurrentWeather(
+        'key_1',
+        ignoreExpiration: true,
+      );
 
       expect(result, isNotNull);
       expect(result?.name, 'London');
@@ -109,8 +125,9 @@ void main() {
 
       await datasource.cacheCurrentWeather('key_1', tWeatherModel);
 
-      final captured = verify(() => mockWeatherBox.put('key_1', captureAny())).captured.first
-          as Map;
+      final captured =
+          verify(() => mockWeatherBox.put('key_1', captureAny())).captured.first
+              as Map;
       expect(captured.containsKey('timestamp'), isTrue);
       expect(captured.containsKey('data'), isTrue);
 
@@ -143,10 +160,14 @@ void main() {
 
     test('returns null when forecast cache expired', () async {
       when(() => mockForecastBox.get('forecast_key')).thenReturn({
-        'timestamp': DateTime.now().subtract(const Duration(hours: 3)).millisecondsSinceEpoch,
+        'timestamp': DateTime.now()
+            .subtract(const Duration(hours: 3))
+            .millisecondsSinceEpoch,
         'data': jsonEncode(tForecastModel.toJson()),
       });
-      when(() => mockForecastBox.delete('forecast_key')).thenAnswer((_) async {});
+      when(
+        () => mockForecastBox.delete('forecast_key'),
+      ).thenAnswer((_) async {});
 
       final result = await datasource.getCachedForecast('forecast_key');
 
@@ -156,11 +177,16 @@ void main() {
 
     test('ignores expiration when ignoreExpiration=true', () async {
       when(() => mockForecastBox.get('forecast_key')).thenReturn({
-        'timestamp': DateTime.now().subtract(const Duration(hours: 3)).millisecondsSinceEpoch,
+        'timestamp': DateTime.now()
+            .subtract(const Duration(hours: 3))
+            .millisecondsSinceEpoch,
         'data': jsonEncode(tForecastModel.toJson()),
       });
 
-      final result = await datasource.getCachedForecast('forecast_key', ignoreExpiration: true);
+      final result = await datasource.getCachedForecast(
+        'forecast_key',
+        ignoreExpiration: true,
+      );
 
       expect(result, isNotNull);
     });
@@ -172,9 +198,11 @@ void main() {
 
       await datasource.cacheForecast('forecast_key', tForecastModel);
 
-      final captured = verify(() => mockForecastBox.put('forecast_key', captureAny()))
-          .captured
-          .first as Map;
+      final captured =
+          verify(
+                () => mockForecastBox.put('forecast_key', captureAny()),
+              ).captured.first
+              as Map;
       expect(captured.containsKey('timestamp'), isTrue);
       final decoded = jsonDecode(captured['data'] as String);
       expect(decoded['city']['name'], 'London');

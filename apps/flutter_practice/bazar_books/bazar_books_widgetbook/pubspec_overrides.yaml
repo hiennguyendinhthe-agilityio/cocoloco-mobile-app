@@ -1,6 +1,7 @@
-# melos_managed_dependency_overrides: bazar_books_app,bazar_books_design
+# melos_managed_dependency_overrides: bazar_books_app,bazar_books_design,intl
 dependency_overrides:
   bazar_books_app:
     path: ../bazar_books_app
   bazar_books_design:
     path: ../bazar_books_design
+  intl: 0.20.2

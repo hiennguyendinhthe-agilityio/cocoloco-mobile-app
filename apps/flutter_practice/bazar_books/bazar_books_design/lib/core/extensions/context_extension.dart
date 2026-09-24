@@ -14,7 +14,7 @@ extension ContextHelper on BuildContext {
 
   TextTheme get textTheme => themeData.textTheme;
 
-  InputDecorationTheme get inputDecorationTheme =>
+  InputDecorationThemeData get inputDecorationTheme =>
       themeData.inputDecorationTheme;
 
   // Helper function to get values based on DeviceType

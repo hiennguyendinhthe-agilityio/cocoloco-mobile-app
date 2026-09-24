@@ -5,13 +5,37 @@ import 'package:weather_app/features/weather/data/datasources/weather_remote_dat
 import 'package:weather_app/features/weather/data/models/current_weather_model.dart';
 import 'package:weather_app/features/weather/data/models/forecast_model.dart';
 import 'package:weather_app/features/weather/data/models/location_model.dart';
-import 'package:weather_app/features/weather/data/sources/geocoding_api.dart';
-import 'package:weather_app/features/weather/data/sources/weather_api.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class MockWeatherApi extends Mock implements WeatherApi {}
-class MockGeocodingApi extends Mock implements GeocodingApi {}
+import '../../../../service.mocks.dart';
+
+const _tCurrentWeather = CurrentWeatherModel(
+  name: 'London',
+  dt: 123456789,
+  timezone: 0,
+  id: 1,
+  weather: [],
+  main: CurrentMainModel(
+    temp: 20,
+    feelsLike: 20,
+    tempMin: 20,
+    tempMax: 20,
+    pressure: 1000,
+    humidity: 50,
+  ),
+  wind: WindModel(speed: 1, deg: 1),
+  sys: SysModel(country: 'GB', sunrise: 1, sunset: 2),
+);
+
+const _tForecast = ForecastModel(
+  list: [],
+  city: ForecastCityModel(id: 1, name: 'London', country: 'GB', timezone: 0),
+);
+
+final _tLocationList = [
+  const LocationModel(name: 'London', lat: 51.5, lon: -0.1, country: 'GB'),
+];
 
 void main() {
   late WeatherRemoteDatasourceImpl datasource;
@@ -22,126 +46,121 @@ void main() {
     dotenv.loadFromString(envString: 'OWM_API_KEY=test_key');
   });
 
-  final tCurrentWeather = const CurrentWeatherModel(
-    name: 'London',
-    dt: 123456789,
-    timezone: 0,
-    id: 1,
-    weather: [],
-    main: CurrentMainModel(temp: 20, feelsLike: 20, tempMin: 20, tempMax: 20, pressure: 1000, humidity: 50),
-    wind: WindModel(speed: 1, deg: 1),
-    sys: SysModel(country: 'GB', sunrise: 1, sunset: 2),
-  );
-
-  final tForecast = const ForecastModel(
-    list: [],
-    city: ForecastCityModel(id: 1, name: 'London', country: 'GB', timezone: 0),
-  );
-
-  final tLocationList = [
-    const LocationModel(name: 'London', lat: 51.5, lon: -0.1, country: 'GB')
-  ];
-
   setUp(() {
     mockWeatherApi = MockWeatherApi();
     mockGeocodingApi = MockGeocodingApi();
     datasource = WeatherRemoteDatasourceImpl(mockWeatherApi, mockGeocodingApi);
   });
 
-  group('WeatherRemoteDatasourceImpl', () {
-    test('getCurrentWeather calls weatherApi.getCurrentWeatherByCity with correct params', () async {
-      when(() => mockWeatherApi.getCurrentWeatherByCity(
-            city: 'London',
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'en',
-          )).thenAnswer((_) async => tCurrentWeather);
+  group('WeatherRemoteDatasourceImpl - getCurrentWeather:', () {
+    test('calls weatherApi.getCurrentWeatherByCity with correct params',
+        () async {
+      when(
+        () => mockWeatherApi.getCurrentWeatherByCity(
+          city: 'London',
+          apiKey: AppEnv.owmApiKey,
+          units: AppEnv.defaultUnits,
+          lang: 'en',
+        ),
+      ).thenAnswer((_) async => _tCurrentWeather);
 
       final result = await datasource.getCurrentWeather('London', lang: 'en');
 
-      expect(result, tCurrentWeather);
-      verify(() => mockWeatherApi.getCurrentWeatherByCity(
-            city: 'London',
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'en',
-          )).called(1);
+      expect(result, _tCurrentWeather);
+      verify(
+        () => mockWeatherApi.getCurrentWeatherByCity(
+          city: 'London',
+          apiKey: AppEnv.owmApiKey,
+          units: AppEnv.defaultUnits,
+          lang: 'en',
+        ),
+      ).called(1);
     });
+  });
 
-    test('getCurrentWeatherByCoord calls weatherApi.getCurrentWeatherByCoord with correct params', () async {
-      when(() => mockWeatherApi.getCurrentWeatherByCoord(
-            lat: 1.0,
-            lon: 2.0,
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'vi',
-          )).thenAnswer((_) async => tCurrentWeather);
+  group('WeatherRemoteDatasourceImpl - getCurrentWeatherByCoord:', () {
+    test('calls weatherApi.getCurrentWeatherByCoord with correct params',
+        () async {
+      when(
+        () => mockWeatherApi.getCurrentWeatherByCoord(
+          lat: 1.0,
+          lon: 2.0,
+          apiKey: AppEnv.owmApiKey,
+          units: AppEnv.defaultUnits,
+          lang: 'vi',
+        ),
+      ).thenAnswer((_) async => _tCurrentWeather);
 
-      final result = await datasource.getCurrentWeatherByCoord(1.0, 2.0, lang: 'vi');
+      final result =
+          await datasource.getCurrentWeatherByCoord(1.0, 2.0, lang: 'vi');
 
-      expect(result, tCurrentWeather);
-      verify(() => mockWeatherApi.getCurrentWeatherByCoord(
-            lat: 1.0,
-            lon: 2.0,
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'vi',
-          )).called(1);
+      expect(result, _tCurrentWeather);
+      verify(
+        () => mockWeatherApi.getCurrentWeatherByCoord(
+          lat: 1.0,
+          lon: 2.0,
+          apiKey: AppEnv.owmApiKey,
+          units: AppEnv.defaultUnits,
+          lang: 'vi',
+        ),
+      ).called(1);
     });
+  });
 
-    test('getForecast calls weatherApi.getForecastByCity with correct params', () async {
-      when(() => mockWeatherApi.getForecastByCity(
-            city: 'London',
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'en',
-          )).thenAnswer((_) async => tForecast);
+  group('WeatherRemoteDatasourceImpl - getForecast:', () {
+    test('calls weatherApi.getForecastByCity with correct params', () async {
+      when(
+        () => mockWeatherApi.getForecastByCity(
+          city: 'London',
+          apiKey: AppEnv.owmApiKey,
+          units: AppEnv.defaultUnits,
+          lang: 'en',
+        ),
+      ).thenAnswer((_) async => _tForecast);
 
       final result = await datasource.getForecast('London', lang: 'en');
 
-      expect(result, tForecast);
-      verify(() => mockWeatherApi.getForecastByCity(
-            city: 'London',
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'en',
-          )).called(1);
+      expect(result, _tForecast);
     });
+  });
 
-    test('getForecastByCoord calls weatherApi.getForecastByCoord with correct params', () async {
-      when(() => mockWeatherApi.getForecastByCoord(
-            lat: 1.0,
-            lon: 2.0,
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'en',
-          )).thenAnswer((_) async => tForecast);
+  group('WeatherRemoteDatasourceImpl - getForecastByCoord:', () {
+    test('calls weatherApi.getForecastByCoord with correct params', () async {
+      when(
+        () => mockWeatherApi.getForecastByCoord(
+          lat: 1.0,
+          lon: 2.0,
+          apiKey: AppEnv.owmApiKey,
+          units: AppEnv.defaultUnits,
+          lang: 'en',
+        ),
+      ).thenAnswer((_) async => _tForecast);
 
-      final result = await datasource.getForecastByCoord(1.0, 2.0, lang: 'en');
+      final result =
+          await datasource.getForecastByCoord(1.0, 2.0, lang: 'en');
 
-      expect(result, tForecast);
-      verify(() => mockWeatherApi.getForecastByCoord(
-            lat: 1.0,
-            lon: 2.0,
-            apiKey: AppEnv.owmApiKey,
-            units: AppEnv.defaultUnits,
-            lang: 'en',
-          )).called(1);
+      expect(result, _tForecast);
     });
+  });
 
-    test('searchLocation calls geocodingApi.searchLocation with correct params', () async {
-      when(() => mockGeocodingApi.searchLocation(
-            query: 'London',
-            apiKey: AppEnv.owmApiKey,
-          )).thenAnswer((_) async => tLocationList);
+  group('WeatherRemoteDatasourceImpl - searchLocation:', () {
+    test('calls geocodingApi.searchLocation with correct params', () async {
+      when(
+        () => mockGeocodingApi.searchLocation(
+          query: 'London',
+          apiKey: AppEnv.owmApiKey,
+        ),
+      ).thenAnswer((_) async => _tLocationList);
 
       final result = await datasource.searchLocation('London');
 
-      expect(result, tLocationList);
-      verify(() => mockGeocodingApi.searchLocation(
-            query: 'London',
-            apiKey: AppEnv.owmApiKey,
-          )).called(1);
+      expect(result, _tLocationList);
+      verify(
+        () => mockGeocodingApi.searchLocation(
+          query: 'London',
+          apiKey: AppEnv.owmApiKey,
+        ),
+      ).called(1);
     });
   });
 }

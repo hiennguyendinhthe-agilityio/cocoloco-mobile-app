@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/core/storage/preferences_service.dart';
 
-class MockSharedPreferences extends Mock implements SharedPreferences {}
+import '../../repository.mocks.dart';
+
 
 void main() {
   late PreferencesService service;
@@ -14,7 +14,7 @@ void main() {
     service = PreferencesService(mockPrefs);
   });
 
-  group('PreferencesService - Language', () {
+  group('PreferencesService - Language:', () {
     test('getLanguageCode returns null when not set', () {
       when(() => mockPrefs.getString('language_code')).thenReturn(null);
 
@@ -31,7 +31,8 @@ void main() {
       expect(result, 'vi');
     });
 
-    test('saveLanguageCode calls setString with correct key', () async {
+    test('saveLanguageCode calls setString with correct key and value',
+        () async {
       when(() => mockPrefs.setString('language_code', 'en'))
           .thenAnswer((_) async => true);
 
@@ -41,7 +42,7 @@ void main() {
     });
   });
 
-  group('PreferencesService - Theme', () {
+  group('PreferencesService - Theme:', () {
     test('getThemeMode returns null when not set', () {
       when(() => mockPrefs.getString('theme_mode')).thenReturn(null);
 
@@ -50,7 +51,7 @@ void main() {
       expect(result, isNull);
     });
 
-    test('getThemeMode returns saved value "dark"', () {
+    test('getThemeMode returns saved value', () {
       when(() => mockPrefs.getString('theme_mode')).thenReturn('dark');
 
       final result = service.getThemeMode();
@@ -58,7 +59,7 @@ void main() {
       expect(result, 'dark');
     });
 
-    test('saveThemeMode calls setString with correct key', () async {
+    test('saveThemeMode calls setString with correct key and value', () async {
       when(() => mockPrefs.setString('theme_mode', 'dark'))
           .thenAnswer((_) async => true);
 

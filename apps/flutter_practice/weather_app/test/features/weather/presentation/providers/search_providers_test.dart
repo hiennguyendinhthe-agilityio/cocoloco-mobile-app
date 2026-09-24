@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:weather_app/features/weather/data/repositories/recent_searches_repository.dart';
+import 'package:weather_app/features/weather/domain/repositories/recent_searches_repository.dart';
 import 'package:weather_app/features/weather/domain/entities/location_entity.dart';
 import 'package:weather_app/features/weather/domain/usecases/search_location_usecase.dart';
 import 'package:weather_app/features/weather/presentation/providers/search_providers.dart';
+import 'package:weather_app/features/weather/presentation/providers/di_providers.dart';
 
 class MockSearchLocationUseCase extends Mock implements SearchLocationUseCase {}
 class MockRecentSearchesRepository extends Mock implements RecentSearchesRepository {}

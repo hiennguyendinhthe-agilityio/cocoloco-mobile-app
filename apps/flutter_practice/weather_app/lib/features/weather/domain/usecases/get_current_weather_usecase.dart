@@ -6,8 +6,6 @@
 //   - Interacts with Repositories, never directly with Data Sources.
 //   - Can be invoked by UI controllers/Riverpod Notifiers.
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:weather_app/features/weather/data/repositories/weather_repository_impl.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
 import 'package:weather_app/features/weather/domain/repositories/weather_repository.dart';
 
@@ -27,10 +25,3 @@ class GetCurrentWeatherUseCase {
   }
 }
 
-/// Provides [GetCurrentWeatherUseCase].
-final getCurrentWeatherUseCaseProvider = Provider<GetCurrentWeatherUseCase>((
-  ref,
-) {
-  final repository = ref.watch(weatherRepositoryProvider);
-  return GetCurrentWeatherUseCase(repository);
-});

@@ -221,7 +221,7 @@ class LoginScreen extends StatelessWidget {
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print("Handling a background message: ${message.messageId}");
+  debugPrint("Handling a background message: ${message.messageId}");
 }
 
 void main() async {
@@ -306,10 +306,10 @@ class AuthController extends GetxController {
       if (canAuthenticate) {
         // Get available biometrics
         final availableBiometrics = await _localAuth.getAvailableBiometrics();
-        print('Available biometrics: $availableBiometrics');
+        debugPrint('Available biometrics: $availableBiometrics');
       }
     } on PlatformException catch (e) {
-      print('Error checking biometric availability: $e');
+      debugPrint('Error checking biometric availability: $e');
       isBiometricAvailable.value = false;
     }
   }
@@ -448,15 +448,16 @@ class NotificationController extends GetxController {
 
     // Get FCM token
     final token = await _firebaseMessaging.getToken();
-    print('FCM Token: $token');
+    debugPrint('FCM Token: $token');
 
     // Configure foreground message handling
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
+      debugPrint('Got a message whilst in the foreground!');
+      debugPrint('Message data: ${message.data}');
 
       if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
+        debugPrint(
+            'Message also contained a notification: ${message.notification}');
 
         // Add to notifications list
         final notification = AppNotification(
@@ -484,14 +485,16 @@ class NotificationController extends GetxController {
         .getInitialMessage()
         .then((RemoteMessage? message) {
       if (message != null) {
-        print('App opened from terminated state with message: ${message.data}');
+        debugPrint(
+            'App opened from terminated state with message: ${message.data}');
         _handleNotificationTap(message.data);
       }
     });
 
     // Configure message handling when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('App opened from background state with message: ${message.data}');
+      debugPrint(
+          'App opened from background state with message: ${message.data}');
       _handleNotificationTap(message.data);
     });
   }
@@ -503,7 +506,7 @@ class NotificationController extends GetxController {
         settings.authorizationStatus == AuthorizationStatus.authorized ||
             settings.authorizationStatus == AuthorizationStatus.provisional;
 
-    print('User granted permission: ${permissionGranted.value}');
+    debugPrint('User granted permission: ${permissionGranted.value}');
   }
 
   void _handleNotificationTap(Map<String, dynamic> data) {
@@ -573,7 +576,7 @@ class DeepLinkController extends GetxController {
       }
     } catch (e) {
       // Handle exception
-      print('Failed to get initial link: $e');
+      debugPrint('Failed to get initial link: $e');
     }
 
     // Handle app opened from link when app was in background
@@ -584,12 +587,12 @@ class DeepLinkController extends GetxController {
       }
     }, onError: (error) {
       // Handle exception
-      print('Error getting link: $error');
+      debugPrint('Error getting link: $error');
     });
   }
 
   void handleDeepLink(String link) {
-    print('Handling deep link: $link');
+    debugPrint('Handling deep link: $link');
 
     // Parse the link and navigate accordingly
     // Example: myapp://profile
@@ -660,7 +663,7 @@ class NotificationService {
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         // Handle notification tap
-        print('Notification tapped: ${response.payload}');
+        debugPrint('Notification tapped: ${response.payload}');
       },
     );
   }

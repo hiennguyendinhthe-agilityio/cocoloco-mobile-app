@@ -30,13 +30,13 @@ dependencies:
   flutter_bloc: ^8.1.6
 
 dev_dependencies:
-  build_runner: 2.4.11
+  build_runner: ^2.4.11
   flutter_test:
     sdk: flutter
 
 
   # A package to automate setup and maintenance of the widgetbook package by using code generation.
-  widgetbook_generator: 3.2.0
+  widgetbook_generator: any
 
 
   # A recommended set of lints for Flutter apps, packages, and plugins to encourage good coding practices
@@ -78,3 +78,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - assets/
+
+dependency_overrides:
+  intl: 0.20.2

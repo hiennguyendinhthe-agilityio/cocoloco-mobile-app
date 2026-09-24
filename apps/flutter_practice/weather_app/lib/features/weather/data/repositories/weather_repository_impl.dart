@@ -6,10 +6,9 @@
 //   - NO business logic, only data fetching and mapping.
 //   - Hides the remote/local data source complexity from the rest of the app.
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:weather_app/features/weather/data/datasources/weather_local_datasource.dart';
 import 'package:weather_app/features/weather/data/datasources/weather_remote_datasource.dart';
-import 'package:weather_app/features/weather/data/datasources/weather_remote_datasource_impl.dart';
 import 'package:weather_app/features/weather/data/mappers/forecast_mapper.dart';
 import 'package:weather_app/features/weather/data/mappers/weather_mapper.dart';
 import 'package:weather_app/features/weather/domain/entities/forecast_entity.dart';
@@ -132,9 +131,3 @@ class WeatherRepositoryImpl implements WeatherRepository {
   }
 }
 
-/// Provides [WeatherRepository].
-final weatherRepositoryProvider = Provider<WeatherRepository>((ref) {
-  final remoteDatasource = ref.watch(weatherRemoteDatasourceProvider);
-  final localDatasource = ref.watch(weatherLocalDatasourceProvider);
-  return WeatherRepositoryImpl(remoteDatasource, localDatasource);
-});

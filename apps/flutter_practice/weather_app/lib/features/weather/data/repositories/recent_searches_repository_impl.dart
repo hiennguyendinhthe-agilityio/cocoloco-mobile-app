@@ -1,15 +1,7 @@
 import 'dart:convert';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:weather_app/core/storage/preferences_service.dart';
 import 'package:weather_app/features/weather/domain/entities/location_entity.dart';
-
-abstract interface class RecentSearchesRepository {
-  Future<List<LocationEntity>> getRecentSearches();
-  Future<void> addRecentSearch(LocationEntity location);
-  Future<void> clearRecentSearches();
-  Future<void> removeRecentSearch(LocationEntity location);
-}
+import 'package:weather_app/features/weather/domain/repositories/recent_searches_repository.dart';
 
 class RecentSearchesRepositoryImpl implements RecentSearchesRepository {
   static const _key = 'recent_searches';
@@ -61,8 +53,3 @@ class RecentSearchesRepositoryImpl implements RecentSearchesRepository {
     await _prefs.setString(_key, jsonEncode(jsonList));
   }
 }
-
-final recentSearchesRepositoryProvider = Provider<RecentSearchesRepository>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return RecentSearchesRepositoryImpl(prefs);
-});

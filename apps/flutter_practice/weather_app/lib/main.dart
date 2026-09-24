@@ -6,32 +6,27 @@
 //   - Hand off to [App] widget.
 //   - NO business logic, NO initialization side-effects here.
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:weather_app/app.dart';
-import 'package:weather_app/core/storage/preferences_service.dart';
-
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'firebase_options.dart';
-import 'package:weather_app/core/services/push_notification_service.dart';
-
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import 'package:device_preview/device_preview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather_app/app.dart';
+import 'package:weather_app/core/services/push_notification_service.dart';
+import 'package:weather_app/core/storage/preferences_service.dart';
+import 'package:weather_app/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await dotenv.load(fileName: ".env");
+
+  await dotenv.load(fileName: '.env');
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize Hive
   await Hive.initFlutter();
@@ -56,9 +51,7 @@ void main() async {
     DevicePreview(
       enabled: true, // You can toggle this based on debug mode if you want
       builder: (context) => ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(sharedPrefs)],
         child: const App(),
       ),
     ),

@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.6
-  intl: ^0.18.0
+  intl: ^0.20.2
   
   talker: ^4.4.1 
   
@@ -62,11 +62,8 @@ dependencies:
   
   equatable: ^2.0.5
   
-  test: ^1.25.7
 
-  dart_style: ^2.3.7
 
-  json: ^0.20.2
 
   cached_storage: ^2.0.4
   
@@ -100,6 +97,7 @@ dev_dependencies:
 
 dependency_overrides:
   analyzer: ^6.0.0
+  intl: 0.20.2
 
 
 

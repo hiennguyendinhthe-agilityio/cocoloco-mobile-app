@@ -9,6 +9,16 @@ import 'package:weather_app/router/routes.dart';
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.comingSoon),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -61,7 +71,7 @@ class AppDrawer extends StatelessWidget {
                         title: context.l10n.profile,
                         onTap: () {
                           context.pop();
-                          // context.push(AppRoutes.profilePath);
+                          _showComingSoon(context);
                         },
                       ),
                       DrawerNavItem(
@@ -69,7 +79,7 @@ class AppDrawer extends StatelessWidget {
                         title: context.l10n.locations,
                         onTap: () {
                           context.pop();
-                          // Handle locations
+                          _showComingSoon(context);
                         },
                       ),
                       DrawerNavItem(
@@ -77,7 +87,7 @@ class AppDrawer extends StatelessWidget {
                         title: context.l10n.weatherAlerts,
                         onTap: () {
                           context.pop();
-                          // Handle alerts
+                          _showComingSoon(context);
                         },
                       ),
                       DrawerNavItem(
@@ -93,7 +103,7 @@ class AppDrawer extends StatelessWidget {
                         title: context.l10n.helpSupport,
                         onTap: () {
                           context.pop();
-                          // Handle help & support
+                          _showComingSoon(context);
                         },
                       ),
                     ],
@@ -115,7 +125,7 @@ class AppDrawer extends StatelessWidget {
                     textColor: Colors.red,
                     onTap: () {
                       context.pop();
-                      // Handle logout
+                      _showComingSoon(context);
                     },
                   ),
                 ),

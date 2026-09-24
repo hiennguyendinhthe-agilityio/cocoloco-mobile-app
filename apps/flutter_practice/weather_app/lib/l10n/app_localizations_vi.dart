@@ -188,4 +188,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get english => 'English';
+
+  @override
+  String get comingSoon => 'Tính năng này sẽ được cập nhật sớm!';
 }

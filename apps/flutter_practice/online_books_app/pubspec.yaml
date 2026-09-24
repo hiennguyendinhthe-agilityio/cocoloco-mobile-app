@@ -162,3 +162,6 @@ flutter_native_splash:
   android_12:
     image: assets/images/img_rectangle_122.png
     image_dark: assets/images/img_rectangle_122.png
+
+dependency_overrides:
+  intl: 0.20.2

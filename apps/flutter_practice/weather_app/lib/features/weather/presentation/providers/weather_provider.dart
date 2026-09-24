@@ -12,8 +12,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:weather_app/core/localization/locale_provider.dart';
 import 'package:weather_app/features/weather/domain/entities/weather_entity.dart';
-import 'package:weather_app/features/weather/domain/usecases/get_current_weather_by_coord_usecase.dart';
-import 'package:weather_app/features/weather/domain/usecases/get_current_weather_usecase.dart';
+import 'package:weather_app/features/weather/presentation/providers/di_providers.dart';
 
 class WeatherNotifier extends AsyncNotifier<WeatherEntity?> {
   String? _lastSearchedCity;

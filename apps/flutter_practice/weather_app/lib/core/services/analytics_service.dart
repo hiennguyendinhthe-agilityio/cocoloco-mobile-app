@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 
 class AnalyticsService {
   AnalyticsService._privateConstructor();
-  static final AnalyticsService instance = AnalyticsService._privateConstructor();
+  static AnalyticsService instance = AnalyticsService._privateConstructor();
 
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
 

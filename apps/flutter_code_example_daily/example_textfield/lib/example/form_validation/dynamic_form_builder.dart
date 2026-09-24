@@ -91,7 +91,7 @@ class _UserRegistrationFormState extends State<UserRegistrationForm> {
                     labelText: "Date of Birth",
                   ),
                 ),
-                FormBuilderFilterChip(
+                FormBuilderFilterChips(
                   name: "hobbies",
                   options: const [
                     FormBuilderChipOption(value: "Reading"),

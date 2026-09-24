@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:weather_app/features/weather/data/repositories/recent_searches_repository.dart';
+import 'package:weather_app/features/weather/domain/repositories/recent_searches_repository.dart';
+import 'package:weather_app/features/weather/presentation/providers/di_providers.dart';
 import 'package:weather_app/features/weather/domain/entities/location_entity.dart';
-import 'package:weather_app/features/weather/domain/usecases/search_location_usecase.dart';
 
 // 1. The raw search query typed by the user
 final searchQueryProvider = StateProvider<String>((ref) => '');

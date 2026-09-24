@@ -1,0 +1,78 @@
+import 'dart:convert';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:weather_app/features/weather/data/datasources/weather_local_datasource.dart';
+import 'package:weather_app/features/weather/data/models/current_weather_model.dart';
+import 'package:weather_app/features/weather/data/models/forecast_model.dart';
+
+class WeatherLocalDatasourceImpl implements WeatherLocalDatasource {
+  final Box _weatherBox;
+  final Box _forecastBox;
+
+  // Cache expiration duration
+  static const Duration _weatherExpiration = Duration(hours: 2);
+  static const Duration _forecastExpiration = Duration(hours: 2);
+
+  WeatherLocalDatasourceImpl(this._weatherBox, this._forecastBox);
+
+  @override
+  Future<CurrentWeatherModel?> getCachedCurrentWeather(String key, {bool ignoreExpiration = false}) async {
+    final cachedData = _weatherBox.get(key);
+    if (cachedData == null) return null;
+
+    final timestamp = cachedData['timestamp'] as int;
+    final saveTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    
+    if (!ignoreExpiration && DateTime.now().difference(saveTime) > _weatherExpiration) {
+      // Cache expired
+      await _weatherBox.delete(key);
+      return null;
+    }
+
+    try {
+      final jsonStr = cachedData['data'] as String;
+      final jsonMap = jsonDecode(jsonStr) as Map<String, dynamic>;
+      return CurrentWeatherModel.fromJson(jsonMap);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> cacheCurrentWeather(String key, CurrentWeatherModel model) async {
+    await _weatherBox.put(key, {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      'data': jsonEncode(model.toJson()),
+    });
+  }
+
+  @override
+  Future<ForecastModel?> getCachedForecast(String key, {bool ignoreExpiration = false}) async {
+    final cachedData = _forecastBox.get(key);
+    if (cachedData == null) return null;
+
+    final timestamp = cachedData['timestamp'] as int;
+    final saveTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    
+    if (!ignoreExpiration && DateTime.now().difference(saveTime) > _forecastExpiration) {
+      // Cache expired
+      await _forecastBox.delete(key);
+      return null;
+    }
+
+    try {
+      final jsonStr = cachedData['data'] as String;
+      final jsonMap = jsonDecode(jsonStr) as Map<String, dynamic>;
+      return ForecastModel.fromJson(jsonMap);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> cacheForecast(String key, ForecastModel model) async {
+    await _forecastBox.put(key, {
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+      'data': jsonEncode(model.toJson()),
+    });
+  }
+}

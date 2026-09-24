@@ -4,7 +4,11 @@ name: flutter_training
 
 # A list of paths to local packages that are included in the Melos workspace. Each entry can be a specific path or a glob pattern.
 packages:
-  - apps/**
+  - apps/flutter_code_example_daily/*
+  - apps/flutter_practice/*
+  - apps/flutter_practice/bazar_books/*
+  - apps/flutter_practice/immich/mobile
+  - apps/flutter_practice/immich/mobile/packages/*
   - packages/**
   
 scripts:
