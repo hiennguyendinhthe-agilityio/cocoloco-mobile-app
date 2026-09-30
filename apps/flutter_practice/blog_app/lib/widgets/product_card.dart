@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
@@ -46,23 +47,10 @@ class ProductCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(22),
-                  child: Image.asset(
-                    product.imageAsset,
+                  child: SizedBox(
                     width: double.infinity,
                     height: 138,
-                    fit: BoxFit.cover,
-                    alignment: imageAlignment,
-                    errorBuilder: (_, _, _) => Container(
-                      height: 138,
-                      color: AppColors.surfaceMuted,
-                      child: const Center(
-                        child: Icon(
-                          Icons.local_cafe_rounded,
-                          size: 40,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
+                    child: _buildProductImage(),
                   ),
                 ),
               ),
@@ -93,4 +81,65 @@ class ProductCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildProductImage() {
+    final url = product.imageUrl;
+    final hasNetworkUrl = url != null &&
+        url.isNotEmpty &&
+        (url.startsWith('http://') || url.startsWith('https://'));
+
+    if (hasNetworkUrl) {
+      return Hero(
+        tag: 'hero_image_${product.id}',
+        child: CachedNetworkImage(
+          imageUrl: url,
+          width: double.infinity,
+          height: 138,
+          fit: BoxFit.cover,
+          alignment: imageAlignment,
+          placeholder: (_, _) => Container(
+            color: AppColors.surfaceMuted,
+            child: const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ),
+          errorWidget: (_, _, _) => _buildAssetFallback(),
+        ),
+      );
+    }
+
+    return _buildAssetFallback();
+  }
+
+  Widget _buildAssetFallback() {
+    return Hero(
+      tag: 'hero_image_${product.id}',
+      child: Image.asset(
+        product.imageAsset,
+        width: double.infinity,
+        height: 138,
+        fit: BoxFit.cover,
+        alignment: imageAlignment,
+        errorBuilder: (_, _, _) => Container(
+          height: 138,
+          color: AppColors.surfaceMuted,
+          child: const Center(
+            child: Icon(
+              Icons.local_cafe_rounded,
+              size: 40,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
+

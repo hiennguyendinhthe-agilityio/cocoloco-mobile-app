@@ -5,6 +5,15 @@ class AppTypography {
   // Family name registered in pubspec.yaml
   static const String fontFamily = 'Chap';
 
+  // Primary Large Heading ("Your Orders", "Account & Role")
+  static TextStyle get headingLarge => const TextStyle(
+        fontFamily: fontFamily,
+        fontSize: 24,
+        fontWeight: FontWeight.w900,
+        color: AppColors.primary,
+        letterSpacing: -0.3,
+      );
+
   // Primary Headings ("Let's get this day going", "April special")
   // Figma spec: Font Chap, Weight 900
   static TextStyle get sectionHeading => const TextStyle(
