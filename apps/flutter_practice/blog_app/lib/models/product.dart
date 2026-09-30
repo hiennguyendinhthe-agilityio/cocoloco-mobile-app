@@ -14,6 +14,7 @@ class Product {
   final int calories;
   final double rating;
   final bool isFavorite;
+  final bool isAvailable;
 
   const Product({
     required this.id,
@@ -28,6 +29,7 @@ class Product {
     this.calories = 140,
     this.rating = 4.9,
     this.isFavorite = false,
+    this.isAvailable = true,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -79,6 +81,7 @@ class Product {
       calories: 140,
       rating: 4.9,
       isFavorite: false,
+      isAvailable: json['is_available'] as bool? ?? true,
     );
   }
 
@@ -95,6 +98,7 @@ class Product {
     int? calories,
     double? rating,
     bool? isFavorite,
+    bool? isAvailable,
   }) {
     return Product(
       id: id ?? this.id,
@@ -109,6 +113,19 @@ class Product {
       calories: calories ?? this.calories,
       rating: rating ?? this.rating,
       isFavorite: isFavorite ?? this.isFavorite,
+      isAvailable: isAvailable ?? this.isAvailable,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'price': price,
+      'image_url': imageUrl,
+      'description': description,
+      'category': category.toLowerCase(),
+      'is_available': isAvailable,
+    };
   }
 }

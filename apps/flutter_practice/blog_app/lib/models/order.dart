@@ -18,13 +18,17 @@ class OrderItemModel {
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
+    final qty = json['quantity'] as int? ?? 1;
+    final unitPrice = double.tryParse(json['unit_price']?.toString() ?? '0.0') ?? 0.0;
+    final subtotal = double.tryParse(json['subtotal']?.toString() ?? json['total_price']?.toString() ?? '') ?? (unitPrice * qty);
+
     return OrderItemModel(
       id: json['id'] as String? ?? '',
       productId: json['product_id'] as String? ?? '',
       productName: json['product_name'] as String? ?? 'Specialty Item',
-      quantity: json['quantity'] as int? ?? 1,
-      unitPrice: double.tryParse(json['unit_price']?.toString() ?? '0.0') ?? 0.0,
-      totalPrice: double.tryParse(json['total_price']?.toString() ?? '0.0') ?? 0.0,
+      quantity: qty,
+      unitPrice: unitPrice,
+      totalPrice: subtotal,
     );
   }
 }
@@ -48,13 +52,14 @@ class OrderModel {
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     final itemsRaw = json['items'] as List<dynamic>? ?? [];
+    final dateStr = json['ordered_at']?.toString() ?? json['created_at']?.toString();
     return OrderModel(
       id: json['id'] as String? ?? '',
       userId: json['user_id'] as String? ?? '',
       status: (json['status'] as String? ?? 'PENDING').toUpperCase(),
       totalAmount: double.tryParse(json['total_amount']?.toString() ?? '0.0') ?? 0.0,
-      createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
+      createdAt: dateStr != null
+          ? DateTime.tryParse(dateStr)?.toLocal() ?? DateTime.now()
           : DateTime.now(),
       items: itemsRaw.map((e) => OrderItemModel.fromJson(e as Map<String, dynamic>)).toList(),
     );
