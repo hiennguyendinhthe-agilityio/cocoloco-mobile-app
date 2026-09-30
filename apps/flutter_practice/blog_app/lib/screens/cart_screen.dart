@@ -1,42 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/providers/network_providers.dart';
 import '../core/services/session_service.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
-import '../data/repositories/order_repository.dart';
-import '../widgets/clerk_auth_modal.dart';
+import '../data/providers/cart_provider.dart';
+import '../data/providers/orders_provider.dart';
+import '../models/cart_item.dart';
+import '../widgets/cart_item_card.dart';
+import '../widgets/order_summary_card.dart';
+import 'clerk_webview_screen.dart';
 import 'order_success_screen.dart';
 
-class CartItem {
-  final String id;
-  final String name;
-  final String customization;
-  final int quantity;
-  final double price;
-  final Color titleColor;
-
-  const CartItem({
-    required this.id,
-    required this.name,
-    required this.customization,
-    required this.quantity,
-    required this.price,
-    required this.titleColor,
-  });
-}
-
-class CartScreen extends StatefulWidget {
+class CartScreen extends ConsumerStatefulWidget {
   final List<CartItem>? initialItems;
   final VoidCallback? onCheckout;
 
   const CartScreen({super.key, this.initialItems, this.onCheckout});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
+  ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen> {
-  late List<CartItem> _items;
-
+class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   void initState() {
     super.initState();
@@ -45,96 +31,85 @@ class _CartScreenState extends State<CartScreen> {
         ScaffoldMessenger.of(context).clearSnackBars();
       }
     });
-    _items =
-        widget.initialItems ??
-        const [
-          CartItem(
-            id: 'item_cappuccino',
-            name: 'Cappuccino',
-            customization: 'With extra milk',
-            quantity: 2,
-            price: 4.0,
-            titleColor: AppColors.cappuccinoPink,
-          ),
-          CartItem(
-            id: 'item_toast',
-            name: 'Toast',
-            customization: 'With avocado',
-            quantity: 2,
-            price: 6.0,
-            titleColor: AppColors.croissantBlue,
-          ),
-        ];
   }
-
-  double get _subtotal {
-    if (_items.isEmpty) return 0.0;
-    if (_items.length == 2 &&
-        _items[0].id == 'item_cappuccino' &&
-        _items[1].id == 'item_toast') {
-      return 16.0;
-    }
-    return _items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
-  }
-
-  double get _delivery => _items.isEmpty ? 0.0 : 2.0;
-
-  double get _total => _subtotal + _delivery;
-
-  bool _isSubmitting = false;
 
   Future<void> _handleCheckout() async {
-    if (_items.isEmpty) return;
+    final cartState = ref.read(cartProvider);
+    if (cartState.isEmpty || cartState.isSubmitting) return;
 
     final session = SessionService.instance;
     if (!session.isLoggedIn) {
-      ClerkAuthModal.show(context, onAuthSuccess: _processOrderCreation);
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ClerkWebViewScreen()),
+      );
+      if (result != null) {
+        String token = '';
+        String? email;
+        String? fullName;
+        String? avatarUrl;
+
+        if (result is ClerkAuthResult) {
+          token = result.token;
+          email = result.email;
+          fullName = result.fullName;
+          avatarUrl = result.avatarUrl;
+        } else if (result is String) {
+          token = result;
+        }
+
+        if (token.isNotEmpty) {
+          final success = await SessionService.instance.loginWithClerkToken(
+            token,
+            email: email,
+            fullName: fullName,
+            avatarUrl: avatarUrl,
+          );
+          if (success && mounted) {
+            await _executeOrderPlacement();
+          }
+        }
+      }
       return;
     }
 
-    await _processOrderCreation();
+    await _executeOrderPlacement();
   }
 
-  Future<void> _processOrderCreation() async {
-    setState(() => _isSubmitting = true);
+  Future<void> _executeOrderPlacement() async {
+    final orderRepo = ref.read(orderRepositoryProvider);
+    final order = await ref.read(cartProvider.notifier).checkout(orderRepo);
 
-    try {
-      final itemsPayload = _items.map((item) {
-        // extract clean id if starts with item_
-        final cleanId = item.id.replaceFirst('item_', '');
-        return {
-          'product_id': cleanId,
-          'name': item.name,
-          'quantity': item.quantity,
-        };
-      }).toList();
+    if (!mounted) return;
 
-      await OrderRepository().createOrder(items: itemsPayload);
-
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-        widget.onCheckout?.call();
-
-        Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(
-            builder: (_) => OrderSuccessScreen(onDone: widget.onCheckout),
+    if (order != null) {
+      ref.read(ordersProvider.notifier).addOrder(order);
+      widget.onCheckout?.call();
+      Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (_) => OrderSuccessScreen(onDone: widget.onCheckout),
+        ),
+      );
+    } else {
+      final errorMsg = ref.read(cartProvider).errorMessage ??
+          'Could not complete order. Please check your connection.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: const Color(0xFFC53030),
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: _handleCheckout,
           ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-        Navigator.of(context, rootNavigator: true).push(
-          MaterialPageRoute(
-            builder: (_) => OrderSuccessScreen(onDone: widget.onCheckout),
-          ),
-        );
-      }
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartState = ref.watch(cartProvider);
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
 
@@ -153,7 +128,7 @@ class _CartScreenState extends State<CartScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back Arrow Button
+              // Back Button
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -176,7 +151,7 @@ class _CartScreenState extends State<CartScreen> {
 
               const SizedBox(height: 18),
 
-              // Title: "My cart" (Font: Chap, Weight: 900)
+              // Title: "My cart"
               const Text(
                 'My cart',
                 style: TextStyle(
@@ -191,7 +166,7 @@ class _CartScreenState extends State<CartScreen> {
 
               const SizedBox(height: 24),
 
-              // Section Heading: "Summary" (Font: Chap, Weight: 900)
+              // Section Heading: "Summary"
               const Text(
                 'Summary',
                 style: TextStyle(
@@ -205,216 +180,102 @@ class _CartScreenState extends State<CartScreen> {
 
               const SizedBox(height: 16),
 
-              // Cart Items List
+              // Cart Items List or Empty State
               Expanded(
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  itemCount: _items.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final item = _items[index];
-                    return _buildCartItemCard(item);
-                  },
-                ),
+                child: cartState.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 64,
+                              color: AppColors.navInactive.withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Your cart is empty',
+                              style: TextStyle(
+                                fontFamily: AppTypography.fontFamily,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Explore Cocoloco\'s fresh coffee & bakery menu to get started!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        itemCount: cartState.items.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final item = cartState.items[index];
+                          return CartItemCard(item: item);
+                        },
+                      ),
               ),
 
               // Bottom Calculation Breakdown & Checkout Button
-              Column(
-                children: [
-                  const SizedBox(height: 10),
+              if (!cartState.isEmpty) ...[
+                OrderSummaryCard(
+                  subtotal: cartState.subtotal,
+                  deliveryFee: cartState.deliveryFee,
+                  total: cartState.total,
+                ),
+                const SizedBox(height: 24),
+              ],
 
-                  // Subtotal Row
-                  _buildCostRow(
-                    label: 'Subtotal',
-                    amount: '\$${_subtotal.toInt()}',
-                    isTotal: false,
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Delivery Row
-                  _buildCostRow(
-                    label: 'Delivery',
-                    amount: '\$${_delivery.toInt()}',
-                    isTotal: false,
-                  ),
-
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Divider(color: Color(0xFFF1ECE4), thickness: 1),
-                  ),
-
-                  // Total Row
-                  _buildCostRow(
-                    label: 'Total',
-                    amount: '\$${_total.toInt()}',
-                    isTotal: true,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Primary "Go to checkout" Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: (_items.isEmpty || _isSubmitting) ? null : _handleCheckout,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                      ),
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Go to checkout',
-                              style: TextStyle(
-                                fontFamily: AppTypography.fontFamily,
-                                fontSize: 16.5,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
+              // Primary "Go to checkout" Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: (cartState.isEmpty || cartState.isSubmitting)
+                      ? null
+                      : _handleCheckout,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Floating White Item Card matching Figma spec
-  Widget _buildCartItemCard(CartItem item) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left: Product Name & Customization note
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  item.name,
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontFamily,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: item.titleColor,
-                    height: 1.05,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  item.customization,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFFA5B1BC),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-
-          // Right: 2x Badge and Price
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // "2x" Pill Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3EFE8),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${item.quantity}x',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF260D11),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 14),
-
-              // Item Price ("$4", "$6")
-              Text(
-                '\$${item.price.toInt()}',
-                style: const TextStyle(
-                  fontFamily: AppTypography.fontFamily,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF260D11),
+                  child: cartState.isSubmitting
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Go to checkout',
+                          style: TextStyle(
+                            fontFamily: AppTypography.fontFamily,
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],
           ),
-        ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildCostRow({
-    required String label,
-    required String amount,
-    required bool isTotal,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isTotal ? 15.5 : 15,
-            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            color: const Color(0xFFA59E96),
-          ),
-        ),
-        Text(
-          amount,
-          style: TextStyle(
-            fontFamily: AppTypography.fontFamily,
-            fontSize: isTotal ? 17.5 : 16,
-            fontWeight: isTotal ? FontWeight.w900 : FontWeight.w800,
-            color: AppColors.primary,
-          ),
-        ),
-      ],
     );
   }
 }

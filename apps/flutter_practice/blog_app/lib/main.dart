@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
 import 'screens/main_navigation_screen.dart';
@@ -21,11 +22,13 @@ class CocolocoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Cocoloco - Artisanal Coffee & Bakery',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const MainNavigationScreen(),
+    return ProviderScope(
+      child: MaterialApp(
+        title: 'Cocoloco - Artisanal Coffee & Bakery',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: MainNavigationScreen(),
+      ),
     );
   }
 }

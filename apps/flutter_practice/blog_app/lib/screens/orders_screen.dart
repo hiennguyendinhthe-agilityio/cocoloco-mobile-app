@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../core/services/session_service.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
-import '../data/repositories/order_repository.dart';
+import '../data/providers/orders_provider.dart';
 import '../models/order.dart';
+import 'clerk_webview_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
-class OrdersScreen extends StatefulWidget {
+class OrdersScreen extends ConsumerStatefulWidget {
   final List<String>? cartItems;
   final double? totalAmount;
   final VoidCallback? onClearCart;
@@ -18,15 +22,10 @@ class OrdersScreen extends StatefulWidget {
   });
 
   @override
-  State<OrdersScreen> createState() => _OrdersScreenState();
+  ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends State<OrdersScreen> {
-  final OrderRepository _orderRepo = OrderRepository();
-  List<OrderModel> _orders = [];
-  bool _isLoading = true;
-  String _selectedStatusFilter = 'ALL';
-
+class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   final List<Map<String, String>> _statusFilters = const [
     {'id': 'ALL', 'label': 'All Orders'},
     {'id': 'PENDING', 'label': '⏳ Pending'},
@@ -37,27 +36,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   void initState() {
     super.initState();
-    _loadOrders();
-  }
-
-  Future<void> _loadOrders() async {
-    setState(() => _isLoading = true);
-    final results = await _orderRepo.getMyOrders();
-    if (mounted) {
-      setState(() {
-        _orders = results;
-        _isLoading = false;
-      });
-    }
-  }
-
-  List<OrderModel> get _filteredOrders {
-    if (_selectedStatusFilter == 'ALL') return _orders;
-    return _orders.where((o) => o.status == _selectedStatusFilter).toList();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(ordersProvider.notifier).loadOrders();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final ordersState = ref.watch(ordersProvider);
+    final filteredOrders = ordersState.filteredOrders;
+    final totalOrdersCount = ordersState.orders.length;
+    final isLoading = ordersState.isLoading;
+    final selectedStatusFilter = ordersState.selectedFilter;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -100,7 +93,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         const Icon(Icons.receipt_long_rounded, size: 16, color: AppColors.primary),
                         const SizedBox(width: 6),
                         Text(
-                          '${_orders.length} orders',
+                          SessionService.instance.isLoggedIn
+                              ? '$totalOrdersCount orders'
+                              : 'Guest',
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -125,7 +120,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final filter = _statusFilters[index];
-                  final isSelected = filter['id'] == _selectedStatusFilter;
+                  final isSelected = filter['id'] == selectedStatusFilter;
                   return ChoiceChip(
                     label: Text(
                       filter['label']!,
@@ -147,7 +142,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     ),
                     showCheckmark: false,
                     onSelected: (_) {
-                      setState(() => _selectedStatusFilter = filter['id']!);
+                      ref.read(ordersProvider.notifier).setFilter(filter['id']!);
                     },
                   );
                 },
@@ -161,25 +156,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
               child: RefreshIndicator(
                 color: AppColors.primary,
                 backgroundColor: Colors.white,
-                onRefresh: _loadOrders,
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: AppColors.primary,
-                        ),
-                      )
-                    : _filteredOrders.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.separated(
+                onRefresh: () => ref.read(ordersProvider.notifier).refresh(),
+                child: isLoading
+                    ? _buildLoadingList()
+                    : !SessionService.instance.isLoggedIn
+                        ? _buildGuestState()
+                        : filteredOrders.isEmpty
+                            ? _buildEmptyState()
+                            : ListView.separated(
                             physics: const AlwaysScrollableScrollPhysics(
                               parent: BouncingScrollPhysics(),
                             ),
                             padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                            itemCount: _filteredOrders.length,
+                            itemCount: filteredOrders.length,
                             separatorBuilder: (_, _) => const SizedBox(height: 16),
                             itemBuilder: (context, index) {
-                              final order = _filteredOrders[index];
+                              final order = filteredOrders[index];
                               return _buildOrderCard(order);
                             },
                           ),
@@ -188,6 +180,79 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLoadingList() {
+    return ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      itemCount: 4,
+      separatorBuilder: (_, _) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        return Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey[200]!,
+            highlightColor: Colors.grey[50]!,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    Container(
+                      width: 80,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: 140,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -343,38 +408,167 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
+  Widget _buildGuestState() {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 76,
+                    height: 76,
+                    decoration: const BoxDecoration(
+                      color: AppColors.surfaceMuted,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 38,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Not Signed In',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontFamily,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Please sign in with your Clerk account to view your receipts and track brewing progress.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const ClerkWebViewScreen()),
+                        );
+                        if (result != null) {
+                          String token = '';
+                          String? email;
+                          String? fullName;
+                          String? avatarUrl;
+
+                          if (result is ClerkAuthResult) {
+                            token = result.token;
+                            email = result.email;
+                            fullName = result.fullName;
+                            avatarUrl = result.avatarUrl;
+                          } else if (result is String) {
+                            token = result;
+                          }
+
+                          if (token.isNotEmpty) {
+                            final success = await SessionService.instance.loginWithClerkToken(
+                              token,
+                              email: email,
+                              fullName: fullName,
+                              avatarUrl: avatarUrl,
+                            );
+                            if (success && mounted) {
+                              ref.read(ordersProvider.notifier).loadOrders();
+                            }
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                      ),
+                      icon: const Icon(Icons.login_rounded, size: 18),
+                      label: const Text(
+                        'Sign In Now',
+                        style: TextStyle(
+                          fontFamily: AppTypography.fontFamily,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceMuted,
-              shape: BoxShape.circle,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: const BoxDecoration(
+                      color: AppColors.surfaceMuted,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.coffee_outlined, size: 36, color: AppColors.primary),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No orders yet',
+                    style: TextStyle(
+                      fontFamily: AppTypography.fontFamily,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Explore Cocoloco\'s coffee & bakery menu to place your first order!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: const Icon(Icons.coffee_outlined, size: 36, color: AppColors.primary),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'No orders in this category',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Browse our artisanal menu to place your first cup!',
-            style: TextStyle(
-              fontSize: 13.5,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

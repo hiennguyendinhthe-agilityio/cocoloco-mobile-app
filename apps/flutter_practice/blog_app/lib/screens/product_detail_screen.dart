@@ -1,12 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
+import '../data/providers/cart_provider.dart';
 import '../models/product.dart';
 import 'cart_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
-class ProductDetailScreen extends StatefulWidget {
+class ProductDetailScreen extends ConsumerStatefulWidget {
   final Product product;
   final Function(Product product, int quantity) onAddToCart;
 
@@ -17,12 +20,35 @@ class ProductDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   int _quantity = 2; // Matching Figma demo state (2x)
   final Set<String> _selectedAddons = {};
+  late final ScrollController _scrollController;
+  bool _isCollapsed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final collapsed = _scrollController.offset > (340 - kToolbarHeight - 28);
+    if (collapsed != _isCollapsed) {
+      setState(() => _isCollapsed = collapsed);
+    }
+  }
 
   double get _totalPrice => widget.product.price * _quantity;
 
@@ -39,13 +65,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           imageUrl: url,
           fit: BoxFit.cover,
           alignment: const Alignment(0, 0.2),
-          placeholder: (_, _) => Container(
-            color: AppColors.surfaceMuted,
-            child: const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.primary,
-              ),
+          placeholder: (_, _) => Shimmer.fromColors(
+            baseColor: Colors.grey[200]!,
+            highlightColor: Colors.grey[50]!,
+            child: Container(
+              color: Colors.white,
             ),
           ),
           errorWidget: (_, _, _) => Image.asset(
@@ -69,55 +93,78 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Scrollable Content
-          SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Hero Image Section
-                Stack(
-                  children: [
-                    // Product Image
-                    SizedBox(
-                      height: 350,
-                      width: double.infinity,
-                      child: _buildHeroImage(),
+          // Scrollable Content with Slivers
+          CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            slivers: [
+              // Expandable & Collapsing Hero Image AppBar
+              SliverAppBar(
+                expandedHeight: 340.0,
+                pinned: true,
+                stretch: true,
+                elevation: _isCollapsed ? 1.0 : 0.0,
+                shadowColor: Colors.black12,
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                leading: Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 14),
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: _isCollapsed
+                          ? const Color(0xFFF4F0E8)
+                          : Colors.black.withValues(alpha: 0.35),
+                      shape: BoxShape.circle,
                     ),
-
-                    // Back Arrow Button (White icon on top-left)
-                    Positioned(
-                      top: topPadding + 6,
-                      left: 14,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(24),
-                          onTap: () => Navigator.of(context).pop(),
-                          child: const Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: Icon(
-                              Icons.arrow_back_rounded,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Icon(
+                          Icons.arrow_back_rounded,
+                          color:
+                              _isCollapsed ? AppColors.textDark : Colors.white,
+                          size: 20,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-
-                // Overlapping White Body Container with large top rounded corners
-                Transform.translate(
-                  offset: const Offset(0, -32),
+                title: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: _isCollapsed ? 1.0 : 0.0,
+                  child: Text(
+                    widget.product.name,
+                    style: const TextStyle(
+                      fontFamily: AppTypography.fontFamily,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ),
+                centerTitle: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  stretchModes: const [
+                    StretchMode.zoomBackground,
+                  ],
+                  background: _buildHeroImage(),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(28),
                   child: Container(
+                    height: 28,
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       color: Colors.white,
@@ -125,10 +172,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         top: Radius.circular(32),
                       ),
                     ),
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 120),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                  ),
+                ),
+              ),
+
+              // Product Details Body inside SliverToBoxAdapter
+              SliverToBoxAdapter(
+                child: Container(
+                  color: Colors.white,
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    4,
+                    24,
+                    bottomInset > 0 ? bottomInset + 110 : 120,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                         // Title, Price & Quantity Stepper Row
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +283,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ],
             ),
-          ),
 
           // Bottom Bar (Seamlessly integrated, exactly aligned with body 24px margins)
           Positioned(
@@ -232,7 +291,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             bottom: 0,
             child: Container(
               color: Colors.white,
-              padding: EdgeInsets.fromLTRB(24, 16, 24, 2),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                14,
+                24,
+                bottomInset > 0 ? bottomInset + 10 : 24,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -265,36 +329,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ],
                   ),
 
-                  // Right: "View cart" Button (Proportional 176px width x 54px height per Figma)
+                  // Right: "View cart" Button (Proportional 176px width x 56px height matching CartScreen)
                   SizedBox(
                     width: 176,
-                    height: 54,
+                    height: 56,
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).clearSnackBars();
+                        ref.read(cartProvider.notifier).addProduct(
+                              widget.product,
+                              quantity: _quantity,
+                            );
                         widget.onAddToCart(widget.product, _quantity);
                         Navigator.of(context, rootNavigator: true).push(
                           MaterialPageRoute(
-                            builder: (_) => CartScreen(
-                              initialItems: [
-                                CartItem(
-                                  id: 'item_${widget.product.id}',
-                                  name: widget.product.name,
-                                  customization: 'With extra milk',
-                                  quantity: _quantity,
-                                  price: 4.0,
-                                  titleColor: widget.product.titleColor,
-                                ),
-                                const CartItem(
-                                  id: 'item_toast',
-                                  name: 'Toast',
-                                  customization: 'With avocado',
-                                  quantity: 2,
-                                  price: 6.0,
-                                  titleColor: AppColors.croissantBlue,
-                                ),
-                              ],
-                            ),
+                            builder: (_) => const CartScreen(),
                           ),
                         );
                       },
