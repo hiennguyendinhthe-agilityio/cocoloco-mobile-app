@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_constants.dart';
 
 class ApiClient {
@@ -8,6 +9,8 @@ class ApiClient {
 
   late final Dio dio;
   String? _authToken;
+
+  ApiClient.withDio(this.dio);
 
   ApiClient._internal() {
     dio = Dio(
@@ -22,31 +25,32 @@ class ApiClient {
       ),
     );
 
+    // 1. Authorization Bearer Token Interceptor
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
           if (_authToken != null && _authToken!.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $_authToken';
           }
-          if (kDebugMode) {
-            debugPrint('🌐 [HTTP REQ] ${options.method} -> ${options.uri}');
-          }
           return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          if (kDebugMode) {
-            debugPrint('✅ [HTTP RES] ${response.statusCode} <- ${response.requestOptions.uri}');
-          }
-          return handler.next(response);
-        },
-        onError: (DioException error, handler) {
-          if (kDebugMode) {
-            debugPrint('❌ [HTTP ERR] ${error.response?.statusCode} <- ${error.requestOptions.uri}: ${error.message} | data: ${error.response?.data}');
-          }
-          return handler.next(error);
         },
       ),
     );
+
+    // 2. Clean, Compact Logger in Debug Console (Avoids flooding console)
+    if (kDebugMode) {
+      dio.interceptors.add(
+        PrettyDioLogger(
+          requestHeader: false,
+          requestBody: true,
+          responseBody: false,
+          responseHeader: false,
+          error: true,
+          compact: true,
+          maxWidth: 90,
+        ),
+      );
+    }
   }
 
   void setAuthToken(String? token) {
