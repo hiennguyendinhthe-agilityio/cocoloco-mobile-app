@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
@@ -25,6 +26,47 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   double get _totalPrice => widget.product.price * _quantity;
 
+  Widget _buildHeroImage() {
+    final url = widget.product.imageUrl;
+    final hasNetworkUrl = url != null &&
+        url.isNotEmpty &&
+        (url.startsWith('http://') || url.startsWith('https://'));
+
+    if (hasNetworkUrl) {
+      return Hero(
+        tag: 'hero_image_${widget.product.id}',
+        child: CachedNetworkImage(
+          imageUrl: url,
+          fit: BoxFit.cover,
+          alignment: const Alignment(0, 0.2),
+          placeholder: (_, _) => Container(
+            color: AppColors.surfaceMuted,
+            child: const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+          errorWidget: (_, _, _) => Image.asset(
+            widget.product.imageAsset,
+            fit: BoxFit.cover,
+            alignment: const Alignment(0, 0.2),
+          ),
+        ),
+      );
+    }
+
+    return Hero(
+      tag: 'hero_image_${widget.product.id}',
+      child: Image.asset(
+        widget.product.imageAsset,
+        fit: BoxFit.cover,
+        alignment: const Alignment(0, 0.2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -46,11 +88,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     SizedBox(
                       height: 350,
                       width: double.infinity,
-                      child: Image.asset(
-                        widget.product.imageAsset,
-                        fit: BoxFit.cover,
-                        alignment: const Alignment(0, 0.2),
-                      ),
+                      child: _buildHeroImage(),
                     ),
 
                     // Back Arrow Button (White icon on top-left)

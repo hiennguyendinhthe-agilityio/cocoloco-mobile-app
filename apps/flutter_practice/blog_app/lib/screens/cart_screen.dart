@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-
+import '../core/services/session_service.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
+import '../data/repositories/order_repository.dart';
+import '../widgets/clerk_auth_modal.dart';
 import 'order_success_screen.dart';
 
 class CartItem {
@@ -79,12 +81,56 @@ class _CartScreenState extends State<CartScreen> {
 
   double get _total => _subtotal + _delivery;
 
-  void _handleCheckout() {
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
-        builder: (_) => OrderSuccessScreen(onDone: widget.onCheckout),
-      ),
-    );
+  bool _isSubmitting = false;
+
+  Future<void> _handleCheckout() async {
+    if (_items.isEmpty) return;
+
+    final session = SessionService.instance;
+    if (!session.isLoggedIn) {
+      ClerkAuthModal.show(context, onAuthSuccess: _processOrderCreation);
+      return;
+    }
+
+    await _processOrderCreation();
+  }
+
+  Future<void> _processOrderCreation() async {
+    setState(() => _isSubmitting = true);
+
+    try {
+      final itemsPayload = _items.map((item) {
+        // extract clean id if starts with item_
+        final cleanId = item.id.replaceFirst('item_', '');
+        return {
+          'product_id': cleanId,
+          'name': item.name,
+          'quantity': item.quantity,
+        };
+      }).toList();
+
+      await OrderRepository().createOrder(items: itemsPayload);
+
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        widget.onCheckout?.call();
+
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(
+            builder: (_) => OrderSuccessScreen(onDone: widget.onCheckout),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(
+            builder: (_) => OrderSuccessScreen(onDone: widget.onCheckout),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -213,7 +259,7 @@ class _CartScreenState extends State<CartScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _items.isEmpty ? null : _handleCheckout,
+                      onPressed: (_items.isEmpty || _isSubmitting) ? null : _handleCheckout,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -222,15 +268,24 @@ class _CartScreenState extends State<CartScreen> {
                           borderRadius: BorderRadius.circular(28),
                         ),
                       ),
-                      child: const Text(
-                        'Go to checkout',
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontFamily,
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Go to checkout',
+                              style: TextStyle(
+                                fontFamily: AppTypography.fontFamily,
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ],

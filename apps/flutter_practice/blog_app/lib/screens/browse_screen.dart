@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/constants/mock_data.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
+import '../data/repositories/product_repository.dart';
 import '../models/product.dart';
 import '../widgets/cocoloco_header.dart';
 import '../widgets/product_card.dart';
@@ -21,14 +22,61 @@ class BrowseScreen extends StatefulWidget {
 }
 
 class _BrowseScreenState extends State<BrowseScreen> {
+  final ProductRepository _productRepository = ProductRepository();
+
+  List<Product> _products = [];
+  bool _isLoading = true;
+  String _selectedCategory = 'all';
+
   bool _isSearchOpen = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  final List<Map<String, String>> _categories = const [
+    {'id': 'all', 'label': 'All'},
+    {'id': 'coffee', 'label': '☕ Coffee'},
+    {'id': 'pastry', 'label': '🥐 Bakery'},
+    {'id': 'bundle', 'label': '🎁 Combos'},
+    {'id': 'seasonal', 'label': '✨ Specials'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchProducts() async {
+    setState(() => _isLoading = true);
+    try {
+      final categoryParam = _selectedCategory == 'all' ? null : _selectedCategory;
+      final products = await _productRepository.getProducts(category: categoryParam);
+      if (mounted) {
+        setState(() {
+          _products = products;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _products = MockData.dailyProducts;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onCategorySelected(String categoryId) {
+    if (_selectedCategory == categoryId) return;
+    setState(() => _selectedCategory = categoryId);
+    _fetchProducts();
   }
 
   void _openProductDetail(Product product) {
@@ -97,10 +145,11 @@ class _BrowseScreenState extends State<BrowseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredProducts = MockData.dailyProducts.where((p) {
+    final filteredProducts = _products.where((p) {
       if (_searchQuery.isEmpty) return true;
       return p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          p.category.toLowerCase().contains(_searchQuery.toLowerCase());
+          p.category.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          p.description.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -158,80 +207,232 @@ class _BrowseScreenState extends State<BrowseScreen> {
               duration: const Duration(milliseconds: 250),
             ),
 
-            // Scrollable Content
+            // Scrollable Content wrapped in Pull-to-Refresh
             Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Section 1: "Let's get this day going"
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                      child: Text(
-                        "Let’s get this day going",
-                        style: AppTypography.sectionHeading,
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                backgroundColor: Colors.white,
+                onRefresh: _fetchProducts,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section 1: "Let's get this day going"
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                        child: Text(
+                          "Let’s get this day going",
+                          style: AppTypography.sectionHeading,
+                        ),
                       ),
-                    ),
 
-                    // Horizontal Product Carousel
-                    SizedBox(
-                      height: 248,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
+                      // Category Filter Chips
+                      SizedBox(
+                        height: 40,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          itemCount: _categories.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final cat = _categories[index];
+                            final isSelected = cat['id'] == _selectedCategory;
+                            return ChoiceChip(
+                              label: Text(
+                                cat['label']!,
+                                style: TextStyle(
+                                  fontFamily: AppTypography.fontFamily,
+                                  fontSize: 13,
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                  color: isSelected ? Colors.white : AppColors.textDark,
+                                ),
+                              ),
+                              selected: isSelected,
+                              selectedColor: AppColors.primary,
+                              backgroundColor: Colors.white,
+                              elevation: isSelected ? 2 : 0,
+                              pressElevation: 1,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : const Color(0xFFECE7DE),
+                                  width: 1.2,
+                                ),
+                              ),
+                              showCheckmark: false,
+                              onSelected: (_) => _onCategorySelected(cat['id']!),
+                            );
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Horizontal Product Carousel or Loading Skeleton
+                      SizedBox(
+                        height: 248,
+                        child: _isLoading
+                            ? _buildLoadingCarousel()
+                            : filteredProducts.isEmpty
+                                ? _buildEmptyState()
+                                : ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    itemCount: filteredProducts.length,
+                                    itemBuilder: (context, index) {
+                                      final product = filteredProducts[index];
+                                      return ProductCard(
+                                        product: product,
+                                        imageAlignment: _getProductAlignment(product.id),
+                                        onTap: () => _openProductDetail(product),
+                                      );
+                                    },
+                                  ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Section 2: "April special"
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+                        child: Text(
+                          "April special",
+                          style: AppTypography.sectionHeading,
+                        ),
+                      ),
+
+                      // Vertical Banner List
+                      Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        itemCount: filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = filteredProducts[index];
-                          return ProductCard(
-                            product: product,
-                            imageAlignment: _getProductAlignment(product.id),
-                            onTap: () => _openProductDetail(product),
-                          );
-                        },
+                        child: Column(
+                          children: MockData.specialOffers.map((offer) {
+                            return PromoBannerCard(
+                              offer: offer,
+                              imageAlignment: _getBannerAlignment(offer.id),
+                              onTap: () {
+                                widget.onAddToCart?.call(offer.subtitle, offer.price);
+                                _showAddedSnackbar(offer.subtitle);
+                              },
+                              onAddToCart: () {
+                                widget.onAddToCart?.call(offer.subtitle, offer.price);
+                                _showAddedSnackbar(offer.subtitle);
+                              },
+                            );
+                          }).toList(),
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 24),
-
-                    // Section 2: "April special"
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
-                      child: Text(
-                        "April special",
-                        style: AppTypography.sectionHeading,
-                      ),
-                    ),
-
-                    // Vertical Banner List
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        children: MockData.specialOffers.map((offer) {
-                          return PromoBannerCard(
-                            offer: offer,
-                            imageAlignment: _getBannerAlignment(offer.id),
-                            onTap: () {
-                              widget.onAddToCart?.call(offer.subtitle, offer.price);
-                              _showAddedSnackbar(offer.subtitle);
-                            },
-                            onAddToCart: () {
-                              widget.onAddToCart?.call(offer.subtitle, offer.price);
-                              _showAddedSnackbar(offer.subtitle);
-                            },
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-                  ],
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingCarousel() {
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Container(
+          width: 182,
+          margin: const EdgeInsets.only(right: 18, bottom: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x08000000),
+                blurRadius: 16,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                child: Container(
+                  height: 138,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceMuted,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 16,
+                      width: 100,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceMuted,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 14,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceMuted,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.textSecondary.withValues(alpha: 0.5)),
+          const SizedBox(height: 8),
+          const Text(
+            'No items found in this category',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

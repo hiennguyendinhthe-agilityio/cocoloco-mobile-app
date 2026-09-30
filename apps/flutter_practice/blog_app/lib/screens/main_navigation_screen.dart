@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/cocoloco_bottom_nav_bar.dart';
 import 'browse_screen.dart';
-import 'chat_screen.dart';
+import 'cart_screen.dart';
 import 'favorites_screen.dart';
 import 'orders_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -14,24 +15,21 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  final List<String> _cartItems = [];
+  final List<String> _cartTitles = [];
   double _totalAmount = 0.0;
 
   void _addToCart(String title, double price) {
     setState(() {
-      _cartItems.add(title);
+      _cartTitles.add(title);
       _totalAmount += price;
     });
   }
 
   void _clearCart() {
     setState(() {
-      _cartItems.clear();
+      _cartTitles.clear();
       _totalAmount = 0.0;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Order completed! See you at the pickup counter.')),
-    );
   }
 
   @override
@@ -43,21 +41,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       FavoritesScreen(
         onAddToCart: _addToCart,
       ),
+      CartScreen(
+        onCheckout: _clearCart,
+      ),
       OrdersScreen(
-        cartItems: _cartItems,
+        cartItems: _cartTitles,
         totalAmount: _totalAmount,
         onClearCart: _clearCart,
       ),
-      const ChatScreen(),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: screens,
       ),
       bottomNavigationBar: CocolocoBottomNavBar(
         currentIndex: _currentIndex,
+        cartItemCount: _cartTitles.length,
         onIndexChanged: (index) {
           setState(() {
             _currentIndex = index;

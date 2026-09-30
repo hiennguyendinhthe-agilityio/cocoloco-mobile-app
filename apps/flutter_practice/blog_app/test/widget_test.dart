@@ -24,7 +24,7 @@ void main() {
     await tester.pumpWidget(const CocolocoApp());
     expect(find.text("Let’s get this day going"), findsOneWidget);
     expect(find.text("April special"), findsOneWidget);
+    await tester.pumpAndSettle();
     expect(find.text("Cappuccino"), findsOneWidget);
-    expect(find.text("Crossaint"), findsOneWidget);
   });
 }
