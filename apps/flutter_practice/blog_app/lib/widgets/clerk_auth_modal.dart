@@ -52,7 +52,7 @@ class _ClerkAuthModalState extends State<ClerkAuthModal> {
             children: [
               Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
               SizedBox(width: 10),
-              Text('Đăng nhập Google thành công qua Clerk!'),
+              Text('Signed in with Google successfully via Clerk!'),
             ],
           ),
           backgroundColor: AppColors.primary,
@@ -66,7 +66,7 @@ class _ClerkAuthModalState extends State<ClerkAuthModal> {
   Future<void> _handleEmailSignIn() async {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _errorMessage = 'Vui lòng nhập địa chỉ email hợp lệ');
+      setState(() => _errorMessage = 'Please enter a valid email address');
       return;
     }
 
@@ -85,7 +85,7 @@ class _ClerkAuthModalState extends State<ClerkAuthModal> {
       widget.onAuthSuccess?.call();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Chào mừng bạn! Đã xác thực Clerk thành công ($email)'),
+          content: Text('Welcome! Authenticated with Clerk successfully ($email)'),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

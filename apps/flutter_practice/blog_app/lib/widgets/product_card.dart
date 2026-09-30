@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 import '../models/product.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -97,17 +98,11 @@ class ProductCard extends StatelessWidget {
           height: 138,
           fit: BoxFit.cover,
           alignment: imageAlignment,
-          placeholder: (_, _) => Container(
-            color: AppColors.surfaceMuted,
-            child: const Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.primary,
-                ),
-              ),
+          placeholder: (_, _) => Shimmer.fromColors(
+            baseColor: Colors.grey[200]!,
+            highlightColor: Colors.grey[50]!,
+            child: Container(
+              color: Colors.white,
             ),
           ),
           errorWidget: (_, _, _) => _buildAssetFallback(),
