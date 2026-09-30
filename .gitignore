@@ -44,3 +44,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# =============================================================
+# Large nested repositories — do NOT track
+# =============================================================
+apps/flutter_practice/immich/

@@ -1,29 +1,37 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Cocoloco Warm Brand Palette (from Figma)
-  static const Color primary = Color(0xFF6B3020); // Warm Espresso / Terracotta
-  static const Color primaryDark = Color(0xFF4A1F13);
-  static const Color primaryLight = Color(0xFF8D4A36);
-  static const Color accent = Color(0xFFD67D65);
-  static const Color accentSoft = Color(0xFFF6E7E2);
+  // Cocoloco Exact Brand Palette (Sampled from Figma Cocoloco/Browse)
+  static const Color primary = Color(0xFF5B1921); // Rich Burgundy Wine (#5B1921)
+  static const Color primaryDark = Color(0xFF3E0F15);
+  static const Color primaryLight = Color(0xFF7E2A34);
 
-  // Background & Surface
-  static const Color background = Color(0xFFFAF7F2); // Warm Cream Canvas
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceMuted = Color(0xFFF3EFE8);
+  // Background & Surfaces
+  static const Color background = Color(0xFFFFFEFA); // Warm Off-White Cream (#FFFEFA)
+  static const Color surface = Color(0xFFFFFFFF); // Pure Card White
+  static const Color surfaceMuted = Color(0xFFF7F4EE);
 
-  // Text Colors
-  static const Color textPrimary = Color(0xFF1E1A17);
-  static const Color textSecondary = Color(0xFF756E66);
-  static const Color textTertiary = Color(0xFFA59E96);
+  // Product Specific Title Colors
+  static const Color cappuccinoPink = Color(0xFFD8555F); // Warm Coral Rose (#D8555F)
+  static const Color croissantBlue = Color(0xFF6479C3); // Soft Periwinkle Blue (#6479C3)
+  static const Color americanoOrange = Color(0xFFD97736); // Warm Amber Orange
+  static const Color matchaGreen = Color(0xFF5E8B62); // Sage Forest Green
+  static const Color berryViolet = Color(0xFFA55375); // Mulberry Wine
 
-  // Status & Badges
-  static const Color success = Color(0xFF2E7D32);
-  static const Color warning = Color(0xFFED6C02);
-  static const Color error = Color(0xFFD32F2F);
+  // Price & Subtext Colors
+  static const Color priceMuted = Color(0xFFA5B1BC); // Muted Slate Blue-Gray (#A5B1BC)
+  static const Color textSecondary = Color(0xFF8E8B82);
+  static const Color textDark = Color(0xFF260D11);
 
-  // Card Borders & Dividers
-  static const Color border = Color(0xFFE8E2D9);
-  static const Color divider = Color(0xFFEFE9E0);
+  // Bottom Navigation Bar
+  static const Color navActiveCircle = Color(0xFF95545C); // Dusty Plum Burgundy (#95545C)
+  static const Color navInactive = Color(0xFFB1AEA3); // Warm Taupe Outline (#B1AEA3)
+
+  // Floating Shopping Cart Button
+  static const Color cartButtonBg = Color(0xFFFFFFFF);
+  static const Color cartButtonIcon = Color(0xFF7A2935);
+
+  // Accents & Shadows
+  static const Color shadow = Color(0x12000000);
+  static const Color shadowCard = Color(0x105B1921);
 }

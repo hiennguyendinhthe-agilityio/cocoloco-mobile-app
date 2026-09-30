@@ -1,48 +1,74 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_bottom_nav_bar.dart';
-import 'create_post_screen.dart';
-import 'feed_screen.dart';
-import 'profile_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../data/providers/cart_provider.dart';
+import '../data/providers/orders_provider.dart';
+import '../widgets/cocoloco_bottom_nav_bar.dart';
+import '../core/theme/app_colors.dart';
+import 'browse_screen.dart';
+import 'cart_screen.dart';
+import 'favorites_screen.dart';
+import 'orders_screen.dart';
+import 'chat_screen.dart';
 
-class MainNavigationScreen extends StatefulWidget {
+class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> screens = [
-      FeedScreen(onOpenCreatePost: () => setState(() => _currentIndex = 2)),
-      const Center(child: Text('Explore Categories')),
-      CreatePostScreen(onPostCreated: () => setState(() => _currentIndex = 0)),
-      const Center(child: Text('Saved Bookmarks')),
-      const ProfileScreen(),
+    final cartItemCount = ref.watch(cartProvider.select((s) => s.totalItemCount));
+
+    final List<Widget> screens = const [
+      BrowseScreen(),
+      FavoritesScreen(),
+      OrdersScreen(),
+      ChatScreen(),
     ];
 
     return Scaffold(
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: _currentIndex,
-            children: screens,
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: CustomBottomNavBar(
-              currentIndex: _currentIndex,
-              onIndexChanged: (index) {
-                setState(() => _currentIndex = index);
+      extendBody: true,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: screens,
+      ),
+      floatingActionButton: cartItemCount > 0
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CartScreen(),
+                  ),
+                );
               },
-            ),
-          ),
-        ],
+              backgroundColor: AppColors.primary,
+              icon: const Icon(Icons.shopping_bag_rounded, color: Colors.white),
+              label: Text(
+                '$cartItemCount items',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      bottomNavigationBar: CocolocoBottomNavBar(
+        currentIndex: _currentIndex,
+        onIndexChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 2) {
+            ref.read(ordersProvider.notifier).loadOrders();
+          }
+        },
       ),
     );
   }
