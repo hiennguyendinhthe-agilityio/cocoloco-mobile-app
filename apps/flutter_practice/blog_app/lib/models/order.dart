@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../core/theme/tokens/app_primitives.dart';
+import '../core/theme/tokens/cocoloco_theme_extension.dart';
 
 class OrderItemModel {
   final String id;
@@ -84,28 +86,60 @@ class OrderModel {
   Color get statusBgColor {
     switch (status) {
       case 'CONFIRMED':
-        return const Color(0xFFE8F1FC);
+        return AppPalette.statusConfirmedBg;
       case 'COMPLETED':
-        return const Color(0xFFEAF8ED);
+        return AppPalette.statusCompletedBg;
       case 'CANCELLED':
-        return const Color(0xFFFDEEEC);
+        return AppPalette.statusCancelledBg;
       case 'PENDING':
       default:
-        return const Color(0xFFFFF7E6);
+        return AppPalette.statusPendingBg;
     }
   }
 
   Color get statusTextColor {
     switch (status) {
       case 'CONFIRMED':
-        return const Color(0xFF2B6CB0);
+        return AppPalette.statusConfirmedText;
       case 'COMPLETED':
-        return const Color(0xFF2E7D32);
+        return AppPalette.statusCompletedText;
       case 'CANCELLED':
-        return const Color(0xFFC53030);
+        return AppPalette.statusCancelledText;
       case 'PENDING':
       default:
-        return const Color(0xFFD97706);
+        return AppPalette.statusPendingText;
+    }
+  }
+
+  Color getStatusBgColor(BuildContext context) {
+    final customTheme = Theme.of(context).extension<CocolocoCustomTheme>();
+    if (customTheme == null) return statusBgColor;
+    switch (status) {
+      case 'CONFIRMED':
+        return customTheme.statusConfirmedBg;
+      case 'COMPLETED':
+        return customTheme.statusCompletedBg;
+      case 'CANCELLED':
+        return customTheme.statusCancelledBg;
+      case 'PENDING':
+      default:
+        return customTheme.statusPendingBg;
+    }
+  }
+
+  Color getStatusTextColor(BuildContext context) {
+    final customTheme = Theme.of(context).extension<CocolocoCustomTheme>();
+    if (customTheme == null) return statusTextColor;
+    switch (status) {
+      case 'CONFIRMED':
+        return customTheme.statusConfirmedText;
+      case 'COMPLETED':
+        return customTheme.statusCompletedText;
+      case 'CANCELLED':
+        return customTheme.statusCancelledText;
+      case 'PENDING':
+      default:
+        return customTheme.statusPendingText;
     }
   }
 

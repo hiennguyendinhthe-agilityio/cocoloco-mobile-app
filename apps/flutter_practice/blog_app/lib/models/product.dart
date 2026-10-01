@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 
+enum ProductType {
+  drink,
+  bakery,
+  bowl,
+  meal,
+}
+
 class Product {
   final String id;
   final String name;
@@ -31,6 +38,71 @@ class Product {
     this.isFavorite = false,
     this.isAvailable = true,
   });
+
+  ProductType get productType {
+    final cat = category.toLowerCase();
+    final n = name.toLowerCase();
+
+    // 1. Bakery & Pastry
+    if (cat.contains('bakery') ||
+        cat.contains('pastry') ||
+        cat.contains('bread') ||
+        n.contains('crossaint') ||
+        n.contains('croissant') ||
+        n.contains('bread') ||
+        n.contains('cookie') ||
+        n.contains('cake') ||
+        n.contains('muffin') ||
+        n.contains('bagel') ||
+        n.contains('donut') ||
+        n.contains('waffle') ||
+        n.contains('pancake') ||
+        n.contains('toast')) {
+      return ProductType.bakery;
+    }
+
+    // 2. Bowls & Healthy Salads
+    if (cat.contains('healthy') ||
+        cat.contains('fruit') ||
+        cat.contains('bowl') ||
+        cat.contains('salad') ||
+        n.contains('fruit') ||
+        n.contains('bowl') ||
+        n.contains('salad') ||
+        n.contains('yogurt') ||
+        n.contains('oatmeal') ||
+        n.contains('granola') ||
+        n.contains('acai') ||
+        n.contains('soup')) {
+      return ProductType.bowl;
+    }
+
+    // 3. Hot Meals, Savory Dishes, Pasta & Combos
+    if (cat.contains('bundle') ||
+        cat.contains('combo') ||
+        cat.contains('meal') ||
+        cat.contains('breakfast') ||
+        cat.contains('lunch') ||
+        cat.contains('dinner') ||
+        cat.contains('food') ||
+        n.contains('pasta') ||
+        n.contains('tagliatelle') ||
+        n.contains('spaghetti') ||
+        n.contains('noodle') ||
+        n.contains('pizza') ||
+        n.contains('bundle') ||
+        n.contains('combo') ||
+        n.contains('breakfast') ||
+        n.contains('sandwich') ||
+        n.contains('burger') ||
+        n.contains('steak') ||
+        n.contains('rice') ||
+        n.contains('taco')) {
+      return ProductType.meal;
+    }
+
+    return ProductType.drink;
+  }
 
   factory Product.fromJson(Map<String, dynamic> json) {
     final name = json['name'] as String? ?? 'Product';

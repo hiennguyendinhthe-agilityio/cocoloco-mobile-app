@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/theme/app_theme.dart';
 import '../models/special_offer.dart';
 
 class PromoBannerCard extends StatelessWidget {
@@ -21,19 +20,13 @@ class PromoBannerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 168,
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppRadii.cardHero),
+        boxShadow: AppShadows.card,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadii.cardHero),
         child: Stack(
           children: [
             // Background Image
@@ -43,7 +36,7 @@ class PromoBannerCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 alignment: imageAlignment,
                 errorBuilder: (_, _, _) => Container(
-                  color: AppColors.primaryLight,
+                  color: context.colorScheme.primaryContainer,
                   child: const Center(
                     child: Icon(
                       Icons.restaurant_menu_rounded,
@@ -73,8 +66,8 @@ class PromoBannerCard extends StatelessWidget {
 
             // Banner Title ("BREAKFAST BUNDLE")
             Positioned(
-              left: 24,
-              bottom: 20,
+              left: AppSpacing.xl,
+              bottom: AppSpacing.lg,
               child: Text(
                 offer.title,
                 style: AppTypography.bannerTitle,
@@ -83,23 +76,23 @@ class PromoBannerCard extends StatelessWidget {
 
             // Floating Circular Shopping Cart Button
             Positioned(
-              right: 20,
+              right: AppSpacing.lg,
               bottom: 18,
               child: Material(
-                color: Colors.white,
+                color: context.colorScheme.surface,
                 shape: const CircleBorder(),
                 elevation: 4,
                 shadowColor: Colors.black45,
                 child: InkWell(
                   customBorder: const CircleBorder(),
                   onTap: onAddToCart,
-                  child: const SizedBox(
+                  child: SizedBox(
                     width: 50,
                     height: 50,
                     child: Center(
                       child: Icon(
                         Icons.shopping_cart_outlined,
-                        color: AppColors.cartButtonIcon,
+                        color: context.colorScheme.primary,
                         size: 22,
                       ),
                     ),
@@ -113,7 +106,7 @@ class PromoBannerCard extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(AppRadii.cardHero),
                   onTap: onTap,
                 ),
               ),

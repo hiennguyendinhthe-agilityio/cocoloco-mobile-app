@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/localization/app_localizations.dart';
+import '../core/theme/app_theme.dart';
 import '../data/providers/products_provider.dart';
 import '../data/repositories/product_repository.dart';
 import '../models/product.dart';
@@ -14,7 +14,7 @@ class AdminProductsScreen extends ConsumerStatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -29,13 +29,16 @@ class AdminProductsScreen extends ConsumerStatefulWidget {
 class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, String>> _categories = const [
-    {'id': 'all', 'label': 'All'},
-    {'id': 'coffee', 'label': '☕ Coffee'},
-    {'id': 'pastry', 'label': '🥐 Bakery'},
-    {'id': 'bundle', 'label': '🎁 Combos'},
-    {'id': 'seasonal', 'label': '✨ Specials'},
-  ];
+  List<Map<String, String>> _getCategories(BuildContext context) {
+    final l10n = context.l10n;
+    return [
+      {'id': 'all', 'label': l10n.categoryAll},
+      {'id': 'coffee', 'label': l10n.categoryCoffee},
+      {'id': 'pastry', 'label': l10n.categoryBakery},
+      {'id': 'bundle', 'label': l10n.categoryCombos},
+      {'id': 'seasonal', 'label': l10n.categorySpecials},
+    ];
+  }
 
   @override
   void dispose() {
@@ -44,34 +47,35 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
   }
 
   void _confirmDelete(Product product) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: Colors.white,
+        backgroundColor: context.colorScheme.surface,
         title: Row(
-          children: const [
-            Icon(Icons.delete_forever_rounded, color: Color(0xFFC53030), size: 24),
-            SizedBox(width: 10),
+          children: [
+            const Icon(Icons.delete_forever_rounded, color: Color(0xFFC53030), size: 24),
+            const SizedBox(width: 10),
             Text(
-              'Delete Item',
+              l10n.delete,
               style: TextStyle(
                 fontFamily: AppTypography.fontFamily,
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
-                color: AppColors.textDark,
+                color: context.colorScheme.onSurface,
               ),
             ),
           ],
         ),
         content: Text(
-          'Are you sure you want to permanently delete "${product.name}" from the menu?\n\nThis action cannot be undone.',
-          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+          '${l10n.deleteProductConfirm(product.name)}\n\n${l10n.deleteProductWarning}',
+          style: TextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF7A7067))),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF7A7067))),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -83,7 +87,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
-            child: const Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -128,18 +132,18 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: Colors.white,
-        title: const Row(
+        backgroundColor: context.colorScheme.surface,
+        title: Row(
           children: [
-            Icon(Icons.shield_outlined, color: Color(0xFFE65100), size: 24),
-            SizedBox(width: 10),
+            const Icon(Icons.shield_outlined, color: Color(0xFFE65100), size: 24),
+            const SizedBox(width: 10),
             Text(
               'Item Has Existing Orders',
               style: TextStyle(
                 fontFamily: AppTypography.fontFamily,
                 fontWeight: FontWeight.w800,
                 fontSize: 17,
-                color: AppColors.textDark,
+                color: context.colorScheme.onSurface,
               ),
             ),
           ],
@@ -150,14 +154,14 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
           children: [
             Text(
               'Item "${product.name}" is present in customer order history and cannot be hard-deleted to preserve accounting data integrity.\n\nWould you like to set its status to "Unavailable" (hidden from customer menu) instead?',
-              style: const TextStyle(fontSize: 13.5, color: Color(0xFF5A524C), height: 1.45),
+              style: TextStyle(fontSize: 13.5, color: context.colorScheme.onSurfaceVariant, height: 1.45),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close', style: TextStyle(color: Color(0xFF7A7067))),
+            child: Text('Close', style: TextStyle(color: context.colorScheme.onSurfaceVariant)),
           ),
           ElevatedButton.icon(
             onPressed: () async {
@@ -199,56 +203,54 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
       expand: false,
       builder: (_, scrollController) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Grab handle
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2DDD5),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
               // Header Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Menu Management',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontFamily,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+                  Expanded(
+                    child: Text(
+                      context.l10n.adminProductsTitle,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.fontFamily,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textDark,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 10),
                   ElevatedButton.icon(
                     onPressed: () => AdminProductFormModal.show(context),
-                    icon: const Icon(Icons.add_rounded, size: 18, color: Colors.white),
-                    label: const Text(
-                      'Add Item',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+                    icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                    label: Text(
+                      context.l10n.addProduct,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      minimumSize: const Size(0, 36),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Add new items, adjust prices, or toggle availability',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              Text(
+                context.l10n.adminProductsSubtitle,
+                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 14),
 
@@ -259,7 +261,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
                   ref.read(productsProvider.notifier).setSearchQuery(val);
                 },
                 decoration: InputDecoration(
-                  hintText: 'Search food, drinks...',
+                  hintText: context.l10n.searchPlaceholder,
                   hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFA8A096)),
                   prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.primary),
                   suffixIcon: _searchController.text.isNotEmpty
@@ -291,7 +293,7 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 child: Row(
-                  children: _categories.map((c) {
+                  children: _getCategories(context).map((c) {
                     final isSelected = productsState.selectedCategory == c['id'];
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),

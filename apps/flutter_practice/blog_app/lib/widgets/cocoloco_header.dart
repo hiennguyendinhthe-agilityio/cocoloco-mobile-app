@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../core/localization/locale_provider.dart';
 import '../core/services/session_service.dart';
-import '../core/theme/app_colors.dart';
+import '../core/theme/app_theme.dart';
 import '../models/user_profile.dart';
 import '../screens/profile_screen.dart';
 
@@ -15,6 +17,8 @@ class CocolocoHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 20, 12),
       child: Row(
@@ -31,7 +35,8 @@ class CocolocoHeader extends StatelessWidget {
               height: 64,
               fit: BoxFit.contain,
               alignment: Alignment.centerLeft,
-              errorBuilder: (_, _, _) => _buildFigmaTextLogo(),
+              color: isDark ? context.colorScheme.primary : null,
+              errorBuilder: (_, _, _) => _buildFigmaTextLogo(context),
             ),
           ),
 
@@ -43,15 +48,54 @@ class CocolocoHeader extends StatelessWidget {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(24),
                   onTap: onSearchTap,
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Icon(
                       Icons.search_rounded,
-                      color: AppColors.primary,
+                      color: context.colorScheme.primary,
                       size: 28,
                     ),
                   ),
                 ),
+              ),
+              const SizedBox(width: 4),
+
+              // Quick Language Switcher Chip (EN / VI)
+              Consumer(
+                builder: (context, ref, _) {
+                  final locale = ref.watch(localeProvider);
+                  final isVi = locale.languageCode == 'vi';
+
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        ref.read(localeProvider.notifier).toggleLocale();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: context.colorScheme.outlineVariant,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          isVi ? '🇻🇳 VI' : '🇬🇧 EN',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            color: context.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 4),
               // Profile Action Icon / Avatar
@@ -83,12 +127,12 @@ class CocolocoHeader extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppColors.primary.withValues(alpha: 0.25),
+                                    color: context.colorScheme.primary.withValues(alpha: 0.35),
                                     width: 1.5,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.primary.withValues(alpha: 0.12),
+                                      color: context.colorScheme.primary.withValues(alpha: 0.15),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2),
                                     ),
@@ -101,11 +145,11 @@ class CocolocoHeader extends StatelessWidget {
                                     height: 36,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) =>
-                                        _buildFallbackAvatar(isLoggedIn, user),
+                                        _buildFallbackAvatar(context, isLoggedIn, user),
                                   ),
                                 ),
                               )
-                            : _buildFallbackAvatar(isLoggedIn, user),
+                            : _buildFallbackAvatar(context, isLoggedIn, user),
                       ),
                     ),
                   );
@@ -118,7 +162,7 @@ class CocolocoHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildFallbackAvatar(bool isLoggedIn, UserProfile? user) {
+  Widget _buildFallbackAvatar(BuildContext context, bool isLoggedIn, UserProfile? user) {
     if (isLoggedIn) {
       final initial = (user?.fullName.isNotEmpty == true)
           ? user!.fullName.trim()[0].toUpperCase()
@@ -128,11 +172,11 @@ class CocolocoHeader extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: context.colorScheme.primary,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.2),
+              color: context.colorScheme.primary.withValues(alpha: 0.2),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -141,8 +185,8 @@ class CocolocoHeader extends StatelessWidget {
         child: Center(
           child: Text(
             initial,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.colorScheme.onPrimary,
               fontWeight: FontWeight.w800,
               fontSize: 16,
             ),
@@ -154,23 +198,22 @@ class CocolocoHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.05),
+        color: context.colorScheme.surfaceContainerHighest,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
+      child: Icon(
         Icons.person_outline_rounded,
-        color: AppColors.primary,
+        color: context.colorScheme.primary,
         size: 24,
       ),
     );
   }
 
   // Exact fallback typography according to Figma inspect:
-  // Font: Chap, Weight: 900, Size: 32px, Line height: 32px, Color: #5B1921, Border: 1px #000000 outer
-  Widget _buildFigmaTextLogo() {
+  Widget _buildFigmaTextLogo(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       children: [
-        // 1px Outer Black Border/Stroke (#000000)
         Text(
           'COCO\nLOCO',
           style: GoogleFonts.lilitaOne(
@@ -182,17 +225,16 @@ class CocolocoHeader extends StatelessWidget {
               ..strokeWidth = 2.0
               ..strokeJoin = StrokeJoin.round
               ..strokeCap = StrokeCap.round
-              ..color = Colors.black,
+              ..color = isDark ? Colors.white24 : Colors.black,
           ),
         ),
-        // Primary Burgundy Fill (#5B1921)
         Text(
           'COCO\nLOCO',
           style: GoogleFonts.lilitaOne(
             fontSize: 32,
             height: 1.0,
             letterSpacing: 0,
-            color: AppColors.primary,
+            color: context.colorScheme.primary,
           ),
         ),
       ],

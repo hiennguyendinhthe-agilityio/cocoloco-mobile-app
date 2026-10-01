@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_typography.dart';
+import '../core/theme/app_theme.dart';
 import '../models/cart_item.dart';
 
 class CartItemCard extends StatelessWidget {
@@ -17,17 +17,14 @@ class CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.lg,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        color: context.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadii.cardLg),
+        boxShadow: AppShadows.card,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -45,19 +42,21 @@ class CartItemCard extends StatelessWidget {
                     fontFamily: AppTypography.fontFamily,
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: item.titleColor,
+                    color: item.titleColor == AppColors.primary
+                        ? context.colorScheme.primary
+                        : item.titleColor,
                     height: 1.05,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   item.customization,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFFA5B1BC),
+                    color: context.colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -72,31 +71,34 @@ class CartItemCard extends StatelessWidget {
             children: [
               // Quantity pill badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3EFE8),
-                  borderRadius: BorderRadius.circular(8),
+                  color: context.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(AppRadii.sm),
                 ),
                 child: Text(
                   '${item.quantity}x',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF260D11),
+                    color: context.colorScheme.primary,
                   ),
                 ),
               ),
 
-              const SizedBox(width: 14),
+              const SizedBox(width: AppSpacing.md),
 
               // Item Price
               Text(
                 '\$${item.price.toInt()}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTypography.fontFamily,
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF260D11),
+                  color: context.colorScheme.primary,
                 ),
               ),
             ],

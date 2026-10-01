@@ -1,37 +1,46 @@
 import 'package:flutter/material.dart';
+import 'tokens/app_primitives.dart';
+import 'tokens/app_semantics.dart';
 
-class AppColors {
-  // Cocoloco Exact Brand Palette (Sampled from Figma Cocoloco/Browse)
-  static const Color primary = Color(0xFF5B1921); // Rich Burgundy Wine (#5B1921)
-  static const Color primaryDark = Color(0xFF3E0F15);
-  static const Color primaryLight = Color(0xFF7E2A34);
+/// ============================================================================
+/// FAÇADE: APP COLORS (BACKWARD COMPATIBILITY LAYER)
+/// ============================================================================
+/// Đóng vai trò là Façade trung gian trỏ về Tier 1 (Primitives) và Tier 2 (Semantics).
+/// Giúp toàn bộ codebase hiện tại tiếp tục hoạt động mà không bị vỡ bất kỳ dòng nào.
+/// ============================================================================
+
+abstract final class AppColors {
+  // Brand Burgundy Palette
+  static const Color primary = AppSemanticColors.primary;
+  static const Color primaryDark = AppSemanticColors.primaryDark;
+  static const Color primaryLight = AppSemanticColors.primaryLight;
 
   // Background & Surfaces
-  static const Color background = Color(0xFFFFFEFA); // Warm Off-White Cream (#FFFEFA)
-  static const Color surface = Color(0xFFFFFFFF); // Pure Card White
-  static const Color surfaceMuted = Color(0xFFF7F4EE);
+  static const Color background = AppSemanticColors.background;
+  static const Color surface = AppSemanticColors.surface;
+  static const Color surfaceMuted = AppSemanticColors.surfaceMuted;
 
   // Product Specific Title Colors
-  static const Color cappuccinoPink = Color(0xFFD8555F); // Warm Coral Rose (#D8555F)
-  static const Color croissantBlue = Color(0xFF6479C3); // Soft Periwinkle Blue (#6479C3)
-  static const Color americanoOrange = Color(0xFFD97736); // Warm Amber Orange
-  static const Color matchaGreen = Color(0xFF5E8B62); // Sage Forest Green
-  static const Color berryViolet = Color(0xFFA55375); // Mulberry Wine
+  static const Color cappuccinoPink = AppPalette.coralRose;
+  static const Color croissantBlue = AppPalette.periwinkleBlue;
+  static const Color americanoOrange = AppPalette.amberOrange;
+  static const Color matchaGreen = AppPalette.forestGreen;
+  static const Color berryViolet = AppPalette.mulberryWine;
 
-  // Price & Subtext Colors
-  static const Color priceMuted = Color(0xFFA5B1BC); // Muted Slate Blue-Gray (#A5B1BC)
-  static const Color textSecondary = Color(0xFF8E8B82);
-  static const Color textDark = Color(0xFF260D11);
+  // Price & Text Colors
+  static const Color priceMuted = AppPalette.slate400;
+  static const Color textSecondary = AppSemanticColors.textSecondary;
+  static const Color textDark = AppSemanticColors.textPrimary;
 
-  // Bottom Navigation Bar
-  static const Color navActiveCircle = Color(0xFF95545C); // Dusty Plum Burgundy (#95545C)
-  static const Color navInactive = Color(0xFFB1AEA3); // Warm Taupe Outline (#B1AEA3)
+  // Navigation Bar
+  static const Color navActiveCircle = AppPalette.burgundy500;
+  static const Color navInactive = AppPalette.taupe300;
 
   // Floating Shopping Cart Button
-  static const Color cartButtonBg = Color(0xFFFFFFFF);
-  static const Color cartButtonIcon = Color(0xFF7A2935);
+  static const Color cartButtonBg = AppPalette.pureWhite;
+  static const Color cartButtonIcon = AppPalette.burgundy700;
 
   // Accents & Shadows
   static const Color shadow = Color(0x12000000);
-  static const Color shadowCard = Color(0x105B1921);
+  static const Color shadowCard = AppPalette.burgundy100;
 }

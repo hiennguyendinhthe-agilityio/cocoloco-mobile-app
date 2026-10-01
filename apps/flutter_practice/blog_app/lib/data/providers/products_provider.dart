@@ -23,7 +23,9 @@ class ProductsState {
   List<Product> get filteredProducts {
     return products.where((p) {
       final matchesCategory = selectedCategory == 'all' ||
-          p.category.toLowerCase() == selectedCategory.toLowerCase();
+          p.category.toLowerCase() == selectedCategory.toLowerCase() ||
+          (selectedCategory == 'pastry' && p.category.toLowerCase() == 'bakery') ||
+          (selectedCategory == 'bakery' && p.category.toLowerCase() == 'pastry');
       final matchesSearch = searchQuery.isEmpty ||
           p.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
           p.description.toLowerCase().contains(searchQuery.toLowerCase());

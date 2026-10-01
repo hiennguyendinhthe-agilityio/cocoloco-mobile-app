@@ -49,3 +49,10 @@ app.*.map.json
 # Large nested repositories — do NOT track
 # =============================================================
 apps/flutter_practice/immich/
+
+# Local documentation tracking
+apps/flutter_practice/blog_app/*.md
+!apps/flutter_practice/blog_app/README.md
+!apps/flutter_practice/blog_app/.agents/**/*.md
+.agents
+

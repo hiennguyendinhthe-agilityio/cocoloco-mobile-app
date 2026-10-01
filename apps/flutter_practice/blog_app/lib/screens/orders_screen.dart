@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
+
+import '../core/localization/app_localizations.dart';
 import '../core/services/session_service.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/theme/app_theme.dart';
 import '../data/providers/orders_provider.dart';
 import '../models/order.dart';
 import 'clerk_webview_screen.dart';
-import 'package:shimmer/shimmer.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   final List<String>? cartItems;
@@ -26,12 +27,15 @@ class OrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _OrdersScreenState extends ConsumerState<OrdersScreen> {
-  final List<Map<String, String>> _statusFilters = const [
-    {'id': 'ALL', 'label': 'All Orders'},
-    {'id': 'PENDING', 'label': '⏳ Pending'},
-    {'id': 'CONFIRMED', 'label': '☕ Brewing'},
-    {'id': 'COMPLETED', 'label': '✅ Completed'},
-  ];
+  List<Map<String, String>> _getStatusFilters(BuildContext context) {
+    final l10n = context.l10n;
+    return [
+      {'id': 'ALL', 'label': l10n.allOrders},
+      {'id': 'PENDING', 'label': '⏳ ${l10n.pending}'},
+      {'id': 'CONFIRMED', 'label': '☕ ${l10n.brewing}'},
+      {'id': 'COMPLETED', 'label': '✅ ${l10n.completed}'},
+    ];
+  }
 
   @override
   void initState() {
@@ -52,14 +56,19 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     final selectedStatusFilter = ordersState.selectedFilter;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Screen Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 14),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xxl,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+                AppSpacing.md + 2,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -67,39 +76,46 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Your Orders',
-                        style: AppTypography.headingLarge,
+                        context.l10n.yourOrders,
+                        style: context.textTheme.headlineLarge,
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Track drinks & past receipts',
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        context.l10n.trackReceipts,
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: context.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs + 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceMuted,
-                      borderRadius: BorderRadius.circular(16),
+                      color: context.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(AppRadii.lg),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.receipt_long_rounded, size: 16, color: AppColors.primary),
-                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.receipt_long_rounded,
+                          size: 16,
+                          color: context.colorScheme.primary,
+                        ),
+                        const SizedBox(width: AppSpacing.xs + 2),
                         Text(
                           SessionService.instance.isLoggedIn
-                              ? '$totalOrdersCount orders'
+                              ? context.l10n.ordersCount(totalOrdersCount)
                               : 'Guest',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
+                            color: context.colorScheme.primary,
                           ),
                         ),
                       ],
@@ -112,37 +128,50 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             // Horizontal Status Filter Chips
             SizedBox(
               height: 38,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: _statusFilters.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final filter = _statusFilters[index];
-                  final isSelected = filter['id'] == selectedStatusFilter;
-                  return ChoiceChip(
-                    label: Text(
-                      filter['label']!,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                        color: isSelected ? Colors.white : AppColors.textDark,
-                      ),
-                    ),
-                    selected: isSelected,
-                    selectedColor: AppColors.primary,
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(
-                        color: isSelected ? AppColors.primary : const Color(0xFFECE7DE),
-                        width: 1.2,
-                      ),
-                    ),
-                    showCheckmark: false,
-                    onSelected: (_) {
-                      ref.read(ordersProvider.notifier).setFilter(filter['id']!);
+              child: Builder(
+                builder: (context) {
+                  final statusFilters = _getStatusFilters(context);
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                    itemCount: statusFilters.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+                    itemBuilder: (context, index) {
+                      final filter = statusFilters[index];
+                      final isSelected = filter['id'] == selectedStatusFilter;
+                      return ChoiceChip(
+                        label: Text(
+                          filter['label']!,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w600,
+                            color: isSelected
+                                ? context.colorScheme.onPrimary
+                                : context.colorScheme.onSurface,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: context.colorScheme.primary,
+                        backgroundColor: context.colorScheme.surface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadii.pill),
+                          side: BorderSide(
+                            color: isSelected
+                                ? context.colorScheme.primary
+                                : context.colorScheme.outline,
+                            width: 1.2,
+                          ),
+                        ),
+                        showCheckmark: false,
+                        onSelected: (_) {
+                          ref
+                              .read(ordersProvider.notifier)
+                              .setFilter(filter['id']!);
+                        },
+                      );
                     },
                   );
                 },
@@ -154,27 +183,27 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             // Orders List or Skeleton
             Expanded(
               child: RefreshIndicator(
-                color: AppColors.primary,
-                backgroundColor: Colors.white,
+                color: context.colorScheme.primary,
+                backgroundColor: context.colorScheme.surface,
                 onRefresh: () => ref.read(ordersProvider.notifier).refresh(),
                 child: isLoading
                     ? _buildLoadingList()
                     : !SessionService.instance.isLoggedIn
-                        ? _buildGuestState()
-                        : filteredOrders.isEmpty
-                            ? _buildEmptyState()
-                            : ListView.separated(
-                            physics: const AlwaysScrollableScrollPhysics(
-                              parent: BouncingScrollPhysics(),
-                            ),
-                            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                            itemCount: filteredOrders.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 16),
-                            itemBuilder: (context, index) {
-                              final order = filteredOrders[index];
-                              return _buildOrderCard(order);
-                            },
-                          ),
+                    ? _buildGuestState()
+                    : filteredOrders.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+                        itemCount: filteredOrders.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final order = filteredOrders[index];
+                          return _buildOrderCard(order);
+                        },
+                      ),
               ),
             ),
           ],
@@ -186,14 +215,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget _buildLoadingList() {
     return ListView.separated(
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
       itemCount: 4,
       separatorBuilder: (_, _) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         return Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: const [
               BoxShadow(
@@ -204,8 +233,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             ],
           ),
           child: Shimmer.fromColors(
-            baseColor: Colors.grey[200]!,
-            highlightColor: Colors.grey[50]!,
+            baseColor: context.colorScheme.surfaceContainerHighest,
+            highlightColor: context.colorScheme.surface,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -261,17 +290,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     final formattedDate = dateFormat.format(order.createdAt);
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.md + 6),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 16,
-            offset: Offset(0, 6),
-          ),
-        ],
+        color: context.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadii.xxl),
+        boxShadow: AppShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,25 +305,28 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             children: [
               Text(
                 order.shortId,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTypography.fontFamily,
                   fontSize: 16.5,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
+                  color: context.colorScheme.onSurface,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
-                  color: order.statusBgColor,
-                  borderRadius: BorderRadius.circular(20),
+                  color: order.getStatusBgColor(context),
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
                 ),
                 child: Text(
                   order.statusLabel,
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: order.statusTextColor,
+                    color: order.getStatusTextColor(context),
                   ),
                 ),
               ),
@@ -310,16 +336,19 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           const SizedBox(height: 6),
           Text(
             formattedDate,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: context.colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
           ),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(color: Color(0xFFF1EBE3), height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+            child: Divider(
+              color: context.colorScheme.outlineVariant,
+              height: 1,
+            ),
           ),
 
           // Items summary
@@ -332,10 +361,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   Expanded(
                     child: Text(
                       '${item.quantity}x ${item.productName}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF3C3530),
+                        color: context.colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -343,10 +372,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   ),
                   Text(
                     '\$${item.totalPrice.toStringAsFixed(2)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: context.colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -364,17 +393,21 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Total Amount',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                  Text(
+                    context.l10n.total,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   Text(
                     order.formattedTotal,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppTypography.fontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
-                      color: AppColors.primary,
+                      color: context.colorScheme.primary,
                     ),
                   ),
                 ],
@@ -383,22 +416,34 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Items from ${order.shortId} added to cart!'),
-                      backgroundColor: AppColors.primary,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      content: Text(
+                        'Items from ${order.shortId} added to cart!',
+                      ),
                     ),
                   );
                 },
-                icon: const Icon(Icons.refresh_rounded, size: 16, color: AppColors.primary),
-                label: const Text(
-                  'Reorder',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary),
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  size: 16,
+                  color: context.colorScheme.primary,
+                ),
+                label: Text(
+                  context.l10n.reorder,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: context.colorScheme.primary,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary, width: 1.2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  side: BorderSide(color: context.colorScheme.primary, width: 1.2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.pill),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                 ),
               ),
             ],
@@ -425,44 +470,46 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   Container(
                     width: 76,
                     height: 76,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceMuted,
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainerHighest,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.lock_outline_rounded,
                       size: 38,
-                      color: AppColors.primary,
+                      color: context.colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Not Signed In',
+                  Text(
+                    context.l10n.loginToViewOrders,
                     style: TextStyle(
                       fontFamily: AppTypography.fontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: context.colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Please sign in with your Clerk account to view your receipts and track brewing progress.',
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    context.l10n.loginPromptSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: context.colorScheme.onSurfaceVariant,
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xxl),
                   SizedBox(
                     height: 48,
                     child: ElevatedButton.icon(
                       onPressed: () async {
                         final result = await Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const ClerkWebViewScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const ClerkWebViewScreen(),
+                          ),
                         );
                         if (result != null) {
                           String token = '';
@@ -480,31 +527,23 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                           }
 
                           if (token.isNotEmpty) {
-                            final success = await SessionService.instance.loginWithClerkToken(
-                              token,
-                              email: email,
-                              fullName: fullName,
-                              avatarUrl: avatarUrl,
-                            );
+                            final success = await SessionService.instance
+                                .loginWithClerkToken(
+                                  token,
+                                  email: email,
+                                  fullName: fullName,
+                                  avatarUrl: avatarUrl,
+                                );
                             if (success && mounted) {
                               ref.read(ordersProvider.notifier).loadOrders();
                             }
                           }
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                      ),
                       icon: const Icon(Icons.login_rounded, size: 18),
-                      label: const Text(
-                        'Sign In Now',
-                        style: TextStyle(
+                      label: Text(
+                        context.l10n.signInButton,
+                        style: const TextStyle(
                           fontFamily: AppTypography.fontFamily,
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
@@ -531,36 +570,40 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           constraints: BoxConstraints(minHeight: constraints.maxHeight),
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
                     width: 72,
                     height: 72,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceMuted,
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainerHighest,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.coffee_outlined, size: 36, color: AppColors.primary),
+                    child: Icon(
+                      Icons.coffee_outlined,
+                      size: 36,
+                      color: context.colorScheme.primary,
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No orders yet',
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    context.l10n.noOrdersYet,
                     style: TextStyle(
                       fontFamily: AppTypography.fontFamily,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: context.colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Explore Cocoloco\'s coffee & bakery menu to place your first order!',
+                  Text(
+                    context.l10n.noOrdersSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13.5,
-                      color: AppColors.textSecondary,
+                      color: context.colorScheme.onSurfaceVariant,
                       height: 1.4,
                     ),
                   ),

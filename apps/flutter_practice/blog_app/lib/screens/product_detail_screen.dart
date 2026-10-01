@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/localization/app_localizations.dart';
+import '../core/theme/app_theme.dart';
 import '../data/providers/cart_provider.dart';
 import '../models/product.dart';
 import 'cart_screen.dart';
@@ -28,6 +28,170 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   final Set<String> _selectedAddons = {};
   late final ScrollController _scrollController;
   bool _isCollapsed = false;
+  bool _hasInitialSyncDone = false;
+
+  // Contextual Add-on Configs
+  static final List<_AddonConfig> _drinkAddons = [
+    _AddonConfig(
+      id: 'extra_milk',
+      title: 'Extra milk',
+      price: 0.5,
+      priceDisplay: r'+$0.50',
+      iconBuilder: (color) => _MilkCartonIcon(color: color),
+    ),
+    _AddonConfig(
+      id: 'iced',
+      title: 'Iced',
+      price: 0.0,
+      priceDisplay: 'Free',
+      iconBuilder: (color) => _IceCubesIcon(color: color),
+    ),
+    _AddonConfig(
+      id: 'light_foam',
+      title: 'Light foam',
+      price: 0.0,
+      priceDisplay: 'Free',
+      iconBuilder: (color) => _LightFoamIcon(color: color),
+    ),
+    _AddonConfig(
+      id: 'caramel_drizzle',
+      title: 'Caramel',
+      price: 0.5,
+      priceDisplay: r'+$0.50',
+      iconBuilder: (color) => _CaramelIcon(color: color),
+    ),
+  ];
+
+  static final List<_AddonConfig> _bakeryAddons = [
+    _AddonConfig(
+      id: 'french_butter',
+      title: 'French butter',
+      price: 0.5,
+      priceDisplay: r'+$0.50',
+      iconBuilder: (color) => Icon(Icons.breakfast_dining_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'warm_toasted',
+      title: 'Warm toasted',
+      price: 0.0,
+      priceDisplay: 'Free',
+      iconBuilder: (color) => Icon(Icons.whatshot_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'berry_jam',
+      title: 'Berry jam',
+      price: 0.5,
+      priceDisplay: r'+$0.50',
+      iconBuilder: (color) => Icon(Icons.icecream_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'melted_cheese',
+      title: 'Melted cheese',
+      price: 0.75,
+      priceDisplay: r'+$0.75',
+      iconBuilder: (color) => Icon(Icons.layers_rounded, size: 28, color: color),
+    ),
+  ];
+
+  static final List<_AddonConfig> _bowlAddons = [
+    _AddonConfig(
+      id: 'greek_yogurt',
+      title: 'Greek yogurt',
+      price: 0.75,
+      priceDisplay: r'+$0.75',
+      iconBuilder: (color) => Icon(Icons.water_drop_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'wild_honey',
+      title: 'Wild honey',
+      price: 0.5,
+      priceDisplay: r'+$0.50',
+      iconBuilder: (color) => Icon(Icons.eco_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'chia_seeds',
+      title: 'Chia seeds',
+      price: 0.5,
+      priceDisplay: r'+$0.50',
+      iconBuilder: (color) => Icon(Icons.grain_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'fresh_mint',
+      title: 'Fresh mint',
+      price: 0.0,
+      priceDisplay: 'Free',
+      iconBuilder: (color) => Icon(Icons.spa_rounded, size: 28, color: color),
+    ),
+  ];
+
+  static final List<_AddonConfig> _mealAddons = [
+    _AddonConfig(
+      id: 'aged_parmesan',
+      title: 'Aged parmesan',
+      price: 0.75,
+      priceDisplay: r'+$0.75',
+      iconBuilder: (color) => Icon(Icons.layers_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'crispy_bacon',
+      title: 'Crispy bacon',
+      price: 1.0,
+      priceDisplay: r'+$1.00',
+      iconBuilder: (color) => Icon(Icons.kebab_dining_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'garlic_toast',
+      title: 'Garlic toast',
+      price: 0.75,
+      priceDisplay: r'+$0.75',
+      iconBuilder: (color) => Icon(Icons.breakfast_dining_rounded, size: 28, color: color),
+    ),
+    _AddonConfig(
+      id: 'chili_flakes',
+      title: 'Chili flakes',
+      price: 0.0,
+      priceDisplay: 'Free',
+      iconBuilder: (color) => Icon(Icons.whatshot_rounded, size: 28, color: color),
+    ),
+  ];
+
+  ProductType get _productType => widget.product.productType;
+
+  List<_AddonConfig> get _currentAddons {
+    switch (_productType) {
+      case ProductType.drink:
+        return _drinkAddons;
+      case ProductType.bakery:
+        return _bakeryAddons;
+      case ProductType.bowl:
+        return _bowlAddons;
+      case ProductType.meal:
+        return _mealAddons;
+    }
+  }
+
+  _AddonConfig? _findAddon(String id) {
+    for (final addon in _currentAddons) {
+      if (addon.id == id) return addon;
+    }
+    for (final addon in [..._drinkAddons, ..._bakeryAddons, ..._bowlAddons, ..._mealAddons]) {
+      if (addon.id == id) return addon;
+    }
+    return null;
+  }
+
+  static IconData _getStepperIcon(ProductType type) {
+    switch (type) {
+      case ProductType.drink:
+        return Icons.coffee_rounded;
+      case ProductType.bakery:
+        return Icons.bakery_dining_rounded;
+      case ProductType.bowl:
+        return Icons.rice_bowl_rounded;
+      case ProductType.meal:
+        return Icons.restaurant_rounded;
+    }
+  }
 
   @override
   void initState() {
@@ -44,13 +208,52 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-    final collapsed = _scrollController.offset > (340 - kToolbarHeight - 28);
+    final collapsed = _scrollController.offset > (340 - kToolbarHeight);
     if (collapsed != _isCollapsed) {
       setState(() => _isCollapsed = collapsed);
     }
   }
 
-  double get _totalPrice => widget.product.price * _quantity;
+  void _syncWithCartOnce() {
+    if (_hasInitialSyncDone) return;
+    _hasInitialSyncDone = true;
+    final cartItems = ref.read(cartProvider).items;
+    final existing = cartItems.where((i) => i.productId == widget.product.id).firstOrNull;
+    if (existing != null) {
+      _quantity = existing.quantity;
+      if (existing.customization.isNotEmpty && existing.customization != 'Standard') {
+        final lower = existing.customization.toLowerCase();
+        for (final addon in _currentAddons) {
+          if (lower.contains(addon.title.toLowerCase()) ||
+              lower.contains(addon.id.replaceAll('_', ' '))) {
+            _selectedAddons.add(addon.id);
+          }
+        }
+      }
+    }
+  }
+
+  double get _addonsTotalPerItem {
+    double total = 0.0;
+    for (final id in _selectedAddons) {
+      final info = _findAddon(id);
+      if (info != null) total += info.price;
+    }
+    return total;
+  }
+
+  double get _unitPrice => widget.product.price + _addonsTotalPerItem;
+  double get _totalPrice => _unitPrice * _quantity;
+
+  String get _addonsCustomizationString {
+    final names = _selectedAddons.map((id) => _findAddon(id)?.title ?? id).toList();
+    return names.isNotEmpty ? names.join(', ') : 'Standard';
+  }
+
+  String get _addonsSummary {
+    final names = _selectedAddons.map((id) => _findAddon(id)?.title ?? id).toList();
+    return names.join(', ');
+  }
 
   Widget _buildHeroImage() {
     final url = widget.product.imageUrl;
@@ -58,45 +261,126 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         url.isNotEmpty &&
         (url.startsWith('http://') || url.startsWith('https://'));
 
+    Widget rawImage;
     if (hasNetworkUrl) {
-      return Hero(
-        tag: 'hero_image_${widget.product.id}',
-        child: CachedNetworkImage(
-          imageUrl: url,
-          fit: BoxFit.cover,
-          alignment: const Alignment(0, 0.2),
-          placeholder: (_, _) => Shimmer.fromColors(
-            baseColor: Colors.grey[200]!,
-            highlightColor: Colors.grey[50]!,
-            child: Container(
-              color: Colors.white,
-            ),
-          ),
-          errorWidget: (_, _, _) => Image.asset(
-            widget.product.imageAsset,
-            fit: BoxFit.cover,
-            alignment: const Alignment(0, 0.2),
+      rawImage = CachedNetworkImage(
+        imageUrl: url,
+        fit: BoxFit.cover,
+        alignment: const Alignment(0, 0.2),
+        placeholder: (_, _) => Shimmer.fromColors(
+          baseColor: context.colorScheme.surfaceContainerHighest,
+          highlightColor: context.colorScheme.surface,
+          child: Container(
+            color: context.colorScheme.surface,
           ),
         ),
+        errorWidget: (_, _, _) => Image.asset(
+          widget.product.imageAsset,
+          fit: BoxFit.cover,
+          alignment: const Alignment(0, 0.2),
+        ),
+      );
+    } else {
+      rawImage = Image.asset(
+        widget.product.imageAsset,
+        fit: BoxFit.cover,
+        alignment: const Alignment(0, 0.2),
       );
     }
 
     return Hero(
       tag: 'hero_image_${widget.product.id}',
-      child: Image.asset(
-        widget.product.imageAsset,
-        fit: BoxFit.cover,
-        alignment: const Alignment(0, 0.2),
+      flightShuttleBuilder: (
+        flightContext,
+        animation,
+        flightDirection,
+        fromHeroContext,
+        toHeroContext,
+      ) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) {
+            // animation.value: 0.0 at ProductCard <-> 1.0 at ProductDetailScreen
+            final t = Curves.fastOutSlowIn.transform(animation.value);
+
+            // Interpolate corner radii: 20px (card) <-> 0px (detail screen top)
+            final cardBorderRadius = BorderRadius.lerp(
+              BorderRadius.circular(AppRadii.cardInner),
+              BorderRadius.zero,
+              t,
+            )!;
+
+            // Dynamically scale the bottom sheet curve:
+            // At card (t <= 0.25): height = 0 (perfect unblemished card image, no cutout!)
+            // At detail (t = 1.0): height = 32px (full rounded sheet cap overlapping photo)
+            final curveProgress = ((t - 0.25) / 0.75).clamp(0.0, 1.0);
+            final curveHeight = 32.0 * curveProgress;
+            final curveRadius = 32.0 * curveProgress;
+
+            return Material(
+              color: Colors.transparent,
+              child: ClipRRect(
+                borderRadius: cardBorderRadius,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    rawImage,
+                    if (curveHeight > 0.5)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: -1,
+                        height: curveHeight,
+                        child: Opacity(
+                          opacity: curveProgress,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.surface,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(curveRadius),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          rawImage,
+          // Seamless rounded sheet top cap - part of the Hero so it flies with the image and never snaps in late!
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: -1,
+            height: 32,
+            child: Container(
+              decoration: BoxDecoration(
+                color: context.colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    _syncWithCartOnce();
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           // Scrollable Content with Slivers
@@ -113,7 +397,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 stretch: true,
                 elevation: _isCollapsed ? 1.0 : 0.0,
                 shadowColor: Colors.black12,
-                backgroundColor: Colors.white,
+                backgroundColor: context.colorScheme.surface,
                 surfaceTintColor: Colors.transparent,
                 leading: Center(
                   child: Container(
@@ -122,19 +406,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     height: 38,
                     decoration: BoxDecoration(
                       color: _isCollapsed
-                          ? const Color(0xFFF4F0E8)
+                          ? context.colorScheme.surfaceContainerHighest
                           : Colors.black.withValues(alpha: 0.35),
                       shape: BoxShape.circle,
                     ),
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
                         onTap: () => Navigator.of(context).pop(),
                         child: Icon(
                           Icons.arrow_back_rounded,
                           color:
-                              _isCollapsed ? AppColors.textDark : Colors.white,
+                              _isCollapsed ? context.colorScheme.onSurface : Colors.white,
                           size: 20,
                         ),
                       ),
@@ -146,40 +430,92 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   opacity: _isCollapsed ? 1.0 : 0.0,
                   child: Text(
                     widget.product.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppTypography.fontFamily,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: context.colorScheme.onSurface,
                     ),
                   ),
                 ),
                 centerTitle: true,
+                actions: [
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final cartItemCount = ref.watch(cartProvider.select((s) => s.totalItemCount));
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 14),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: _isCollapsed
+                                    ? context.colorScheme.surfaceContainerHighest
+                                    : Colors.black.withValues(alpha: 0.35),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                                  onTap: () {
+                                    Navigator.of(context, rootNavigator: true).push(
+                                      MaterialPageRoute(builder: (_) => const CartScreen()),
+                                    );
+                                  },
+                                  child: Icon(
+                                    Icons.shopping_bag_outlined,
+                                    color: _isCollapsed ? context.colorScheme.onSurface : Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (cartItemCount > 0)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE65100),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                                  child: Text(
+                                    '$cartItemCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.0,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   stretchModes: const [
                     StretchMode.zoomBackground,
                   ],
                   background: _buildHeroImage(),
                 ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(28),
-                  child: Container(
-                    height: 28,
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(32),
-                      ),
-                    ),
-                  ),
-                ),
               ),
 
               // Product Details Body inside SliverToBoxAdapter
               SliverToBoxAdapter(
                 child: Container(
-                  color: Colors.white,
+                  color: context.colorScheme.surface,
                   padding: EdgeInsets.fromLTRB(
                     24,
                     4,
@@ -213,11 +549,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                   const SizedBox(height: 8),
                                   Text(
                                     widget.product.priceDisplay,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: AppTypography.fontFamily,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.priceMuted,
+                                      color: context.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -234,10 +570,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         // Description Paragraph
                         Text(
                           widget.product.description,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14.5,
                             height: 1.48,
-                            color: Color(0xFF4A443E),
+                            color: context.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -251,29 +587,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                           clipBehavior: Clip.none,
                           child: Row(
                             children: [
-                              _buildAddonCard(
-                                id: 'extra_milk',
-                                title: 'Extra milk',
-                                icon: const _MilkCartonIcon(),
-                              ),
-                              const SizedBox(width: 14),
-                              _buildAddonCard(
-                                id: 'iced',
-                                title: 'Iced',
-                                icon: const _IceCubesIcon(),
-                              ),
-                              const SizedBox(width: 14),
-                              _buildAddonCard(
-                                id: 'light_foam',
-                                title: 'Light foam',
-                                icon: const _LightFoamIcon(),
-                              ),
-                              const SizedBox(width: 14),
-                              _buildAddonCard(
-                                id: 'caramel_drizzle',
-                                title: 'Caramel',
-                                icon: const _CaramelIcon(),
-                              ),
+                              for (int i = 0; i < _currentAddons.length; i++) ...[
+                                if (i > 0) const SizedBox(width: 14),
+                                _buildAddonCard(addon: _currentAddons[i]),
+                              ],
                             ],
                           ),
                         ),
@@ -290,7 +607,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             right: 0,
             bottom: 0,
             child: Container(
-              color: Colors.white,
+              decoration: BoxDecoration(
+                color: context.colorScheme.surface,
+                border: Border(
+                  top: BorderSide(
+                    color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
               padding: EdgeInsets.fromLTRB(
                 24,
                 14,
@@ -302,32 +634,38 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Left: Price & Quantity Label - exactly aligned with left margin (24px)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${_totalPrice.toInt()}\$',
-                        style: const TextStyle(
-                          fontFamily: AppTypography.fontFamily,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.textDark,
-                          height: 1.0,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${_totalPrice.toStringAsFixed(_totalPrice.truncateToDouble() == _totalPrice ? 0 : 2)}\$',
+                          style: TextStyle(
+                            fontFamily: AppTypography.fontFamily,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: context.colorScheme.onSurface,
+                            height: 1.0,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        '${_quantity}x ${widget.product.name}',
-                        style: const TextStyle(
-                          fontFamily: AppTypography.fontFamily,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.priceMuted,
+                        const SizedBox(height: 5),
+                        Text(
+                          '${_quantity}x ${widget.product.name}${_addonsSummary.isNotEmpty ? " • $_addonsSummary" : ""}',
+                          style: TextStyle(
+                            fontFamily: AppTypography.fontFamily,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: context.colorScheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+
+                  const SizedBox(width: 14),
 
                   // Right: "View cart" Button (Proportional 176px width x 56px height matching CartScreen)
                   SizedBox(
@@ -336,9 +674,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).clearSnackBars();
-                        ref.read(cartProvider.notifier).addProduct(
+                        ref.read(cartProvider.notifier).setOrUpdateProduct(
                               widget.product,
                               quantity: _quantity,
+                              customization: _addonsCustomizationString,
+                              price: _unitPrice,
                             );
                         widget.onAddToCart(widget.product, _quantity);
                         Navigator.of(context, rootNavigator: true).push(
@@ -348,21 +688,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: context.colorScheme.primary,
+                        foregroundColor: context.colorScheme.onPrimary,
                         elevation: 0,
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
                         ),
                       ),
-                      child: const Text(
-                        'View cart',
+                      child: Text(
+                        context.l10n.viewCart,
                         style: TextStyle(
                           fontFamily: AppTypography.fontFamily,
                           fontSize: 16.5,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: context.colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -401,18 +741,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
             children: [
               Text(
                 '${_quantity}x',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTypography.fontFamily,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.textDark,
+                  color: context.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 2),
-              const Icon(
-                Icons.coffee_rounded,
+              Icon(
+                _getStepperIcon(_productType),
                 size: 20,
-                color: AppColors.textDark,
+                color: context.colorScheme.onSurface,
               ),
             ],
           ),
@@ -436,99 +776,151 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: const Color(0xFFF4F0E8),
-      borderRadius: BorderRadius.circular(10),
+      color: context.colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(AppRadii.sm),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadii.sm),
         onTap: onTap,
         child: SizedBox(
           width: 32,
           height: 32,
           child: Center(
-            child: Icon(icon, size: 16, color: const Color(0xFF4A4541)),
+            child: Icon(icon, size: 16, color: context.colorScheme.onSurface),
           ),
         ),
       ),
     );
   }
 
-  // Customization Card (Extra milk, Iced, Light foam)
+  // Customization Card (Extra milk, Iced, Light foam, French butter, etc.)
   Widget _buildAddonCard({
-    required String id,
-    required String title,
-    required Widget icon,
+    required _AddonConfig addon,
   }) {
-    final isSelected = _selectedAddons.contains(id);
+    final isSelected = _selectedAddons.contains(addon.id);
+    final activeColor =
+        isSelected ? context.colorScheme.primary : context.colorScheme.onSurface;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            _selectedAddons.remove(id);
-          } else {
-            _selectedAddons.add(id);
-          }
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        width: 106,
-        height: 118,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFDFBF7) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : const Color(0xFFECE7DE),
-            width: 1.5,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.cardHero),
+        onTap: () {
+          setState(() {
+            if (isSelected) {
+              _selectedAddons.remove(addon.id);
+            } else {
+              _selectedAddons.add(addon.id);
+            }
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 106,
+          height: 122,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? context.colorScheme.primary.withValues(alpha: 0.12)
+                : context.colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+            borderRadius: BorderRadius.circular(AppRadii.cardHero),
+            border: Border.all(
+              color: isSelected
+                  ? context.colorScheme.primary
+                  : context.colorScheme.outlineVariant,
+              width: isSelected ? 2.0 : 1.2,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: context.colorScheme.primary.withValues(alpha: 0.20),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Top-right Plus / Check Badge
-            Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary
-                      : const Color(0xFFF9EEEE),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(
-                    isSelected ? Icons.check : Icons.add,
-                    size: 13,
-                    color: isSelected ? Colors.white : const Color(0xFFD8555F),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Top-right Plus / Check Badge
+              Align(
+                alignment: Alignment.topRight,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? context.colorScheme.primary
+                        : context.colorScheme.surfaceContainerHighest,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      isSelected ? Icons.check_rounded : Icons.add_rounded,
+                      size: 14,
+                      color: isSelected
+                          ? context.colorScheme.onPrimary
+                          : context.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Center Custom Icon
-            Expanded(child: Center(child: icon)),
+              // Center Custom / Material Icon
+              Expanded(child: Center(child: addon.iconBuilder(activeColor))),
 
-            // Bottom Label
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w700,
-                color: isSelected ? AppColors.primary : AppColors.textDark,
+              // Bottom Label
+              Text(
+                addon.title,
+                style: TextStyle(
+                  fontFamily: AppTypography.fontFamily,
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                  color: activeColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-          ],
+              const SizedBox(height: 2),
+
+              // Price badge
+              Text(
+                addon.priceDisplay,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected
+                      ? context.colorScheme.primary
+                      : context.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+// -------------------------------------------------------------
+// Add-on Configuration Model
+// -------------------------------------------------------------
+
+class _AddonConfig {
+  final String id;
+  final String title;
+  final double price;
+  final String priceDisplay;
+  final Widget Function(Color color) iconBuilder;
+
+  const _AddonConfig({
+    required this.id,
+    required this.title,
+    required this.price,
+    required this.priceDisplay,
+    required this.iconBuilder,
+  });
 }
 
 // -------------------------------------------------------------
@@ -536,22 +928,27 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 // -------------------------------------------------------------
 
 class _MilkCartonIcon extends StatelessWidget {
-  const _MilkCartonIcon();
+  final Color? color;
+  const _MilkCartonIcon({this.color});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 32,
       height: 42,
-      child: CustomPaint(painter: _MilkCartonPainter()),
+      child: CustomPaint(
+        painter: _MilkCartonPainter(color ?? context.colorScheme.onSurface),
+      ),
     );
   }
 }
 
 class _MilkCartonPainter extends CustomPainter {
+  final Color strokeColor;
+  _MilkCartonPainter(this.strokeColor);
+
   @override
   void paint(Canvas canvas, Size size) {
-    const strokeColor = Color(0xFF3C3633);
     final outlinePaint = Paint()
       ..color = strokeColor
       ..style = PaintingStyle.stroke
@@ -600,22 +997,27 @@ class _MilkCartonPainter extends CustomPainter {
 }
 
 class _IceCubesIcon extends StatelessWidget {
-  const _IceCubesIcon();
+  final Color? color;
+  const _IceCubesIcon({this.color});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 40,
       height: 38,
-      child: CustomPaint(painter: _IceCubesPainter()),
+      child: CustomPaint(
+        painter: _IceCubesPainter(color ?? context.colorScheme.onSurface),
+      ),
     );
   }
 }
 
 class _IceCubesPainter extends CustomPainter {
+  final Color color;
+  _IceCubesPainter(this.color);
+
   @override
   void paint(Canvas canvas, Size size) {
-    const color = Color(0xFF3C3633);
     final strokePaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -662,22 +1064,27 @@ class _IceCubesPainter extends CustomPainter {
 }
 
 class _LightFoamIcon extends StatelessWidget {
-  const _LightFoamIcon();
+  final Color? color;
+  const _LightFoamIcon({this.color});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 36,
       height: 36,
-      child: CustomPaint(painter: _LightFoamPainter()),
+      child: CustomPaint(
+        painter: _LightFoamPainter(color ?? context.colorScheme.onSurface),
+      ),
     );
   }
 }
 
 class _LightFoamPainter extends CustomPainter {
+  final Color color;
+  _LightFoamPainter(this.color);
+
   @override
   void paint(Canvas canvas, Size size) {
-    const color = Color(0xFF3C3633);
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -710,14 +1117,15 @@ class _LightFoamPainter extends CustomPainter {
 }
 
 class _CaramelIcon extends StatelessWidget {
-  const _CaramelIcon();
+  final Color? color;
+  const _CaramelIcon({this.color});
 
   @override
   Widget build(BuildContext context) {
-    return const Icon(
+    return Icon(
       Icons.water_drop_outlined,
       size: 28,
-      color: Color(0xFF3C3633),
+      color: color ?? context.colorScheme.onSurface,
     );
   }
 }

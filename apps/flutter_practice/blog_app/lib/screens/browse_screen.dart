@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../core/constants/mock_data.dart';
+import '../core/localization/app_localizations.dart';
 import '../core/providers/network_providers.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/theme/app_theme.dart';
 import '../data/providers/products_provider.dart';
 import '../models/product.dart';
 import '../widgets/admin_product_form_modal.dart';
@@ -30,13 +30,16 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, String>> _categories = const [
-    {'id': 'all', 'label': 'All'},
-    {'id': 'coffee', 'label': '☕ Coffee'},
-    {'id': 'pastry', 'label': '🥐 Bakery'},
-    {'id': 'bundle', 'label': '🎁 Combos'},
-    {'id': 'seasonal', 'label': '✨ Specials'},
-  ];
+  List<Map<String, String>> _getCategories(BuildContext context) {
+    final l10n = context.l10n;
+    return [
+      {'id': 'all', 'label': l10n.categoryAll},
+      {'id': 'coffee', 'label': l10n.categoryCoffee},
+      {'id': 'pastry', 'label': l10n.categoryBakery},
+      {'id': 'bundle', 'label': l10n.categoryCombos},
+      {'id': 'seasonal', 'label': l10n.categorySpecials},
+    ];
+  }
 
   @override
   void dispose() {
@@ -57,18 +60,37 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
     if (_selectedCategory == categoryId) return;
     setState(() => _selectedCategory = categoryId);
     ref.read(productsProvider.notifier).setCategory(categoryId);
-    _fetchProducts();
   }
 
   void _openProductDetail(Product product) {
     Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(
-        builder: (_) => ProductDetailScreen(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 380),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ProductDetailScreen(
           product: product,
           onAddToCart: (p, qty) {
             widget.onAddToCart?.call(p.name, p.price * qty);
           },
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+          return FadeTransition(
+            opacity: curvedAnimation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.06),
+                end: Offset.zero,
+              ).animate(curvedAnimation),
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
@@ -90,7 +112,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Added $item to order',
+                context.l10n.addedToOrder(item),
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -133,25 +155,32 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
     final productsState = ref.watch(productsProvider);
     final products = productsState.products;
     final isLoading = productsState.isLoading;
-    final isAdmin = ref.watch(sessionServiceProvider).isAdmin;
+    final isAdmin = ref.watch(isAdminProvider);
 
     final filteredProducts = products.where((p) {
-      if (_searchQuery.isEmpty) return true;
-      return p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+      final matchesSearch = _searchQuery.isEmpty ||
+          p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           p.category.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           p.description.toLowerCase().contains(_searchQuery.toLowerCase());
+
+      final matchesCategory = _selectedCategory == 'all' ||
+          p.category.toLowerCase() == _selectedCategory.toLowerCase() ||
+          (_selectedCategory == 'pastry' && p.category.toLowerCase() == 'bakery') ||
+          (_selectedCategory == 'bakery' && p.category.toLowerCase() == 'pastry');
+
+      return matchesSearch && matchesCategory;
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
-              backgroundColor: AppColors.primary,
+              backgroundColor: context.colorScheme.primary,
               elevation: 4,
-              icon: const Icon(Icons.add_rounded, color: Colors.white),
-              label: const Text(
+              icon: Icon(Icons.add_rounded, color: context.colorScheme.onPrimary),
+              label: Text(
                 'Add Item',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                style: TextStyle(color: context.colorScheme.onPrimary, fontWeight: FontWeight.w700),
               ),
               onPressed: () => AdminProductFormModal.show(context),
             )
@@ -182,14 +211,14 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                   controller: _searchController,
                   onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: InputDecoration(
-                    hintText: 'Search coffee, bakery & specials...',
-                    hintStyle: const TextStyle(
-                      color: AppColors.textSecondary,
+                    hintText: context.l10n.searchPlaceholder,
+                    hintStyle: TextStyle(
+                      color: context.colorScheme.onSurfaceVariant,
                       fontSize: 14,
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search,
-                      color: AppColors.primary,
+                      color: context.colorScheme.primary,
                       size: 20,
                     ),
                     suffixIcon: _searchQuery.isNotEmpty
@@ -202,7 +231,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: context.colorScheme.surfaceContainerHighest,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
@@ -223,8 +252,8 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
             // Scrollable Content wrapped in Pull-to-Refresh with Slivers
             Expanded(
               child: RefreshIndicator(
-                color: AppColors.primary,
-                backgroundColor: Colors.white,
+                color: context.colorScheme.primary,
+                backgroundColor: context.colorScheme.surface,
                 onRefresh: _fetchProducts,
                 child: CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(
@@ -236,8 +265,8 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(24, 8, 24, 6),
                         child: Text(
-                          "Let’s get this day going",
-                          style: AppTypography.sectionHeading,
+                          context.l10n.letsGetThisDayGoing,
+                          style: context.textTheme.headlineMedium,
                         ),
                       ),
                     ),
@@ -246,7 +275,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                     SliverPersistentHeader(
                       pinned: true,
                       delegate: _StickyCategoryHeaderDelegate(
-                        categories: _categories,
+                        categories: _getCategories(context),
                         selectedCategory: _selectedCategory,
                         onCategorySelected: _onCategorySelected,
                       ),
@@ -292,8 +321,8 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
                             child: Text(
-                              "April special",
-                              style: AppTypography.sectionHeading,
+                              context.l10n.aprilSpecial,
+                              style: context.textTheme.headlineMedium,
                             ),
                           ),
                         ],
@@ -329,9 +358,9 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                       ),
                     ),
 
-                    // Bottom Safe Spacing
+                    // Bottom Spacing
                     const SliverToBoxAdapter(
-                      child: SizedBox(height: 24),
+                      child: SizedBox(height: 20),
                     ),
                   ],
                 ),
@@ -354,19 +383,13 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
           width: 182,
           margin: const EdgeInsets.only(right: 18, bottom: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x08000000),
-                blurRadius: 16,
-                offset: Offset(0, 6),
-              ),
-            ],
+            color: context.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppRadii.hero),
+            boxShadow: AppShadows.soft,
           ),
           child: Shimmer.fromColors(
-            baseColor: Colors.grey[200]!,
-            highlightColor: Colors.grey[50]!,
+            baseColor: context.colorScheme.surfaceContainerHighest,
+            highlightColor: context.colorScheme.surface,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -375,7 +398,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                   child: Container(
                     height: 138,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(22),
                     ),
                   ),
@@ -389,7 +412,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                         height: 16,
                         width: 100,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
@@ -398,7 +421,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                         height: 14,
                         width: 50,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
@@ -421,13 +444,13 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
           Icon(
             Icons.inventory_2_outlined,
             size: 48,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'No items found in this category',
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            context.l10n.noProductsFound,
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: context.colorScheme.onSurfaceVariant,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -464,7 +487,7 @@ class _StickyCategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
     return Container(
       height: 52.0,
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: overlapsContent
             ? [
                 BoxShadow(
@@ -479,9 +502,9 @@ class _StickyCategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
         itemCount: categories.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
           final cat = categories[index];
           final isSelected = cat['id'] == selectedCategory;
@@ -492,20 +515,22 @@ class _StickyCategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
                 fontFamily: AppTypography.fontFamily,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected ? Colors.white : AppColors.textDark,
+                color: isSelected
+                    ? context.colorScheme.onPrimary
+                    : context.colorScheme.onSurface,
               ),
             ),
             selected: isSelected,
-            selectedColor: AppColors.primary,
-            backgroundColor: Colors.white,
+            selectedColor: context.colorScheme.primary,
+            backgroundColor: context.colorScheme.surfaceContainerHighest,
             elevation: isSelected ? 2 : 0,
             pressElevation: 1,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadii.pill),
               side: BorderSide(
                 color: isSelected
-                    ? AppColors.primary
-                    : const Color(0xFFECE7DE),
+                    ? context.colorScheme.primary
+                    : context.colorScheme.outline,
                 width: 1.2,
               ),
             ),

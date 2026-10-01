@@ -1,25 +1,27 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../core/localization/app_localizations.dart';
 import '../core/services/session_service.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/theme/app_theme.dart';
 import '../data/repositories/order_repository.dart';
 import '../models/order.dart';
 import '../models/user_profile.dart';
 import 'admin_products_screen.dart';
 import 'clerk_webview_screen.dart';
+import 'settings_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final SessionService _session = SessionService.instance;
   final OrderRepository _orderRepo = OrderRepository();
-  bool _notificationsEnabled = true;
 
   @override
   void initState() {
@@ -113,36 +115,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _confirmLogout() {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: Colors.white,
-        title: const Row(
+        backgroundColor: context.colorScheme.surface,
+        title: Row(
           children: [
-            Icon(Icons.logout_rounded, color: Color(0xFFC53030), size: 24),
-            SizedBox(width: 10),
+            const Icon(Icons.logout_rounded, color: Color(0xFFC53030), size: 24),
+            const SizedBox(width: 10),
             Text(
-              'Confirm Sign Out',
+              l10n.signOut,
               style: TextStyle(
                 fontFamily: AppTypography.fontFamily,
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
-                color: AppColors.textDark,
+                color: context.colorScheme.onSurface,
               ),
             ),
           ],
         ),
-        content: const Text(
-          'Are you sure you want to sign out of your Cocoloco account on this device?',
-          style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+        content: Text(
+          l10n.signOutConfirm,
+          style: TextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Color(0xFF7A7067), fontWeight: FontWeight.w600),
+            child: Text(
+              l10n.cancel,
+              style: TextStyle(color: context.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
             ),
           ),
           ElevatedButton(
@@ -154,8 +157,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _session.logout();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Signed out successfully.'),
+                  SnackBar(
+                    content: Text(l10n.signedOutSuccessfully),
                     backgroundColor: AppColors.primary,
                   ),
                 );
@@ -166,9 +169,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
-            child: const Text(
-              'Sign Out',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            child: Text(
+              l10n.signOut,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -176,11 +179,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+
+
   void _openAdminOrdersManager() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: context.colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -196,55 +201,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
               builder: (context, snapshot) {
                 final orders = snapshot.data ?? [];
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Center(
-                        child: Container(
-                          width: 44,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE2DDD5),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'All Store Orders',
                             style: TextStyle(
                               fontFamily: AppTypography.fontFamily,
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textDark,
+                              color: context.colorScheme.onSurface,
                             ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF5B1921),
+                              color: context.colorScheme.primary,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
+                            child: Text(
                               'ADMIN HUB',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.colorScheme.onPrimary),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      const Text(
+                      Text(
                         'Tap a status button to quickly update order lifecycle',
-                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        style: TextStyle(fontSize: 13, color: context.colorScheme.onSurfaceVariant),
                       ),
-                      const Divider(height: 24),
+                      Divider(height: 24, color: context.colorScheme.outlineVariant),
                       Expanded(
                         child: snapshot.connectionState == ConnectionState.waiting
-                            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                            ? Center(child: CircularProgressIndicator(color: context.colorScheme.primary))
                             : orders.isEmpty
                                 ? const Center(child: Text('No orders yet.'))
                                 : ListView.separated(
@@ -275,9 +269,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBF9F5),
+        color: context.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFECE7DE)),
+        border: Border.all(color: context.colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Text(
                 '${ord.shortId} • \$${ord.totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.textDark),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: context.colorScheme.onSurface),
               ),
               PopupMenuButton<String>(
                 initialValue: ord.status,
@@ -353,23 +347,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final role = _session.role;
     final user = _session.user;
     final bool isLoggedIn = role != AppRole.guest;
+    final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const BackButton(color: AppColors.textDark),
+        leading: BackButton(color: context.colorScheme.onSurface),
         centerTitle: true,
-        title: const Text(
-          'Cocoloco Account',
+        title: Text(
+          l10n.cocolocoAccount,
           style: TextStyle(
             fontFamily: AppTypography.fontFamily,
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textDark,
+            color: context.colorScheme.onSurface,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.settings_outlined,
+              color: context.colorScheme.onSurface,
+              size: 24,
+            ),
+            tooltip: l10n.settingsAndUtilities,
+            onPressed: () {
+              Navigator.push(
+                context,
+                CupertinoPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -396,154 +410,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
 
               // 4. Section: Orders & Payments
-              _buildSectionHeader('Orders & Transactions'),
+              _buildSectionHeader(l10n.ordersAndTransactions),
               _buildMenuCard([
                 _buildMenuItem(
                   icon: Icons.receipt_long_outlined,
-                  title: 'Order History',
-                  subtitle: 'Track your orders and delivery status',
+                  title: l10n.orderHistory,
+                  subtitle: l10n.orderHistorySub,
                   onTap: () {
-                    _showComingSoon('Order History');
+                    _showComingSoon(l10n.orderHistory);
                   },
                 ),
                 _buildDivider(),
                 _buildMenuItem(
                   icon: Icons.location_on_outlined,
-                  title: 'Saved Addresses',
-                  subtitle: 'Manage delivery addresses for coffee & bakery',
-                  onTap: () => _showComingSoon('Saved Addresses'),
+                  title: l10n.savedAddresses,
+                  subtitle: l10n.savedAddressesSub,
+                  onTap: () => _showComingSoon(l10n.savedAddresses),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
                   icon: Icons.credit_card_outlined,
-                  title: 'Payment Methods',
-                  subtitle: 'Credit Card, Apple Pay, Cash',
-                  onTap: () => _showComingSoon('Payment Methods'),
+                  title: l10n.paymentMethods,
+                  subtitle: l10n.paymentMethodsSub,
+                  onTap: () => _showComingSoon(l10n.paymentMethods),
                 ),
                 _buildDivider(),
                 _buildMenuItem(
                   icon: Icons.confirmation_number_outlined,
-                  title: 'Vouchers & Offers',
-                  subtitle: 'You have two 20% discount vouchers',
+                  title: l10n.vouchersAndOffers,
+                  subtitle: l10n.vouchersSub,
                   badge: '2 NEW',
                   badgeColor: const Color(0xFFE65100),
-                  onTap: () => _showComingSoon('Vouchers & Offers'),
+                  onTap: () => _showComingSoon(l10n.vouchersAndOffers),
                 ),
               ]),
 
-              const SizedBox(height: 20),
-
-              // 5. Section: Preferences & Security
-              _buildSectionHeader('Settings & Utilities'),
-              _buildMenuCard([
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3EFE8),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.notifications_outlined, color: AppColors.primary, size: 22),
-                  ),
-                  title: const Text(
-                    'Push Notifications',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textDark),
-                  ),
-                  subtitle: const Text(
-                    'Receive order status updates',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
-                  ),
-                  trailing: Switch.adaptive(
-                    value: _notificationsEnabled,
-                    activeTrackColor: AppColors.primary,
-                    onChanged: (val) {
-                      setState(() {
-                        _notificationsEnabled = val;
-                      });
-                    },
-                  ),
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.verified_user_outlined,
-                  title: 'Account Security',
-                  subtitle: 'Clerk RS256 JWKS authentication',
-                  trailing: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 18),
-                      SizedBox(width: 4),
-                      Text('Secure', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF2E7D32))),
-                    ],
-                  ),
-                  onTap: () {},
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.language_rounded,
-                  title: 'Display Language',
-                  subtitle: 'English (Default)',
-                  onTap: () => _showComingSoon('Change Language'),
-                ),
-              ]),
-
-              const SizedBox(height: 20),
-
-              // 6. Section: Support & Info
-              _buildSectionHeader('Information & Support'),
-              _buildMenuCard([
-                _buildMenuItem(
-                  icon: Icons.headset_mic_outlined,
-                  title: 'Customer Support Hotline',
-                  subtitle: 'Hotline 1900 6868 (8:00 - 22:00)',
-                  onTap: () => _showComingSoon('Call Hotline'),
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.policy_outlined,
-                  title: 'Terms of Service & Policies',
-                  subtitle: 'Protecting user rights',
-                  onTap: () => _showComingSoon('Terms & Policies'),
-                ),
-                _buildDivider(),
-                _buildMenuItem(
-                  icon: Icons.info_outline_rounded,
-                  title: 'App Version',
-                  subtitle: 'Cocoloco Mobile App v1.0.0 (FastAPI 3.12+)',
-                  trailing: const Text(
-                    'v1.0.0',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
-                  ),
-                  onTap: () {},
-                ),
-              ]),
-
-              const SizedBox(height: 28),
-
-              // 7. Logout Button (If Logged In)
-              if (isLoggedIn)
+              // 5. Logout Button (If Logged In)
+              if (isLoggedIn) ...[
+                const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: OutlinedButton.icon(
                     onPressed: _confirmLogout,
-                    icon: const Icon(Icons.logout_rounded, color: Color(0xFFC53030), size: 20),
-                    label: const Text(
-                      'Sign Out',
+                    icon: Icon(Icons.logout_rounded, color: context.colorScheme.error, size: 20),
+                    label: Text(
+                      l10n.signOut,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFC53030),
+                        color: context.colorScheme.error,
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFF3D2D2), width: 1.5),
-                      backgroundColor: const Color(0xFFFDF4F4),
+                      side: BorderSide(color: context.colorScheme.error.withValues(alpha: 0.35), width: 1.5),
+                      backgroundColor: context.colorScheme.error.withValues(alpha: 0.1),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                     ),
                   ),
                 ),
+              ],
             ],
           ),
         ),
@@ -558,7 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colorScheme.surface,
         borderRadius: BorderRadius.circular(26),
         boxShadow: const [
           BoxShadow(
@@ -632,12 +558,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isLoggedIn ? (user?.fullName ?? 'Cocoloco Member') : 'Welcome!',
-                      style: const TextStyle(
+                      isLoggedIn ? (user?.fullName ?? 'Cocoloco Member') : context.l10n.welcomeToCocoloco,
+                      style: TextStyle(
                         fontFamily: AppTypography.fontFamily,
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textDark,
+                        color: context.colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -646,38 +572,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Text(
                       isLoggedIn
                           ? (user?.email ?? 'Clerk Verified Account')
-                          : 'Sign in to earn rewards & points',
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          : context.l10n.signInSubtitle,
+                      style: TextStyle(fontSize: 13, color: context.colorScheme.onSurfaceVariant),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: role == AppRole.admin
-                            ? const Color(0xFFFDEEEC)
+                    Builder(
+                      builder: (context) {
+                        final isDark = Theme.of(context).brightness == Brightness.dark;
+                        final badgeBg = role == AppRole.admin
+                            ? (isDark ? const Color(0xFF4A1D1D) : const Color(0xFFFDEEEC))
                             : isLoggedIn
-                                ? const Color(0xFFEAF8ED)
-                                : const Color(0xFFF3EFE8),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        role == AppRole.admin
-                            ? '🛡️ Administrator (ADMIN)'
+                                ? (isDark ? const Color(0xFF1C4522) : const Color(0xFFEAF8ED))
+                                : context.colorScheme.surfaceContainerHighest;
+                        final badgeText = role == AppRole.admin
+                            ? (isDark ? const Color(0xFFFEB2B2) : const Color(0xFFC53030))
                             : isLoggedIn
-                                ? '⭐ Loyal Member (USER)'
-                                : '👤 Guest (GUEST)',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: role == AppRole.admin
-                              ? const Color(0xFFC53030)
-                              : isLoggedIn
-                                  ? const Color(0xFF2E7D32)
-                                  : const Color(0xFF6A645D),
-                        ),
-                      ),
+                                ? (isDark ? const Color(0xFF9AE6B4) : const Color(0xFF2E7D32))
+                                : context.colorScheme.onSurfaceVariant;
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: badgeBg,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            role == AppRole.admin
+                                ? '🛡️ Administrator (ADMIN)'
+                                : isLoggedIn
+                                    ? '⭐ Loyal Member (USER)'
+                                    : '👤 Guest (GUEST)',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: badgeText,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -692,16 +626,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: ElevatedButton.icon(
                 onPressed: _handleClerkLogin,
                 icon: const Icon(Icons.login_rounded, color: Colors.white, size: 20),
-                label: const Text(
-                  'Sign In / Register',
-                  style: TextStyle(
+                label: Text(
+                  context.l10n.signInButton,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.colorScheme.primary,
+                  foregroundColor: context.colorScheme.onPrimary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                 ),
@@ -737,37 +672,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.coffee_rounded, color: Color(0xFFD4AF37), size: 18),
                     ),
-                    child: const Icon(Icons.coffee_rounded, color: Color(0xFFD4AF37), size: 18),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'COCOLOCO REWARDS',
-                    style: TextStyle(
-                      color: Color(0xFFD4AF37),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
+                    const SizedBox(width: 8),
+                    const Flexible(
+                      child: Text(
+                        'COCOLOCO REWARDS',
+                        style: TextStyle(
+                          color: Color(0xFFD4AF37),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'GOLD MEMBER',
-                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
+                child: Text(
+                  context.l10n.goldMember.toUpperCase(),
+                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -777,25 +719,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Cocoloco Beans Points',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    '180 ☕',
-                    style: TextStyle(
-                      fontFamily: AppTypography.fontFamily,
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.cocolocoBeans,
+                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    const Text(
+                      '180 ☕',
+                      style: TextStyle(
+                        fontFamily: AppTypography.fontFamily,
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               OutlinedButton(
                 onPressed: () => _showComingSoon('Redeem Points'),
                 style: OutlinedButton.styleFrom(
@@ -803,9 +750,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 ),
-                child: const Text(
-                  'Redeem Now',
-                  style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.w700),
+                child: Text(
+                  context.l10n.redeemGifts,
+                  style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -924,10 +871,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w800,
-          color: AppColors.textSecondary,
+          color: context.colorScheme.onSurfaceVariant,
           letterSpacing: 0.3,
         ),
       ),
@@ -947,7 +894,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       child: Material(
-        color: Colors.white,
+        color: context.colorScheme.surface,
         borderRadius: BorderRadius.circular(22),
         clipBehavior: Clip.antiAlias,
         child: Column(children: children),
@@ -970,20 +917,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF3EFE8),
+          color: context.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: AppColors.primary, size: 22),
+        child: Icon(icon, color: context.colorScheme.primary, size: 22),
       ),
       title: Row(
         children: [
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 15,
-                color: AppColors.textDark,
+                color: context.colorScheme.onSurface,
               ),
             ),
           ),
@@ -991,7 +938,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: badgeColor ?? AppColors.primary,
+                color: badgeColor ?? context.colorScheme.primary,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -1004,14 +951,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       subtitle: subtitle != null
           ? Text(
               subtitle,
-              style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12.5, color: context.colorScheme.onSurfaceVariant),
             )
           : null,
-      trailing: trailing ?? const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFFB5ADA4)),
+      trailing: trailing ?? Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.colorScheme.outlineVariant),
     );
   }
 
   Widget _buildDivider() {
-    return const Divider(height: 1, indent: 62, endIndent: 16, color: Color(0xFFF1ECE4));
+    return Divider(height: 1, indent: 62, endIndent: 16, color: context.colorScheme.outlineVariant);
   }
 }
