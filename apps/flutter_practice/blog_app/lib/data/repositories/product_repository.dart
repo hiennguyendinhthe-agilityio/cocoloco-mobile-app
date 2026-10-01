@@ -67,8 +67,14 @@ class ProductRepository {
 
     // Graceful offline fallback
     if (category != null && category.isNotEmpty && category.toLowerCase() != 'all') {
+      final cat = category.toLowerCase();
       return MockData.dailyProducts
-          .where((p) => p.category.toLowerCase() == category.toLowerCase())
+          .where((p) {
+            final pCat = p.category.toLowerCase();
+            return pCat == cat ||
+                (cat == 'pastry' && pCat == 'bakery') ||
+                (cat == 'bakery' && pCat == 'pastry');
+          })
           .toList();
     }
     return MockData.dailyProducts;

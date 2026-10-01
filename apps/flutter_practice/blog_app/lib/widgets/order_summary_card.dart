@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/localization/app_localizations.dart';
+import '../core/theme/app_theme.dart';
 
 class OrderSummaryCard extends StatelessWidget {
   final double subtotal;
@@ -16,26 +16,30 @@ class OrderSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       children: [
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpacing.sm),
         _buildCostRow(
-          label: 'Subtotal',
+          context: context,
+          label: l10n.subtotal,
           amount: '\$${subtotal.toInt()}',
           isTotal: false,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpacing.sm),
         _buildCostRow(
-          label: 'Delivery',
+          context: context,
+          label: l10n.deliveryFee,
           amount: '\$${deliveryFee.toInt()}',
           isTotal: false,
         ),
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: Divider(color: Color(0xFFF1ECE4), thickness: 1),
+          padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          child: Divider(),
         ),
         _buildCostRow(
-          label: 'Total',
+          context: context,
+          label: l10n.total,
           amount: '\$${total.toInt()}',
           isTotal: true,
         ),
@@ -44,6 +48,7 @@ class OrderSummaryCard extends StatelessWidget {
   }
 
   Widget _buildCostRow({
+    required BuildContext context,
     required String label,
     required String amount,
     required bool isTotal,
@@ -56,7 +61,7 @@ class OrderSummaryCard extends StatelessWidget {
           style: TextStyle(
             fontSize: isTotal ? 15.5 : 15,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            color: const Color(0xFFA59E96),
+            color: context.colorScheme.onSurfaceVariant,
           ),
         ),
         Text(
@@ -65,7 +70,7 @@ class OrderSummaryCard extends StatelessWidget {
             fontFamily: AppTypography.fontFamily,
             fontSize: isTotal ? 17.5 : 16,
             fontWeight: isTotal ? FontWeight.w900 : FontWeight.w800,
-            color: AppColors.primary,
+            color: context.colorScheme.primary,
           ),
         ),
       ],

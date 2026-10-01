@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/providers/cart_provider.dart';
 import '../data/providers/orders_provider.dart';
 import '../widgets/cocoloco_bottom_nav_bar.dart';
-import '../core/theme/app_colors.dart';
 import 'browse_screen.dart';
 import 'cart_screen.dart';
 import 'favorites_screen.dart';
@@ -32,7 +31,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     ];
 
     return Scaffold(
-      extendBody: true,
+      extendBody: false,
       body: IndexedStack(
         index: _currentIndex,
         children: screens,
@@ -47,12 +46,12 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
                   ),
                 );
               },
-              backgroundColor: AppColors.primary,
-              icon: const Icon(Icons.shopping_bag_rounded, color: Colors.white),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              icon: Icon(Icons.shopping_bag_rounded, color: Theme.of(context).colorScheme.onPrimary),
               label: Text(
                 '$cartItemCount items',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
                 ),
               ),

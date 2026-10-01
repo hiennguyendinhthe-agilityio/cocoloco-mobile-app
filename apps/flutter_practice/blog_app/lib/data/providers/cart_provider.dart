@@ -62,7 +62,12 @@ class CartNotifier extends Notifier<CartState> {
     return const CartState();
   }
 
-  void addProduct(Product product, {int quantity = 1, String? customization}) {
+  void addProduct(
+    Product product, {
+    int quantity = 1,
+    String? customization,
+    double? price,
+  }) {
     if (quantity <= 0) return;
 
     final existingIndex = state.items.indexWhere((i) => i.productId == product.id);
@@ -71,6 +76,8 @@ class CartNotifier extends Notifier<CartState> {
       final updatedList = List<CartItem>.from(state.items);
       updatedList[existingIndex] = existingItem.copyWith(
         quantity: existingItem.quantity + quantity,
+        customization: customization ?? existingItem.customization,
+        price: price ?? existingItem.price,
       );
       state = state.copyWith(items: updatedList, clearError: true);
     } else {
@@ -80,7 +87,43 @@ class CartNotifier extends Notifier<CartState> {
         name: product.name,
         customization: customization ?? 'Standard',
         quantity: quantity,
-        price: product.price,
+        price: price ?? product.price,
+        titleColor: product.titleColor,
+      );
+      state = state.copyWith(items: [...state.items, newItem], clearError: true);
+    }
+  }
+
+  /// Sets the exact quantity and customization for a product (avoids blind accumulation).
+  void setOrUpdateProduct(
+    Product product, {
+    required int quantity,
+    String? customization,
+    double? price,
+  }) {
+    if (quantity <= 0) {
+      removeItem(product.id);
+      return;
+    }
+
+    final existingIndex = state.items.indexWhere((i) => i.productId == product.id);
+    if (existingIndex != -1) {
+      final existingItem = state.items[existingIndex];
+      final updatedList = List<CartItem>.from(state.items);
+      updatedList[existingIndex] = existingItem.copyWith(
+        quantity: quantity,
+        customization: customization ?? existingItem.customization,
+        price: price ?? existingItem.price,
+      );
+      state = state.copyWith(items: updatedList, clearError: true);
+    } else {
+      final newItem = CartItem(
+        id: product.id,
+        productId: product.id,
+        name: product.name,
+        customization: customization ?? 'Standard',
+        quantity: quantity,
+        price: price ?? product.price,
         titleColor: product.titleColor,
       );
       state = state.copyWith(items: [...state.items, newItem], clearError: true);

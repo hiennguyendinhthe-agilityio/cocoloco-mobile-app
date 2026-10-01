@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/localization/app_localizations.dart';
 import '../core/providers/network_providers.dart';
 import '../core/services/session_service.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_typography.dart';
+import '../core/theme/app_theme.dart';
 import '../data/providers/cart_provider.dart';
 import '../data/providers/orders_provider.dart';
 import '../models/cart_item.dart';
@@ -92,14 +92,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       );
     } else {
       final errorMsg = ref.read(cartProvider).errorMessage ??
-          'Could not complete order. Please check your connection.';
+          context.l10n.orderFailed;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg),
-          backgroundColor: const Color(0xFFC53030),
+          backgroundColor: context.colorScheme.error,
           action: SnackBarAction(
-            label: 'Retry',
-            textColor: Colors.white,
+            label: context.l10n.retry,
+            textColor: context.colorScheme.onError,
             onPressed: _handleCheckout,
           ),
         ),
@@ -114,16 +114,16 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.colorScheme.surface,
       body: SafeArea(
         top: false,
         bottom: false,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-            24,
-            topPadding + 12,
-            24,
-            bottomInset > 0 ? bottomInset + 10 : 24,
+            AppSpacing.xxl,
+            topPadding + AppSpacing.md,
+            AppSpacing.xxl,
+            bottomInset > 0 ? bottomInset + AppSpacing.sm : AppSpacing.xxl,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,53 +132,39 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
                   onTap: () {
                     if (Navigator.of(context).canPop()) {
                       Navigator.of(context).pop();
                     }
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(4.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
                     child: Icon(
                       Icons.arrow_back_rounded,
-                      color: AppColors.primary,
+                      color: context.colorScheme.primary,
                       size: 26,
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: AppSpacing.lg),
 
               // Title: "My cart"
-              const Text(
-                'My cart',
+              Text(
+                context.l10n.cartTitle,
                 style: TextStyle(
                   fontFamily: AppTypography.fontFamily,
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.primary,
+                  color: context.colorScheme.primary,
                   height: 1.1,
                   letterSpacing: -0.5,
                 ),
               ),
 
-              const SizedBox(height: 24),
-
-              // Section Heading: "Summary"
-              const Text(
-                'Summary',
-                style: TextStyle(
-                  fontFamily: AppTypography.fontFamily,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primary,
-                  letterSpacing: -0.2,
-                ),
-              ),
-
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.xxl),
 
               // Cart Items List or Empty State
               Expanded(
@@ -190,25 +176,25 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             Icon(
                               Icons.shopping_bag_outlined,
                               size: 64,
-                              color: AppColors.navInactive.withValues(alpha: 0.6),
+                              color: context.colorScheme.outlineVariant,
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Your cart is empty',
+                            const SizedBox(height: AppSpacing.lg),
+                            Text(
+                              context.l10n.cartEmptyTitle,
                               style: TextStyle(
                                 fontFamily: AppTypography.fontFamily,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textDark,
+                                color: context.colorScheme.onSurface,
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Explore Cocoloco\'s fresh coffee & bakery menu to get started!',
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              context.l10n.cartEmptySubtitle,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary,
+                                color: context.colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -218,7 +204,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         physics: const BouncingScrollPhysics(),
                         padding: EdgeInsets.zero,
                         itemCount: cartState.items.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 16),
+                        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
                         itemBuilder: (context, index) {
                           final item = cartState.items[index];
                           return CartItemCard(item: item);
@@ -233,7 +219,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   deliveryFee: cartState.deliveryFee,
                   total: cartState.total,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxl),
               ],
 
               // Primary "Go to checkout" Button
@@ -244,30 +230,21 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   onPressed: (cartState.isEmpty || cartState.isSubmitting)
                       ? null
                       : _handleCheckout,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
                   child: cartState.isSubmitting
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            color: Colors.white,
+                            color: context.colorScheme.onPrimary,
                           ),
                         )
-                      : const Text(
-                          'Go to checkout',
-                          style: TextStyle(
+                      : Text(
+                          context.l10n.checkout,
+                          style: const TextStyle(
                             fontFamily: AppTypography.fontFamily,
                             fontSize: 16.5,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
                           ),
                         ),
                 ),

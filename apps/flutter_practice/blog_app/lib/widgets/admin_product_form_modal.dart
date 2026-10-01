@@ -14,7 +14,7 @@ class AdminProductFormModal extends ConsumerStatefulWidget {
     return showModalBottomSheet<Product>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -168,44 +168,31 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Grab handle
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2DDD5),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
               // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     _isEditMode ? 'Edit Product' : 'Add New Product',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppTypography.fontFamily,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF5B1921),
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       _isEditMode ? 'EDIT MODE' : 'NEW ITEM',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -216,9 +203,9 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
                 _isEditMode
                     ? 'Update price, description, or availability status'
                     : 'Enter product details to make it available on the menu',
-                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
-              const Divider(height: 24),
+              Divider(height: 24, color: Theme.of(context).colorScheme.outlineVariant),
 
               // 1. Product Name
               _buildFieldLabel('Product Name *'),
