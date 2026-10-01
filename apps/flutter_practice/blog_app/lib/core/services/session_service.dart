@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../network/api_client.dart';
 import '../network/api_constants.dart';
 import '../../models/user_profile.dart';
@@ -10,10 +12,16 @@ class SessionService extends ChangeNotifier {
 
   SessionService._internal();
 
+  static const String _kRoleKey = 'cocoloco_session_role';
+  static const String _kTokenKey = 'cocoloco_session_token';
+  static const String _kUserKey = 'cocoloco_session_user';
+  static const String _kLoggedOutKey = 'cocoloco_has_logged_out';
+
   AppRole _role = AppRole.guest;
   UserProfile? _user;
   String? _token;
   bool _hasLoggedOut = false;
+  bool _isInitialized = false;
 
   AppRole get role => _role;
   UserProfile? get user => _user;
@@ -21,6 +29,73 @@ class SessionService extends ChangeNotifier {
   bool get isLoggedIn => _role != AppRole.guest;
   bool get isAdmin => _role == AppRole.admin;
   bool get hasLoggedOut => _hasLoggedOut;
+  bool get isInitialized => _isInitialized;
+
+  /// Restores session state from persistent local storage upon application launch.
+  Future<void> init() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _hasLoggedOut = prefs.getBool(_kLoggedOutKey) ?? false;
+      final roleStr = prefs.getString(_kRoleKey);
+      final tokenStr = prefs.getString(_kTokenKey);
+      final userJsonStr = prefs.getString(_kUserKey);
+
+      if (roleStr != null && userJsonStr != null) {
+        final Map<String, dynamic> userMap =
+            jsonDecode(userJsonStr) as Map<String, dynamic>;
+        _user = UserProfile.fromJson(userMap);
+        _token = tokenStr;
+        if (roleStr == 'admin') {
+          _role = AppRole.admin;
+        } else if (roleStr == 'user') {
+          _role = AppRole.user;
+        } else {
+          _role = AppRole.guest;
+        }
+        ApiClient().setAuthToken(_token);
+      } else {
+        _role = AppRole.guest;
+        _user = null;
+        _token = null;
+        ApiClient().setAuthToken(null);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ [SessionService] Failed to load session from storage: $e');
+      }
+      _role = AppRole.guest;
+      _user = null;
+      _token = null;
+      ApiClient().setAuthToken(null);
+    } finally {
+      _isInitialized = true;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _persistSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_role == AppRole.guest || _user == null) {
+        await prefs.remove(_kRoleKey);
+        await prefs.remove(_kTokenKey);
+        await prefs.remove(_kUserKey);
+      } else {
+        await prefs.setString(_kRoleKey, _role.name);
+        if (_token != null) {
+          await prefs.setString(_kTokenKey, _token!);
+        } else {
+          await prefs.remove(_kTokenKey);
+        }
+        await prefs.setString(_kUserKey, jsonEncode(_user!.toJson()));
+      }
+      await prefs.setBool(_kLoggedOutKey, _hasLoggedOut);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ [SessionService] Failed to persist session: $e');
+      }
+    }
+  }
 
   Future<bool> loginWithClerkToken(
     String clerkToken, {
@@ -68,11 +143,14 @@ class SessionService extends ChangeNotifier {
           avatarUrl: resolvedAvatarUrl,
         );
         _token = clerkToken;
+        _hasLoggedOut = false;
+
         if (kDebugMode) {
           debugPrint('🔑 [CLERK TOKEN FOR POSTMAN (${_user?.role})]: $clerkToken');
         }
         
         notifyListeners();
+        await _persistSession();
         return true;
       }
       return false;
@@ -86,7 +164,7 @@ class SessionService extends ChangeNotifier {
     }
   }
 
-  void loginAs(AppRole targetRole) {
+  Future<void> loginAs(AppRole targetRole) async {
     // Keep this for local testing without backend if needed
     _role = targetRole;
     switch (targetRole) {
@@ -99,6 +177,7 @@ class SessionService extends ChangeNotifier {
           role: 'ADMIN',
         );
         _token = 'demo_admin_jwt_token';
+        _hasLoggedOut = false;
         break;
       case AppRole.user:
         _user = const UserProfile(
@@ -109,23 +188,27 @@ class SessionService extends ChangeNotifier {
           role: 'USER',
         );
         _token = 'demo_customer_jwt_token';
+        _hasLoggedOut = false;
         break;
       case AppRole.guest:
         _user = null;
         _token = null;
+        _hasLoggedOut = false;
         break;
     }
 
     ApiClient().setAuthToken(_token);
     notifyListeners();
+    await _persistSession();
   }
 
-  void logout() {
+  Future<void> logout() async {
     _role = AppRole.guest;
     _user = null;
     _token = null;
     _hasLoggedOut = true;
     ApiClient().setAuthToken(null);
     notifyListeners();
+    await _persistSession();
   }
 }
