@@ -66,17 +66,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
-          children: const [
+          children: [
             SizedBox(
               width: 20,
               height: 20,
-              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              child: CircularProgressIndicator(color: context.colorScheme.onPrimary, strokeWidth: 2),
             ),
-            SizedBox(width: 12),
-            Text('Syncing with Cocoloco system...'),
+            const SizedBox(width: 12),
+            const Text('Syncing with Cocoloco system...'),
           ],
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: context.colorScheme.primary,
         duration: const Duration(seconds: 10),
       ),
     );
@@ -92,22 +92,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white),
-                SizedBox(width: 10),
-                Text('Signed in and synced successfully!'),
+                Icon(Icons.check_circle_rounded, color: AppPalette.pureWhite),
+                const SizedBox(width: 10),
+                const Text('Signed in and synced successfully!'),
               ],
             ),
-            backgroundColor: Color(0xFF2E7D32),
+            backgroundColor: AppPalette.emeraldGreen,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sync failed. Please try again.'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text('Sync failed. Please try again.'),
+            backgroundColor: context.colorScheme.error,
           ),
         );
       }
@@ -255,7 +255,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 6),
           Text(
             ord.items.map((i) => '${i.quantity}x ${i.productName}').join(', '),
-            style: const TextStyle(fontSize: 13, color: Color(0xFF5A524C)),
+            style: TextStyle(fontSize: 13, color: context.colorScheme.onSurfaceVariant),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -268,7 +268,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$feature feature coming soon!'),
-        backgroundColor: AppColors.primary,
+        backgroundColor: context.colorScheme.primary,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -372,7 +372,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: l10n.vouchersAndOffers,
                   subtitle: l10n.vouchersSub,
                   badge: '2 NEW',
-                  badgeColor: const Color(0xFFE65100),
+                  badgeColor: AppPalette.amberOrange,
                   onTap: () => _showComingSoon(l10n.vouchersAndOffers),
                 ),
               ]),
@@ -386,17 +386,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildProfileCard(bool isLoggedIn, AppRole role, UserProfile? user) {
     final avatarUrl = user?.avatarUrl;
     final hasAvatar = isLoggedIn && avatarUrl != null && avatarUrl.isNotEmpty;
+    final theme = Theme.of(context);
+    final cocolocoColors = context.cocolocoTheme;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
         borderRadius: BorderRadius.circular(26),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: theme.shadowColor.withValues(alpha: 0.05),
             blurRadius: 18,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -410,10 +412,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: role == AppRole.admin
-                        ? [const Color(0xFF5B1921), const Color(0xFF862B37)]
+                        ? [context.colorScheme.primary, AppPalette.burgundy700]
                         : isLoggedIn
-                            ? [AppColors.primary, const Color(0xFF7A2531)]
-                            : [const Color(0xFFDFD9D0), const Color(0xFFC5BDB0)],
+                            ? [context.colorScheme.primary, AppPalette.burgundy600]
+                            : [context.colorScheme.surfaceContainerHighest, context.colorScheme.outlineVariant],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -421,8 +423,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   boxShadow: [
                     BoxShadow(
                       color: role == AppRole.admin
-                          ? const Color(0x445B1921)
-                          : const Color(0x22000000),
+                          ? context.colorScheme.primary.withValues(alpha: 0.3)
+                          : theme.shadowColor.withValues(alpha: 0.12),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -441,7 +443,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ? Icons.admin_panel_settings_rounded
                                   : Icons.person_rounded,
                               size: 32,
-                              color: Colors.white,
+                              color: isLoggedIn ? context.colorScheme.onPrimary : context.colorScheme.onSurfaceVariant,
                             ),
                           ),
                         )
@@ -453,7 +455,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ? Icons.person_rounded
                                     : Icons.person_outline_rounded,
                             size: 32,
-                            color: Colors.white,
+                            color: isLoggedIn ? context.colorScheme.onPrimary : context.colorScheme.onSurfaceVariant,
                           ),
                         ),
                 ),
@@ -484,40 +486,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    Builder(
-                      builder: (context) {
-                        final isDark = Theme.of(context).brightness == Brightness.dark;
-                        final badgeBg = role == AppRole.admin
-                            ? (isDark ? const Color(0xFF4A1D1D) : const Color(0xFFFDEEEC))
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: role == AppRole.admin
+                            ? cocolocoColors.statusCancelledBg
                             : isLoggedIn
-                                ? (isDark ? const Color(0xFF1C4522) : const Color(0xFFEAF8ED))
-                                : context.colorScheme.surfaceContainerHighest;
-                        final badgeText = role == AppRole.admin
-                            ? (isDark ? const Color(0xFFFEB2B2) : const Color(0xFFC53030))
+                                ? cocolocoColors.statusCompletedBg
+                                : context.colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        role == AppRole.admin
+                            ? '🛡️ Administrator (ADMIN)'
                             : isLoggedIn
-                                ? (isDark ? const Color(0xFF9AE6B4) : const Color(0xFF2E7D32))
-                                : context.colorScheme.onSurfaceVariant;
-
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: badgeBg,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            role == AppRole.admin
-                                ? '🛡️ Administrator (ADMIN)'
-                                : isLoggedIn
-                                    ? '⭐ Loyal Member (USER)'
-                                    : '👤 Guest (GUEST)',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: badgeText,
-                            ),
-                          ),
-                        );
-                      },
+                                ? '⭐ Loyal Member (USER)'
+                                : '👤 Guest (GUEST)',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: role == AppRole.admin
+                              ? cocolocoColors.statusCancelledText
+                              : isLoggedIn
+                                  ? cocolocoColors.statusCompletedText
+                                  : context.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -531,13 +525,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               height: 48,
               child: ElevatedButton.icon(
                 onPressed: _handleClerkLogin,
-                icon: const Icon(Icons.login_rounded, color: Colors.white, size: 20),
+                icon: Icon(Icons.login_rounded, color: context.colorScheme.onPrimary, size: 20),
                 label: Text(
                   context.l10n.signInButton,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: context.colorScheme.onPrimary,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -559,16 +553,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF2B221E), Color(0xFF1B1513)],
+          colors: [AppPalette.darkSurfaceElevated, AppPalette.darkSurface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x2A000000),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.14),
             blurRadius: 14,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -584,17 +578,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                        color: AppPalette.gold.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.coffee_rounded, color: Color(0xFFD4AF37), size: 18),
+                      child: const Icon(Icons.coffee_rounded, color: AppPalette.gold, size: 18),
                     ),
                     const SizedBox(width: 8),
                     const Flexible(
                       child: Text(
                         'COCOLOCO REWARDS',
                         style: TextStyle(
-                          color: Color(0xFFD4AF37),
+                          color: AppPalette.gold,
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.8,
@@ -610,12 +604,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: AppPalette.pureWhite.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   context.l10n.goldMember.toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800),
+                  style: const TextStyle(color: AppPalette.pureWhite, fontSize: 10, fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -631,7 +625,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     Text(
                       context.l10n.cocolocoBeans,
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      style: TextStyle(color: AppPalette.pureWhite.withValues(alpha: 0.7), fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -640,7 +634,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       '180 ☕',
                       style: TextStyle(
                         fontFamily: AppTypography.fontFamily,
-                        color: Colors.white,
+                        color: AppPalette.pureWhite,
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                       ),
@@ -652,13 +646,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               OutlinedButton(
                 onPressed: () => _showComingSoon('Redeem Points'),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFD4AF37), width: 1.2),
+                  side: const BorderSide(color: AppPalette.gold, width: 1.2),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 ),
                 child: Text(
                   context.l10n.redeemGifts,
-                  style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.w700),
+                  style: const TextStyle(color: AppPalette.gold, fontSize: 12, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -672,17 +666,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF5B1921), Color(0xFF862B37)],
+        gradient: LinearGradient(
+          colors: [context.colorScheme.primary, AppPalette.burgundy700],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x335B1921),
+            color: context.colorScheme.primary.withValues(alpha: 0.25),
             blurRadius: 18,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -692,14 +686,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.shield_rounded, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
+                  Icon(Icons.shield_rounded, color: context.colorScheme.onPrimary, size: 20),
+                  const SizedBox(width: 8),
                   Text(
                     'STORE MANAGEMENT',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.colorScheme.onPrimary,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                       fontSize: 13.5,
@@ -710,20 +704,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white24,
+                  color: context.colorScheme.onPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
+                child: Text(
                   'ADMIN HUB',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.colorScheme.onPrimary),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'You have full permissions to track and manage customer orders across the system.',
-            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+            style: TextStyle(color: context.colorScheme.onPrimary.withValues(alpha: 0.8), fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 16),
           Row(
@@ -733,13 +727,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   height: 46,
                   child: ElevatedButton.icon(
                     onPressed: () => AdminProductsScreen.show(context),
-                    icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFF5B1921), size: 18),
-                    label: const Text(
+                    icon: Icon(Icons.inventory_2_outlined, color: context.colorScheme.primary, size: 18),
+                    label: Text(
                       'Menu Catalog',
-                      style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF5B1921), fontSize: 13.5),
+                      style: TextStyle(fontWeight: FontWeight.w800, color: context.colorScheme.primary, fontSize: 13.5),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.colorScheme.surface,
+                      foregroundColor: context.colorScheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
@@ -752,13 +747,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   height: 46,
                   child: ElevatedButton.icon(
                     onPressed: _openAdminOrdersManager,
-                    icon: const Icon(Icons.receipt_long_rounded, color: Color(0xFF5B1921), size: 18),
-                    label: const Text(
+                    icon: Icon(Icons.receipt_long_rounded, color: context.colorScheme.primary, size: 18),
+                    label: Text(
                       'All Orders',
-                      style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF5B1921), fontSize: 13.5),
+                      style: TextStyle(fontWeight: FontWeight.w800, color: context.colorScheme.primary, fontSize: 13.5),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.colorScheme.surface,
+                      foregroundColor: context.colorScheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
@@ -791,11 +787,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x08000000),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.04),
             blurRadius: 14,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -849,7 +845,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               child: Text(
                 badge,
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: context.colorScheme.onPrimary),
               ),
             ),
         ],
