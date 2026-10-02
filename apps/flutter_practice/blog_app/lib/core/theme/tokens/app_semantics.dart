@@ -1,40 +1,28 @@
 import 'package:flutter/material.dart';
+
 import 'app_primitives.dart';
 
-/// ============================================================================
-/// TIER 2: SYSTEM / SEMANTIC DESIGN TOKENS
-/// ============================================================================
-/// Ánh xạ từ Primitive Tokens (Cấp 1) sang vai trò ngữ nghĩa của hệ thống.
-/// Trả lời câu hỏi: Token này đóng vai trò gì trong giao diện?
-/// Hỗ trợ chuyển đổi ColorScheme (Light / Dark) và đồng bộ TextTheme.
-/// ============================================================================
-
 abstract final class AppSemanticColors {
-  // Brand Roles
   static const Color primary = AppPalette.burgundy800;
   static const Color primaryDark = AppPalette.burgundy900;
   static const Color primaryLight = AppPalette.burgundy600;
 
-  // Background & Surfaces
   static const Color background = AppPalette.cream50;
   static const Color surface = AppPalette.pureWhite;
   static const Color surfaceMuted = AppPalette.cream100;
   static const Color borderSubtle = AppPalette.cream200;
   static const Color divider = AppPalette.cream300;
 
-  // Text Roles
   static const Color textPrimary = AppPalette.espresso900;
   static const Color textSecondary = AppPalette.taupe500;
   static const Color textMuted = AppPalette.taupe300;
   static const Color textOnPrimary = AppPalette.pureWhite;
 
-  // Functional Roles
   static const Color success = AppPalette.emeraldGreen;
   static const Color error = AppPalette.crimsonRed;
   static const Color warning = AppPalette.honeyAmber;
   static const Color info = AppPalette.infoBlue;
 
-  /// Material 3 ColorScheme chuẩn mực (Light Mode)
   static const ColorScheme lightColorScheme = ColorScheme.light(
     primary: primary,
     onPrimary: textOnPrimary,
@@ -50,7 +38,6 @@ abstract final class AppSemanticColors {
     onError: textOnPrimary,
   );
 
-  /// Material 3 ColorScheme chuẩn mực (Espresso Night Dark Mode)
   static const ColorScheme darkColorScheme = ColorScheme.dark(
     primary: AppPalette.darkPrimary,
     onPrimary: AppPalette.darkBackground,
@@ -70,7 +57,6 @@ abstract final class AppSemanticColors {
 abstract final class AppSemanticTypography {
   static const String fontFamily = 'Chap';
 
-  // Display / Hero Headings
   static const TextStyle displayLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 28,
@@ -79,7 +65,6 @@ abstract final class AppSemanticTypography {
     letterSpacing: -0.4,
   );
 
-  // Large Section Headings ("Your Orders", "Account & Role")
   static const TextStyle headlineLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 24,
@@ -88,7 +73,6 @@ abstract final class AppSemanticTypography {
     letterSpacing: -0.3,
   );
 
-  // Medium Headings ("Let's get this day going", "April special")
   static const TextStyle headlineMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 20,
@@ -97,7 +81,6 @@ abstract final class AppSemanticTypography {
     letterSpacing: -0.2,
   );
 
-  // Card & Sub-section Titles
   static const TextStyle titleLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 20,
@@ -113,7 +96,6 @@ abstract final class AppSemanticTypography {
     color: AppSemanticColors.textPrimary,
   );
 
-  // Body Texts
   static const TextStyle bodyLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 16,
@@ -128,7 +110,6 @@ abstract final class AppSemanticTypography {
     color: AppSemanticColors.textSecondary,
   );
 
-  // Captions & Microcopy
   static const TextStyle caption = TextStyle(
     fontFamily: fontFamily,
     fontSize: 12,
@@ -136,7 +117,6 @@ abstract final class AppSemanticTypography {
     color: AppSemanticColors.textSecondary,
   );
 
-  // Buttons & Badges
   static const TextStyle labelLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 15,
@@ -144,7 +124,6 @@ abstract final class AppSemanticTypography {
     letterSpacing: 0.2,
   );
 
-  /// Material 3 TextTheme trọn vẹn (Light Mode)
   static const TextTheme textTheme = TextTheme(
     displayLarge: displayLarge,
     headlineLarge: headlineLarge,
@@ -157,7 +136,6 @@ abstract final class AppSemanticTypography {
     labelLarge: labelLarge,
   );
 
-  /// Material 3 TextTheme trọn vẹn (Dark Mode)
   static final TextTheme darkTextTheme = TextTheme(
     displayLarge: displayLarge.copyWith(color: AppPalette.darkPrimary),
     headlineLarge: headlineLarge.copyWith(color: AppPalette.darkPrimary),

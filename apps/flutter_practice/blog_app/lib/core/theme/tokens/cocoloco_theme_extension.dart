@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
-import 'app_primitives.dart';
 
-/// ============================================================================
-/// TIER 3: DOMAIN COMPONENT TOKENS (FLUTTER THEME EXTENSION)
-/// ============================================================================
-/// Chứa các token đặc thù của thương hiệu Cocoloco F&B mà Material 3 không có.
-/// Cho phép truy cập qua `Theme.of(context).extension<CocolocoCustomTheme>()!`
-/// hoặc extension tiện ích `context.cocolocoTheme`.
-/// ============================================================================
+import 'app_primitives.dart';
 
 class CocolocoCustomTheme extends ThemeExtension<CocolocoCustomTheme> {
   final Color cappuccinoPink;
@@ -52,7 +45,6 @@ class CocolocoCustomTheme extends ThemeExtension<CocolocoCustomTheme> {
     required this.statusPendingText,
   });
 
-  /// Light Mode preset chuẩn xác theo Figma Cocoloco
   static const CocolocoCustomTheme light = CocolocoCustomTheme(
     cappuccinoPink: AppPalette.coralRose,
     croissantBlue: AppPalette.periwinkleBlue,
@@ -75,7 +67,6 @@ class CocolocoCustomTheme extends ThemeExtension<CocolocoCustomTheme> {
     statusPendingText: AppPalette.statusPendingText,
   );
 
-  /// Dark Mode preset (Espresso Night Cocoloco)
   static const CocolocoCustomTheme dark = CocolocoCustomTheme(
     cappuccinoPink: AppPalette.coralRose,
     croissantBlue: AppPalette.periwinkleBlue,
@@ -161,19 +152,46 @@ class CocolocoCustomTheme extends ThemeExtension<CocolocoCustomTheme> {
       cartButtonBg: Color.lerp(cartButtonBg, other.cartButtonBg, t)!,
       cartButtonIcon: Color.lerp(cartButtonIcon, other.cartButtonIcon, t)!,
       shadowCard: Color.lerp(shadowCard, other.shadowCard, t)!,
-      statusConfirmedBg: Color.lerp(statusConfirmedBg, other.statusConfirmedBg, t)!,
-      statusConfirmedText: Color.lerp(statusConfirmedText, other.statusConfirmedText, t)!,
-      statusCompletedBg: Color.lerp(statusCompletedBg, other.statusCompletedBg, t)!,
-      statusCompletedText: Color.lerp(statusCompletedText, other.statusCompletedText, t)!,
-      statusCancelledBg: Color.lerp(statusCancelledBg, other.statusCancelledBg, t)!,
-      statusCancelledText: Color.lerp(statusCancelledText, other.statusCancelledText, t)!,
+      statusConfirmedBg: Color.lerp(
+        statusConfirmedBg,
+        other.statusConfirmedBg,
+        t,
+      )!,
+      statusConfirmedText: Color.lerp(
+        statusConfirmedText,
+        other.statusConfirmedText,
+        t,
+      )!,
+      statusCompletedBg: Color.lerp(
+        statusCompletedBg,
+        other.statusCompletedBg,
+        t,
+      )!,
+      statusCompletedText: Color.lerp(
+        statusCompletedText,
+        other.statusCompletedText,
+        t,
+      )!,
+      statusCancelledBg: Color.lerp(
+        statusCancelledBg,
+        other.statusCancelledBg,
+        t,
+      )!,
+      statusCancelledText: Color.lerp(
+        statusCancelledText,
+        other.statusCancelledText,
+        t,
+      )!,
       statusPendingBg: Color.lerp(statusPendingBg, other.statusPendingBg, t)!,
-      statusPendingText: Color.lerp(statusPendingText, other.statusPendingText, t)!,
+      statusPendingText: Color.lerp(
+        statusPendingText,
+        other.statusPendingText,
+        t,
+      )!,
     );
   }
 }
 
-/// Extension tiện lợi giúp gọi trực tiếp `context.cocolocoTheme`
 extension CocolocoThemeContext on BuildContext {
   CocolocoCustomTheme get cocolocoTheme {
     return Theme.of(this).extension<CocolocoCustomTheme>() ??
