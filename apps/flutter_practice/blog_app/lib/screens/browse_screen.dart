@@ -175,6 +175,7 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
+              heroTag: 'browse_admin_add_product_fab',
               backgroundColor: context.colorScheme.primary,
               elevation: 4,
               icon: Icon(Icons.add_rounded, color: context.colorScheme.onPrimary),

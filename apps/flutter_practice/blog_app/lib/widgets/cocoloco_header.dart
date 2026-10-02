@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/localization/locale_provider.dart';
 import '../core/services/session_service.dart';
 import '../core/theme/app_theme.dart';
+import '../data/providers/cart_provider.dart';
 import '../models/user_profile.dart';
+import '../screens/cart_screen.dart';
 import '../screens/profile_screen.dart';
 
 class CocolocoHeader extends StatelessWidget {
@@ -60,36 +61,36 @@ class CocolocoHeader extends StatelessWidget {
               ),
               const SizedBox(width: 4),
 
-              // Quick Language Switcher Chip (EN / VI)
+              // Cart Action Icon with Dynamic Badge
               Consumer(
                 builder: (context, ref, _) {
-                  final locale = ref.watch(localeProvider);
-                  final isVi = locale.languageCode == 'vi';
+                  final cartCount = ref.watch(cartProvider.select((s) => s.totalItemCount));
 
                   return Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(24),
                       onTap: () {
-                        ref.read(localeProvider.notifier).toggleLocale();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CartScreen()),
+                        );
                       },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        decoration: BoxDecoration(
-                          color: context.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: context.colorScheme.outlineVariant,
-                            width: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Badge(
+                          isLabelVisible: cartCount > 0,
+                          backgroundColor: const Color(0xFFD9534F),
+                          textColor: Colors.white,
+                          textStyle: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                        child: Text(
-                          isVi ? '🇻🇳 VI' : '🇬🇧 EN',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w800,
+                          label: Text('$cartCount'),
+                          child: Icon(
+                            Icons.shopping_bag_outlined,
                             color: context.colorScheme.primary,
+                            size: 26,
                           ),
                         ),
                       ),
@@ -97,7 +98,7 @@ class CocolocoHeader extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               // Profile Action Icon / Avatar
               ListenableBuilder(
                 listenable: SessionService.instance,

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/providers/cart_provider.dart';
 import '../data/providers/orders_provider.dart';
 import '../widgets/cocoloco_bottom_nav_bar.dart';
 import 'browse_screen.dart';
-import 'cart_screen.dart';
 import 'favorites_screen.dart';
 import 'orders_screen.dart';
 import 'chat_screen.dart';
@@ -21,8 +19,6 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cartItemCount = ref.watch(cartProvider.select((s) => s.totalItemCount));
-
     final List<Widget> screens = const [
       BrowseScreen(),
       FavoritesScreen(),
@@ -36,28 +32,6 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         index: _currentIndex,
         children: screens,
       ),
-      floatingActionButton: cartItemCount > 0
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CartScreen(),
-                  ),
-                );
-              },
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              icon: Icon(Icons.shopping_bag_rounded, color: Theme.of(context).colorScheme.onPrimary),
-              label: Text(
-                '$cartItemCount items',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       bottomNavigationBar: CocolocoBottomNavBar(
         currentIndex: _currentIndex,
         onIndexChanged: (index) {

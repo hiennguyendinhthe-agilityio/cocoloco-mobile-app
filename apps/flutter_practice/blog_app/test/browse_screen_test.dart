@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:blog_app/data/providers/products_provider.dart';
 import 'package:blog_app/screens/browse_screen.dart';
+import 'package:blog_app/screens/cart_screen.dart';
 import 'package:blog_app/widgets/product_card.dart';
 import 'package:blog_app/widgets/promo_banner_card.dart';
 
@@ -73,6 +74,19 @@ void main() {
       // Tap search button again to close
       await tester.tap(searchButton);
       await tester.pumpAndSettle();
+    });
+
+    testWidgets('Tapping cart icon in header navigates to CartScreen',
+        (tester) async {
+      await tester.pumpWidget(createBrowseScreen());
+      await tester.pumpAndSettle();
+
+      final cartButton = find.byIcon(Icons.shopping_bag_outlined);
+      expect(cartButton, findsOneWidget);
+      await tester.tap(cartButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CartScreen), findsOneWidget);
     });
 
     testWidgets('Tapping a product card opens ProductDetailScreen',

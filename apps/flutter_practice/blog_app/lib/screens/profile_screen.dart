@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import '../core/localization/app_localizations.dart';
 import '../core/services/session_service.dart';
 import '../core/theme/app_theme.dart';
@@ -113,73 +112,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         );
       }
   }
-
-  void _confirmLogout() {
-    final l10n = context.l10n;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: context.colorScheme.surface,
-        title: Row(
-          children: [
-            const Icon(Icons.logout_rounded, color: Color(0xFFC53030), size: 24),
-            const SizedBox(width: 10),
-            Text(
-              l10n.signOut,
-              style: TextStyle(
-                fontFamily: AppTypography.fontFamily,
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-                color: context.colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          l10n.signOutConfirm,
-          style: TextStyle(fontSize: 14, color: context.colorScheme.onSurfaceVariant, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              l10n.cancel,
-              style: TextStyle(color: context.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await WebViewCookieManager().clearCookies();
-              } catch (_) {}
-              _session.logout();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.signedOutSuccessfully),
-                    backgroundColor: AppColors.primary,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFC53030),
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            child: Text(
-              l10n.signOut,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
 
   void _openAdminOrdersManager() {
     showModalBottomSheet(
@@ -444,32 +376,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   onTap: () => _showComingSoon(l10n.vouchersAndOffers),
                 ),
               ]),
-
-              // 5. Logout Button (If Logged In)
-              if (isLoggedIn) ...[
-                const SizedBox(height: 28),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    onPressed: _confirmLogout,
-                    icon: Icon(Icons.logout_rounded, color: context.colorScheme.error, size: 20),
-                    label: Text(
-                      l10n.signOut,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: context.colorScheme.error,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: context.colorScheme.error.withValues(alpha: 0.35), width: 1.5),
-                      backgroundColor: context.colorScheme.error.withValues(alpha: 0.1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
