@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
+import 'product.dart';
 
 @immutable
 class CartItem {
@@ -10,6 +11,7 @@ class CartItem {
   final int quantity;
   final double price;
   final Color titleColor;
+  final Product? product;
 
   const CartItem({
     required this.id,
@@ -19,6 +21,7 @@ class CartItem {
     this.quantity = 1,
     required this.price,
     this.titleColor = AppColors.primary,
+    this.product,
   }) : assert(quantity > 0, 'Quantity must be at least 1');
 
   double get totalPrice => price * quantity;
@@ -31,6 +34,7 @@ class CartItem {
     int? quantity,
     double? price,
     Color? titleColor,
+    Product? product,
   }) {
     return CartItem(
       id: id ?? this.id,
@@ -40,6 +44,7 @@ class CartItem {
       quantity: quantity ?? this.quantity,
       price: price ?? this.price,
       titleColor: titleColor ?? this.titleColor,
+      product: product ?? this.product,
     );
   }
 

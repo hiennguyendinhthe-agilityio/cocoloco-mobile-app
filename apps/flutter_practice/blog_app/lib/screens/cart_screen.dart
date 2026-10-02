@@ -7,10 +7,13 @@ import '../core/theme/app_theme.dart';
 import '../data/providers/cart_provider.dart';
 import '../data/providers/orders_provider.dart';
 import '../models/cart_item.dart';
+import '../models/product.dart';
+import '../data/providers/products_provider.dart';
 import '../widgets/cart_item_card.dart';
 import '../widgets/order_summary_card.dart';
 import 'clerk_webview_screen.dart';
 import 'order_success_screen.dart';
+import 'product_detail_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   final List<CartItem>? initialItems;
@@ -105,6 +108,34 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         ),
       );
     }
+  }
+
+  void _openItemDetail(CartItem item) {
+    Product? product = item.product;
+    if (product == null) {
+      final products = ref.read(productsProvider).products;
+      product = products.where((p) => p.id == item.productId).firstOrNull;
+    }
+    product ??= Product(
+      id: item.productId,
+      name: item.name,
+      description: item.customization,
+      price: item.price,
+      priceDisplay: '\$${item.price.toInt()}',
+      imageAsset: 'assets/images/cappuccino.jpg',
+      imageUrl: '',
+      category: 'coffee',
+      titleColor: item.titleColor,
+    );
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProductDetailScreen(
+          product: product!,
+          isEditingFromCart: true,
+        ),
+      ),
+    );
   }
 
   @override
@@ -207,7 +238,63 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
                         itemBuilder: (context, index) {
                           final item = cartState.items[index];
-                          return CartItemCard(item: item);
+                          return Dismissible(
+                            key: ValueKey(item.id),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: AppSpacing.xxl),
+                              decoration: BoxDecoration(
+                                color: context.colorScheme.error,
+                                borderRadius: BorderRadius.circular(AppRadii.cardLg),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.delete_rounded,
+                                    color: context.colorScheme.onError,
+                                    size: 26,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    context.l10n.delete,
+                                    style: TextStyle(
+                                      color: context.colorScheme.onError,
+                                      fontFamily: AppTypography.fontFamily,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            onDismissed: (_) {
+                              final removedItem = item;
+                              final removedIndex = index;
+                              ref.read(cartProvider.notifier).removeItem(item.id);
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('${removedItem.name} removed from cart'),
+                                  duration: const Duration(seconds: 4),
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    textColor: AppPalette.honeyAmber,
+                                    onPressed: () {
+                                      ref
+                                          .read(cartProvider.notifier)
+                                          .restoreItem(removedItem, index: removedIndex);
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                            child: CartItemCard(
+                              item: item,
+                              onTap: () => _openItemDetail(item),
+                            ),
+                          );
                         },
                       ),
               ),

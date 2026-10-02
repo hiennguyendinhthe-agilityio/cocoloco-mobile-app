@@ -207,5 +207,54 @@ void main() {
       expect(stateAfterSuccess.isEmpty, isTrue);
       expect(stateAfterSuccess.errorMessage, isNull);
     });
+
+    test('removeItem removes product by id', () {
+      final notifier = container.read(cartProvider.notifier);
+      notifier.addProduct(testProduct, quantity: 2);
+      expect(container.read(cartProvider).items.length, equals(1));
+
+      notifier.removeItem(testProduct.id);
+      expect(container.read(cartProvider).items.isEmpty, isTrue);
+    });
+
+    test('restoreItem restores removed item at original index for Undo operation', () {
+      final notifier = container.read(cartProvider.notifier);
+      const secondProduct = Product(
+        id: '87621d48-7a5a-49cc-b1b6-13ff420bf492',
+        name: 'Croissant',
+        description: 'Test pastry',
+        price: 3.0,
+        priceDisplay: r'$3',
+        imageAsset: 'assets/images/croissant.png',
+        category: 'bakery',
+        titleColor: AppColors.croissantBlue,
+      );
+
+      notifier.addProduct(testProduct, quantity: 1); // index 0
+      notifier.addProduct(secondProduct, quantity: 2); // index 1
+      expect(container.read(cartProvider).items.length, equals(2));
+
+      final removedItem = container.read(cartProvider).items.first; // Cappuccino at 0
+      notifier.removeItem(removedItem.id);
+      expect(container.read(cartProvider).items.length, equals(1));
+      expect(container.read(cartProvider).items.first.name, equals('Croissant'));
+
+      // Undo: Restore Cappuccino back at index 0
+      notifier.restoreItem(removedItem, index: 0);
+      final restoredItems = container.read(cartProvider).items;
+      expect(restoredItems.length, equals(2));
+      expect(restoredItems[0].name, equals('Cappuccino'));
+      expect(restoredItems[0].quantity, equals(1));
+      expect(restoredItems[1].name, equals('Croissant'));
+    });
+
+    test('setOrUpdateProduct with quantity 0 removes product from cart', () {
+      final notifier = container.read(cartProvider.notifier);
+      notifier.addProduct(testProduct, quantity: 3);
+      expect(container.read(cartProvider).items.length, equals(1));
+
+      notifier.setOrUpdateProduct(testProduct, quantity: 0);
+      expect(container.read(cartProvider).items.isEmpty, isTrue);
+    });
   });
 }
