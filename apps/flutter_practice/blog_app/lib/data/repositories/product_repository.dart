@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/constants/mock_data.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/api_constants.dart';
@@ -168,6 +169,46 @@ class ProductRepository {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('❌ [deleteProduct Error]: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Admin only: Uploads a product image file via POST /api/v1/uploads/image.
+  /// Returns the publicly accessible URL of the uploaded image.
+  Future<String> uploadImage(XFile file) async {
+    try {
+      final bytes = await file.readAsBytes();
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: file.name.isNotEmpty ? file.name : 'upload.jpg',
+        ),
+      });
+
+      final response = await _apiClient.dio.post(
+        ApiConstants.uploadsImage,
+        data: formData,
+      );
+
+      if (response.statusCode == 201 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final url = data['url'] as String? ?? '';
+        if (kDebugMode) {
+          debugPrint('📸 [Image Uploaded]: $url');
+        }
+        return url;
+      }
+      throw Exception('Unexpected server response: ${response.statusCode}');
+    } on DioException catch (e) {
+      final detail = _extractErrorMessage(e);
+      if (kDebugMode) {
+        debugPrint('❌ [uploadImage DioException]: $detail');
+      }
+      throw Exception(detail);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ [uploadImage Error]: $e');
       }
       rethrow;
     }

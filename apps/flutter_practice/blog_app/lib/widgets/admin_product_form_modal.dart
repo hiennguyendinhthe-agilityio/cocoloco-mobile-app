@@ -1,8 +1,12 @@
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 import '../data/providers/products_provider.dart';
+import '../data/repositories/product_repository.dart';
 import '../models/product.dart';
 
 class AdminProductFormModal extends ConsumerStatefulWidget {
@@ -37,6 +41,53 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
   late String _selectedCategory;
   late bool _isAvailable;
   bool _isSubmitting = false;
+
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _isUploadingImage = false;
+  XFile? _pickedLocalFile;
+
+  final List<Map<String, String>> _presetImages = const [
+    {
+      'name': 'Cappuccino',
+      'category': 'coffee',
+      'url': 'https://images.unsplash.com/photo-1572442388796-11668ba67e53?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'name': 'Iced Latte',
+      'category': 'coffee',
+      'url': 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'name': 'Matcha Cloud',
+      'category': 'seasonal',
+      'url': 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'name': 'French Croissant',
+      'category': 'pastry',
+      'url': 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'name': 'Cold Brew Bottle',
+      'category': 'coffee',
+      'url': 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'name': 'Breakfast Bundle',
+      'category': 'bundle',
+      'url': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'name': 'Berry Cheesecake',
+      'category': 'pastry',
+      'url': 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      'name': 'Artisanal Bread',
+      'category': 'pastry',
+      'url': 'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80',
+    },
+  ];
 
   final List<Map<String, String>> _categories = const [
     {'value': 'coffee', 'label': '☕ Coffee'},
@@ -76,6 +127,150 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
   }
 
   bool get _isEditMode => widget.product != null;
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 85,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+      if (picked == null) return;
+
+      setState(() {
+        _pickedLocalFile = picked;
+        _isUploadingImage = true;
+      });
+
+      try {
+        final uploadedUrl = await ProductRepository().uploadImage(picked);
+        if (mounted) {
+          setState(() {
+            _imageUrlController.text = uploadedUrl;
+            _isUploadingImage = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✨ Image uploaded to Cocoloco server successfully!'),
+              backgroundColor: Color(0xFF2E7D32),
+            ),
+          );
+        }
+      } catch (uploadError) {
+        if (mounted) {
+          setState(() {
+            _isUploadingImage = false;
+            _imageUrlController.text = picked.path;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Local image selected ($uploadError)'),
+              backgroundColor: const Color(0xFFD97706),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not access photos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _openPresetLibrary() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Cocoloco Preset Library',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Tap any photo to instantly use it for this product item:',
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 240,
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 0.82,
+                  ),
+                  itemCount: _presetImages.length,
+                  itemBuilder: (_, index) {
+                    final item = _presetImages[index];
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        setState(() {
+                          _imageUrlController.text = item['url']!;
+                          _pickedLocalFile = null;
+                        });
+                        Navigator.pop(ctx);
+                      },
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                item['url']!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Container(
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.broken_image, size: 20),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item['name']!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -284,26 +479,108 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
               ),
               const SizedBox(height: 14),
 
-              // 3. Image URL & Live Preview
-              _buildFieldLabel('Image URL'),
+              // 3. Product Photo & Multi-Source Picker
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildFieldLabel('Product Image'),
+                  if (_imageUrlController.text.isNotEmpty || _pickedLocalFile != null)
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _imageUrlController.clear();
+                          _pickedLocalFile = null;
+                        });
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        child: Text(
+                          'Clear Photo',
+                          style: TextStyle(fontSize: 12, color: Colors.red, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildImageSourceButton(
+                      icon: Icons.photo_library_rounded,
+                      label: 'Gallery',
+                      onTap: () => _pickImage(ImageSource.gallery),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildImageSourceButton(
+                      icon: Icons.camera_alt_rounded,
+                      label: 'Camera',
+                      onTap: () => _pickImage(ImageSource.camera),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildImageSourceButton(
+                      icon: Icons.collections_rounded,
+                      label: 'Presets',
+                      onTap: _openPresetLibrary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              if (_isUploadingImage)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBF9F5),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Uploading image to server...',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              if (_pickedLocalFile != null || _imageUrlController.text.trim().isNotEmpty) ...[
+                _buildImagePreview(),
+                const SizedBox(height: 10),
+              ],
+
               TextFormField(
                 controller: _imageUrlController,
                 keyboardType: TextInputType.url,
-                decoration: _inputDecoration('https://images.unsplash.com/...', Icons.image_rounded),
+                style: const TextStyle(fontSize: 12.5),
+                decoration: _inputDecoration('Or enter image URL (https://...)', Icons.link_rounded),
                 validator: (val) {
                   if (val != null && val.trim().isNotEmpty) {
                     final clean = val.trim();
-                    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+                    if (!clean.startsWith('http://') && !clean.startsWith('https://') && !clean.startsWith('/')) {
                       return 'URL must start with http:// or https://';
                     }
                   }
                   return null;
                 },
               ),
-              if (_imageUrlController.text.trim().isNotEmpty) ...[
-                const SizedBox(height: 8),
-                _buildImagePreview(_imageUrlController.text.trim()),
-              ],
               const SizedBox(height: 14),
 
               // 4. Description
@@ -450,17 +727,54 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
     );
   }
 
-  Widget _buildImagePreview(String url) {
-    return Container(
-      height: 120,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3EFE8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2DDD5)),
+  Widget _buildImageSourceButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFBF9F5),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFECE7DE)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.network(
+    );
+  }
+
+  Widget _buildImagePreview() {
+    Widget imageWidget;
+    if (_pickedLocalFile != null) {
+      if (kIsWeb) {
+        imageWidget = Image.network(_pickedLocalFile!.path, fit: BoxFit.cover);
+      } else {
+        imageWidget = Image.file(File(_pickedLocalFile!.path), fit: BoxFit.cover);
+      }
+    } else {
+      final url = _imageUrlController.text.trim();
+      imageWidget = Image.network(
         url,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => const Center(
@@ -470,13 +784,80 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
               Icon(Icons.broken_image_rounded, color: Colors.grey),
               SizedBox(width: 8),
               Text(
-                'Unable to load image from this URL',
+                'Unable to preview image',
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
         ),
-      ),
+      );
+    }
+
+    return Stack(
+      children: [
+        Container(
+          height: 130,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF3EFE8),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2DDD5)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: imageWidget,
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Material(
+            color: Colors.black54,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () {
+                setState(() {
+                  _imageUrlController.clear();
+                  _pickedLocalFile = null;
+                });
+              },
+              child: const Padding(
+                padding: EdgeInsets.all(5),
+                child: Icon(Icons.close_rounded, size: 16, color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 8,
+          left: 8,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _pickedLocalFile != null ? Icons.photo_rounded : Icons.cloud_done_rounded,
+                  size: 12,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _pickedLocalFile != null ? 'LOCAL PHOTO' : 'IMAGE READY',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
