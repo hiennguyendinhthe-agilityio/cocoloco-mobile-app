@@ -2,10 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'api_constants.dart';
+import 'error_interceptor.dart';
 
 class ApiClient {
-  static final ApiClient _instance = ApiClient._internal();
+  static ApiClient _instance = ApiClient._internal();
   factory ApiClient() => _instance;
+  static set instance(ApiClient newInstance) => _instance = newInstance;
+  static void resetInstance() => _instance = ApiClient._internal();
 
   late final Dio dio;
   String? _authToken;
@@ -37,7 +40,10 @@ class ApiClient {
       ),
     );
 
-    // 2. Clean, Compact Logger in Debug Console (Avoids flooding console)
+    // 2. Centralized Error Handling Interceptor
+    dio.interceptors.add(ErrorInterceptor());
+
+    // 3. Clean, Compact Logger in Debug Console (Avoids flooding console)
     if (kDebugMode) {
       dio.interceptors.add(
         PrettyDioLogger(

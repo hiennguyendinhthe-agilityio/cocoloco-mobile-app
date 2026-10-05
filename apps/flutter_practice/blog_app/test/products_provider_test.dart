@@ -2,6 +2,7 @@ import 'package:blog_app/core/providers/network_providers.dart';
 import 'package:blog_app/core/theme/app_colors.dart';
 import 'package:blog_app/data/providers/products_provider.dart';
 import 'package:blog_app/data/repositories/product_repository.dart';
+import 'package:blog_app/models/paginated_response.dart';
 import 'package:blog_app/models/product.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,14 +17,37 @@ class MockProductRepository extends ProductRepository {
   });
 
   @override
-  Future<List<Product>> getProducts({String? category, int page = 1, int size = 20}) async {
+  Future<PaginatedResponse<Product>> getProductsPaged({
+    String? category,
+    int page = 1,
+    int size = 10,
+  }) async {
     if (shouldThrow) throw Exception('API Error');
+    List<Product> filtered = productsToReturn;
     if (category != null && category.isNotEmpty && category != 'all') {
-      return productsToReturn
+      filtered = productsToReturn
           .where((p) => p.category.toLowerCase() == category.toLowerCase())
           .toList();
     }
-    return productsToReturn;
+    final total = filtered.length;
+    final startIndex = (page - 1) * size;
+    final items = (startIndex >= total || startIndex < 0)
+        ? <Product>[]
+        : filtered.skip(startIndex).take(size).toList();
+    final pages = total == 0 ? 0 : (total / size).ceil();
+    return PaginatedResponse<Product>(
+      items: items,
+      total: total,
+      page: page,
+      size: size,
+      pages: pages,
+    );
+  }
+
+  @override
+  Future<List<Product>> getProducts({String? category, int page = 1, int size = 20}) async {
+    final paged = await getProductsPaged(category: category, page: page, size: size);
+    return paged.items;
   }
 
   @override
@@ -248,6 +272,68 @@ void main() {
 
       notifier.setSearchQuery('croissant');
       expect(container.read(productsProvider).searchQuery, 'croissant');
+    });
+
+    test('loadMoreProducts appends items and increments currentPage', () async {
+      final manyProducts = List.generate(
+        15,
+        (i) => Product(
+          id: 'item_$i',
+          name: 'Item $i',
+          priceDisplay: '\$10',
+          price: 10,
+          titleColor: AppColors.americanoOrange,
+          imageAsset: 'assets/images/cappuccino.jpg',
+          description: 'Desc $i',
+          category: 'Coffee',
+        ),
+      );
+
+      final mockRepo = MockProductRepository(productsToReturn: manyProducts);
+      final container = ProviderContainer(
+        overrides: [
+          productRepositoryProvider.overrideWithValue(mockRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      // Initial load: 10 items (page 1)
+      await container.read(productsProvider.notifier).loadProducts();
+      var state = container.read(productsProvider);
+      expect(state.products.length, 10);
+      expect(state.currentPage, 1);
+      expect(state.hasMore, isTrue);
+      expect(state.isLoadingMore, isFalse);
+
+      // Load more: next 5 items (page 2)
+      await container.read(productsProvider.notifier).loadMoreProducts();
+      state = container.read(productsProvider);
+      expect(state.products.length, 15);
+      expect(state.currentPage, 2);
+      expect(state.hasMore, isFalse); // Total 15 items, page 2 has all
+      expect(state.isLoadingMore, isFalse);
+    });
+
+    test('loadMoreProducts does nothing if hasMore is false (anti-spam guard)', () async {
+      final mockRepo = MockProductRepository(productsToReturn: [p1]);
+      final container = ProviderContainer(
+        overrides: [
+          productRepositoryProvider.overrideWithValue(mockRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(productsProvider.notifier).loadProducts();
+      var state = container.read(productsProvider);
+      expect(state.products.length, 1);
+      expect(state.hasMore, isFalse);
+
+      // Attempting to load more when hasMore is false
+      await container.read(productsProvider.notifier).loadMoreProducts();
+      state = container.read(productsProvider);
+      expect(state.products.length, 1);
+      expect(state.currentPage, 1);
+      expect(state.isLoadingMore, isFalse);
     });
   });
 }

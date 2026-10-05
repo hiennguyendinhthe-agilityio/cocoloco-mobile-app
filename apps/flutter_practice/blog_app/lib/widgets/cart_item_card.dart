@@ -4,12 +4,14 @@ import '../models/cart_item.dart';
 
 class CartItemCard extends StatelessWidget {
   final CartItem item;
+  final VoidCallback? onTap;
   final VoidCallback? onIncrement;
   final VoidCallback? onDecrement;
 
   const CartItemCard({
     super.key,
     required this.item,
+    this.onTap,
     this.onIncrement,
     this.onDecrement,
   });
@@ -17,19 +19,26 @@ class CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xl,
-        vertical: AppSpacing.lg,
-      ),
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadii.cardLg),
         boxShadow: AppShadows.card,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadii.cardLg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadii.cardLg),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xl,
+              vertical: AppSpacing.lg,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
           // Left: Product Name & Customization
           Expanded(
             child: Column(
@@ -101,10 +110,13 @@ class CartItemCard extends StatelessWidget {
                   color: context.colorScheme.primary,
                 ),
               ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
-    );
+    ),
+  ),
+);
   }
 }

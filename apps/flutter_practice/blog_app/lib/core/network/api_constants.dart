@@ -18,6 +18,7 @@ class ApiConstants {
   static const String orders = '/orders';
   static const String myOrders = '/orders/me';
   static const String authSync = '/auth/sync';
+  static const String uploadsImage = '/uploads/image';
 
   // Clerk Authentication Configuration
   static const String clerkPublishableKey = 'pk_test_cHJvdWQtcmhpbm8tODA3NC5jbGVyay5hY2NvdW50cy5kZXYk';

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:blog_app/core/constants/mock_data.dart';
+import 'package:blog_app/core/localization/app_localizations.dart';
 import 'package:blog_app/data/providers/cart_provider.dart';
 import 'package:blog_app/models/product.dart';
+import 'package:blog_app/screens/cart_screen.dart';
 import 'package:blog_app/screens/product_detail_screen.dart';
 
 void main() {
@@ -13,15 +16,31 @@ void main() {
   Widget createTestWidget({
     Product? product,
     void Function(Product, int)? onAddToCart,
+    bool isEditingFromCart = false,
+    ProviderContainer? container,
   }) {
-    return ProviderScope(
-      child: MaterialApp(
-        home: ProductDetailScreen(
-          product: product ?? testProduct,
-          onAddToCart: onAddToCart ?? (product, quantity) {},
-        ),
+    final app = MaterialApp(
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: ProductDetailScreen(
+        product: product ?? testProduct,
+        onAddToCart: onAddToCart ?? (product, quantity) {},
+        isEditingFromCart: isEditingFromCart,
       ),
     );
+
+    if (container != null) {
+      return UncontrolledProviderScope(
+        container: container,
+        child: app,
+      );
+    }
+    return ProviderScope(child: app);
   }
 
   group('ProductDetailScreen Sliver Layout Tests', () {
@@ -306,6 +325,71 @@ void main() {
       expect(croissant.productType, equals(ProductType.bakery));
       expect(fruit.productType, equals(ProductType.bowl));
       expect(pasta.productType, equals(ProductType.meal));
+    });
+
+    testWidgets('In edit mode (isEditingFromCart), stepper can decrease to 0 and removes product', (tester) async {
+      await tester.pumpWidget(createTestWidget(isEditingFromCart: true));
+      await tester.pumpAndSettle();
+
+      // Initial state is 2x
+      expect(find.text('2x'), findsOneWidget);
+
+      // Tap - button once -> 1x
+      await tester.tap(find.byIcon(Icons.remove));
+      await tester.pump();
+      expect(find.text('1x'), findsOneWidget);
+
+      // Now at 1x in edit mode, minus button turns into trash icon
+      expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
+
+      // Tap trash button -> 0x
+      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      await tester.pump();
+      expect(find.text('0x'), findsOneWidget);
+      expect(find.text(r'$0'), findsOneWidget);
+      expect(find.text('Remove'), findsOneWidget);
+
+      // Tap + button -> increments back to 1x
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pump();
+      expect(find.text('1x'), findsOneWidget);
+      expect(find.text('Update Cart'), findsOneWidget);
+
+      // Tap trash button again -> 0x
+      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      await tester.pump();
+      expect(find.text('0x'), findsOneWidget);
+      expect(find.text('Remove'), findsOneWidget);
+
+      // Tap Remove button
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets(
+        'When opened from Home (isEditingFromCart: false), tapping View Cart opens CartScreen and does not pop to home even if product was already in cart',
+        (tester) async {
+      final container = ProviderContainer();
+      // Pre-add product to cart to simulate that the item is already existing in cart
+      container.read(cartProvider.notifier).addProduct(testProduct, quantity: 2);
+
+      await tester.pumpWidget(createTestWidget(
+        container: container,
+        isEditingFromCart: false,
+      ));
+      await tester.pumpAndSettle();
+
+      // Button says "View cart"
+      expect(find.text('View cart'), findsOneWidget);
+
+      // Tap "View cart"
+      await tester.tap(find.text('View cart'));
+      await tester.pumpAndSettle();
+
+      // Should have pushed CartScreen, NOT popped to home!
+      expect(find.byType(CartScreen), findsOneWidget);
+
+      container.dispose();
     });
   });
 }

@@ -32,6 +32,7 @@ abstract final class AppPalette {
   static const Color emeraldGreen = Color(0xFF2E7D32);
   static const Color crimsonRed = Color(0xFFD32F2F);
   static const Color honeyAmber = Color(0xFFFFA000);
+  static const Color gold = Color(0xFFD4AF37);
   static const Color infoBlue = Color(0xFF1976D2);
   static const Color clerkPurple = Color(0xFF6C47FF);
 

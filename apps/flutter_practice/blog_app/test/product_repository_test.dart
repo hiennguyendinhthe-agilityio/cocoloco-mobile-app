@@ -1,7 +1,9 @@
+import 'dart:typed_data';
 import 'package:blog_app/core/network/api_client.dart';
 import 'package:blog_app/data/repositories/product_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   group('ProductRepository Unit Tests (With Mocked Network)', () {
@@ -50,6 +52,46 @@ void main() {
       expect(products.length, 2);
       expect(products[0].name, 'Espresso');
       expect(products[1].name, 'Croissant');
+    });
+
+    test('getProductsPaged returns PaginatedResponse with pagination metadata on 200 OK', () async {
+      mockDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            return handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'items': [
+                    {
+                      'id': 'p1',
+                      'name': 'Espresso',
+                      'price': '2.50',
+                      'category': 'coffee',
+                      'is_available': true,
+                    },
+                  ],
+                  'total': 25,
+                  'page': 1,
+                  'size': 10,
+                  'pages': 3,
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      repository = ProductRepository(apiClient: ApiClient.withDio(mockDio));
+      final paged = await repository.getProductsPaged(page: 1, size: 10);
+
+      expect(paged.items.length, 1);
+      expect(paged.total, 25);
+      expect(paged.page, 1);
+      expect(paged.size, 10);
+      expect(paged.pages, 3);
+      expect(paged.hasMore, isTrue);
     });
 
     test('getProducts falls back gracefully to MockData on network error', () async {
@@ -339,6 +381,67 @@ void main() {
       expect(
         () => repository.deleteProduct('p_list_err'),
         throwsA(predicate((e) => e.toString().contains('String error 1'))),
+      );
+    });
+
+    test('uploadImage succeeds on 201 Created and returns image url', () async {
+      mockDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            return handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 201,
+                data: {
+                  'url': 'http://127.0.0.1:8000/static/images/test_image.png',
+                  'filename': 'test_image.png',
+                  'content_type': 'image/png',
+                  'size_bytes': 1024,
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      repository = ProductRepository(apiClient: ApiClient.withDio(mockDio));
+      final xFile = XFile.fromData(
+        Uint8List.fromList([1, 2, 3, 4]),
+        name: 'test_image.png',
+        mimeType: 'image/png',
+      );
+      final url = await repository.uploadImage(xFile);
+
+      expect(url, equals('http://127.0.0.1:8000/static/images/test_image.png'));
+    });
+
+    test('uploadImage throws exception on error', () async {
+      mockDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                response: Response(
+                  requestOptions: options,
+                  statusCode: 400,
+                  data: {'detail': 'Unsupported media type'},
+                ),
+              ),
+            );
+          },
+        ),
+      );
+
+      repository = ProductRepository(apiClient: ApiClient.withDio(mockDio));
+      final xFile = XFile.fromData(
+        Uint8List.fromList([1, 2, 3, 4]),
+        name: 'test_doc.txt',
+      );
+
+      expect(
+        () => repository.uploadImage(xFile),
+        throwsA(predicate((e) => e.toString().contains('Unsupported media type'))),
       );
     });
   });

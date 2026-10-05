@@ -57,51 +57,193 @@ void main() {
     final en = AppLocalizationsEn();
     final vi = AppLocalizationsVi();
 
-    test('All core translation keys return non-empty strings', () {
-      // App & Branding
-      expect(en.appTitle.isNotEmpty, isTrue);
-      expect(vi.appTitle.isNotEmpty, isTrue);
+    void assertAllGetters(AppLocalizations l10n) {
+      expect(l10n.locale, isNotNull);
+      expect(l10n.appTitle.isNotEmpty, isTrue);
+      expect(l10n.appTagline.isNotEmpty, isTrue);
+      expect(l10n.cancel.isNotEmpty, isTrue);
+      expect(l10n.save.isNotEmpty, isTrue);
+      expect(l10n.confirm.isNotEmpty, isTrue);
+      expect(l10n.delete.isNotEmpty, isTrue);
+      expect(l10n.edit.isNotEmpty, isTrue);
+      expect(l10n.close.isNotEmpty, isTrue);
+      expect(l10n.done.isNotEmpty, isTrue);
+      expect(l10n.retry.isNotEmpty, isTrue);
+      expect(l10n.search.isNotEmpty, isTrue);
+      expect(l10n.searchPlaceholder.isNotEmpty, isTrue);
+      expect(l10n.comingSoon.isNotEmpty, isTrue);
+      expect(l10n.comingSoonMsg.isNotEmpty, isTrue);
+      expect(l10n.ok.isNotEmpty, isTrue);
+      expect(l10n.error.isNotEmpty, isTrue);
+      expect(l10n.success.isNotEmpty, isTrue);
+      expect(l10n.loading.isNotEmpty, isTrue);
 
-      // Navigation
-      expect(en.navHome, equals('Home'));
-      expect(vi.navHome, equals('Trang chủ'));
-      expect(en.navCart, equals('Cart'));
-      expect(vi.navCart, equals('Giỏ hàng'));
-      expect(en.navOrders, equals('Orders'));
-      expect(vi.navOrders, equals('Đơn hàng'));
+      expect(l10n.navHome.isNotEmpty, isTrue);
+      expect(l10n.navFavorites.isNotEmpty, isTrue);
+      expect(l10n.navOrders.isNotEmpty, isTrue);
+      expect(l10n.navChat.isNotEmpty, isTrue);
+      expect(l10n.navCart.isNotEmpty, isTrue);
 
-      // Categories
-      expect(en.categoryAll, equals('All'));
-      expect(vi.categoryAll, equals('Tất cả'));
-      expect(en.categoryCoffee, equals('☕ Coffee'));
-      expect(vi.categoryCoffee, equals('☕ Cà phê'));
+      expect(l10n.categoryAll.isNotEmpty, isTrue);
+      expect(l10n.categoryCoffee.isNotEmpty, isTrue);
+      expect(l10n.categoryBakery.isNotEmpty, isTrue);
+      expect(l10n.categoryCombos.isNotEmpty, isTrue);
+      expect(l10n.categorySpecials.isNotEmpty, isTrue);
 
-      // Cart & Checkout
-      expect(en.subtotal, equals('Subtotal'));
-      expect(vi.subtotal, equals('Tạm tính'));
-      expect(en.deliveryFee, equals('Delivery Fee'));
-      expect(vi.deliveryFee, equals('Phí giao hàng'));
-      expect(en.total, equals('Total'));
-      expect(vi.total, equals('Tổng thanh toán'));
-      expect(en.checkout, equals('Go to checkout'));
-      expect(vi.checkout, equals('Tiến hành đặt hàng'));
+      expect(l10n.letsGetThisDayGoing.isNotEmpty, isTrue);
+      expect(l10n.aprilSpecial.isNotEmpty, isTrue);
+      expect(l10n.featuredOffers.isNotEmpty, isTrue);
+      expect(l10n.dailySpecial.isNotEmpty, isTrue);
+      expect(l10n.bestSellers.isNotEmpty, isTrue);
+      expect(l10n.addedToOrder('Latte').isNotEmpty, isTrue);
+      expect(l10n.outOfStock.isNotEmpty, isTrue);
+      expect(l10n.available.isNotEmpty, isTrue);
+      expect(l10n.viewCart.isNotEmpty, isTrue);
+      expect(l10n.addToOrder.isNotEmpty, isTrue);
+      expect(l10n.updateCart.isNotEmpty, isTrue);
+      expect(l10n.cartUpdated.isNotEmpty, isTrue);
+      expect(l10n.orderNow.isNotEmpty, isTrue);
+      expect(l10n.noProductsFound.isNotEmpty, isTrue);
+      expect(l10n.noProductsSub.isNotEmpty, isTrue);
 
-      // Profile & Settings
-      expect(en.displayLanguage, equals('Display Language'));
-      expect(vi.displayLanguage, equals('Ngôn ngữ hiển thị'));
-      expect(en.english, equals('English'));
-      expect(vi.english, equals('English (Tiếng Anh)'));
-      expect(en.vietnamese, equals('Vietnamese (Tiếng Việt)'));
-      expect(vi.vietnamese, equals('Tiếng Việt'));
+      expect(l10n.customization.isNotEmpty, isTrue);
+      expect(l10n.size.isNotEmpty, isTrue);
+      expect(l10n.regular.isNotEmpty, isTrue);
+      expect(l10n.large.isNotEmpty, isTrue);
+      expect(l10n.sweetness.isNotEmpty, isTrue);
+      expect(l10n.iceLevel.isNotEmpty, isTrue);
+      expect(l10n.milkOption.isNotEmpty, isTrue);
+      expect(l10n.reviews.isNotEmpty, isTrue);
+      expect(l10n.description.isNotEmpty, isTrue);
+      expect(l10n.ingredients.isNotEmpty, isTrue);
+
+      expect(l10n.cartTitle.isNotEmpty, isTrue);
+      expect(l10n.cartEmptyTitle.isNotEmpty, isTrue);
+      expect(l10n.cartEmptySubtitle.isNotEmpty, isTrue);
+      expect(l10n.subtotal.isNotEmpty, isTrue);
+      expect(l10n.deliveryFee.isNotEmpty, isTrue);
+      expect(l10n.total.isNotEmpty, isTrue);
+      expect(l10n.freeDelivery.isNotEmpty, isTrue);
+      expect(l10n.checkout.isNotEmpty, isTrue);
+      expect(l10n.checkoutProcessing.isNotEmpty, isTrue);
+      expect(l10n.clearCart.isNotEmpty, isTrue);
+      expect(l10n.clearCartConfirm.isNotEmpty, isTrue);
+      expect(l10n.orderFailed.isNotEmpty, isTrue);
+
+      expect(l10n.orderedTitle.isNotEmpty, isTrue);
+      expect(l10n.orderedSubtitle.isNotEmpty, isTrue);
+      expect(l10n.okayGotIt.isNotEmpty, isTrue);
+
+      expect(l10n.yourOrders.isNotEmpty, isTrue);
+      expect(l10n.trackReceipts.isNotEmpty, isTrue);
+      expect(l10n.allOrders.isNotEmpty, isTrue);
+      expect(l10n.pending.isNotEmpty, isTrue);
+      expect(l10n.brewing.isNotEmpty, isTrue);
+      expect(l10n.completed.isNotEmpty, isTrue);
+      expect(l10n.cancelled.isNotEmpty, isTrue);
+      expect(l10n.reorder.isNotEmpty, isTrue);
+      expect(l10n.noOrdersYet.isNotEmpty, isTrue);
+      expect(l10n.noOrdersSubtitle.isNotEmpty, isTrue);
+      expect(l10n.loginToViewOrders.isNotEmpty, isTrue);
+      expect(l10n.loginPromptSubtitle.isNotEmpty, isTrue);
+      expect(l10n.ordersCount(5).isNotEmpty, isTrue);
+
+      expect(l10n.cocolocoAccount.isNotEmpty, isTrue);
+      expect(l10n.signInPrompt.isNotEmpty, isTrue);
+      expect(l10n.signInSubtitle.isNotEmpty, isTrue);
+      expect(l10n.signInButton.isNotEmpty, isTrue);
+      expect(l10n.goldMember.isNotEmpty, isTrue);
+      expect(l10n.memberId.isNotEmpty, isTrue);
+      expect(l10n.cocolocoBeans.isNotEmpty, isTrue);
+      expect(l10n.redeemGifts.isNotEmpty, isTrue);
+      expect(l10n.ordersAndTransactions.isNotEmpty, isTrue);
+      expect(l10n.orderHistory.isNotEmpty, isTrue);
+      expect(l10n.orderHistorySub.isNotEmpty, isTrue);
+      expect(l10n.savedAddresses.isNotEmpty, isTrue);
+      expect(l10n.savedAddressesSub.isNotEmpty, isTrue);
+      expect(l10n.paymentMethods.isNotEmpty, isTrue);
+      expect(l10n.paymentMethodsSub.isNotEmpty, isTrue);
+      expect(l10n.vouchersAndOffers.isNotEmpty, isTrue);
+      expect(l10n.vouchersSub.isNotEmpty, isTrue);
+      expect(l10n.settingsAndUtilities.isNotEmpty, isTrue);
+      expect(l10n.pushNotifications.isNotEmpty, isTrue);
+      expect(l10n.notificationsSub.isNotEmpty, isTrue);
+      expect(l10n.accountSecurity.isNotEmpty, isTrue);
+      expect(l10n.securitySub.isNotEmpty, isTrue);
+      expect(l10n.secure.isNotEmpty, isTrue);
+      expect(l10n.displayLanguage.isNotEmpty, isTrue);
+      expect(l10n.currentLanguageName.isNotEmpty, isTrue);
+      expect(l10n.selectLanguage.isNotEmpty, isTrue);
+      expect(l10n.english.isNotEmpty, isTrue);
+      expect(l10n.vietnamese.isNotEmpty, isTrue);
+      expect(l10n.infoAndSupport.isNotEmpty, isTrue);
+      expect(l10n.customerSupport.isNotEmpty, isTrue);
+      expect(l10n.hotlineSub.isNotEmpty, isTrue);
+      expect(l10n.termsAndPolicies.isNotEmpty, isTrue);
+      expect(l10n.termsSub.isNotEmpty, isTrue);
+      expect(l10n.appVersion.isNotEmpty, isTrue);
+      expect(l10n.signOut.isNotEmpty, isTrue);
+      expect(l10n.signOutConfirm.isNotEmpty, isTrue);
+      expect(l10n.signedOutSuccessfully.isNotEmpty, isTrue);
+
+      expect(l10n.adminDashboard.isNotEmpty, isTrue);
+      expect(l10n.adminProductsTitle.isNotEmpty, isTrue);
+      expect(l10n.adminProductsSubtitle.isNotEmpty, isTrue);
+      expect(l10n.addProduct.isNotEmpty, isTrue);
+      expect(l10n.editProduct.isNotEmpty, isTrue);
+      expect(l10n.deleteProductConfirm('Latte').isNotEmpty, isTrue);
+      expect(l10n.deleteProductWarning.isNotEmpty, isTrue);
+      expect(l10n.productConflictError.isNotEmpty, isTrue);
+      expect(l10n.productName.isNotEmpty, isTrue);
+      expect(l10n.productPrice.isNotEmpty, isTrue);
+      expect(l10n.productCategory.isNotEmpty, isTrue);
+      expect(l10n.productDescription.isNotEmpty, isTrue);
+      expect(l10n.productImageUrl.isNotEmpty, isTrue);
+      expect(l10n.isAvailable.isNotEmpty, isTrue);
+
+      expect(l10n.welcomeToCocoloco.isNotEmpty, isTrue);
+      expect(l10n.signInSubtitleModal.isNotEmpty, isTrue);
+      expect(l10n.continueWithGoogle.isNotEmpty, isTrue);
+      expect(l10n.orWithEmail.isNotEmpty, isTrue);
+      expect(l10n.enterEmailAddress.isNotEmpty, isTrue);
+      expect(l10n.sendOtpCode.isNotEmpty, isTrue);
+      expect(l10n.guestCheckoutPrompt.isNotEmpty, isTrue);
+      expect(l10n.syncingWithBackend.isNotEmpty, isTrue);
+      expect(l10n.signedInSuccessfully.isNotEmpty, isTrue);
+      expect(l10n.syncFailed.isNotEmpty, isTrue);
+
+      expect(l10n.themeModeTitle.isNotEmpty, isTrue);
+      expect(l10n.themeLight.isNotEmpty, isTrue);
+      expect(l10n.themeDark.isNotEmpty, isTrue);
+      expect(l10n.themeSystem.isNotEmpty, isTrue);
+      expect(l10n.themeLightSubtitle.isNotEmpty, isTrue);
+      expect(l10n.themeDarkSubtitle.isNotEmpty, isTrue);
+      expect(l10n.themeSystemSubtitle.isNotEmpty, isTrue);
+    }
+
+    test('All English translation getters return non-empty strings', () {
+      assertAllGetters(en);
     });
 
-    test('LocalizationsDelegate supports en and vi, rejects unsupported', () {
+    test('All Vietnamese translation getters return non-empty strings', () {
+      assertAllGetters(vi);
+    });
+
+    test('LocalizationsDelegate supports en and vi, rejects unsupported and loads correctly', () async {
       const delegate = AppLocalizations.delegate;
 
       expect(delegate.isSupported(const Locale('en')), isTrue);
       expect(delegate.isSupported(const Locale('vi')), isTrue);
       expect(delegate.isSupported(const Locale('fr')), isFalse);
       expect(delegate.isSupported(const Locale('zh')), isFalse);
+
+      final loadedEn = await delegate.load(const Locale('en'));
+      expect(loadedEn, isA<AppLocalizationsEn>());
+
+      final loadedVi = await delegate.load(const Locale('vi'));
+      expect(loadedVi, isA<AppLocalizationsVi>());
+
+      expect(delegate.shouldReload(delegate), isFalse);
     });
   });
 

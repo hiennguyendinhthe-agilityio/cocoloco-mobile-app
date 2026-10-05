@@ -78,6 +78,7 @@ class CartNotifier extends Notifier<CartState> {
         quantity: existingItem.quantity + quantity,
         customization: customization ?? existingItem.customization,
         price: price ?? existingItem.price,
+        product: product,
       );
       state = state.copyWith(items: updatedList, clearError: true);
     } else {
@@ -89,6 +90,7 @@ class CartNotifier extends Notifier<CartState> {
         quantity: quantity,
         price: price ?? product.price,
         titleColor: product.titleColor,
+        product: product,
       );
       state = state.copyWith(items: [...state.items, newItem], clearError: true);
     }
@@ -114,6 +116,7 @@ class CartNotifier extends Notifier<CartState> {
         quantity: quantity,
         customization: customization ?? existingItem.customization,
         price: price ?? existingItem.price,
+        product: product,
       );
       state = state.copyWith(items: updatedList, clearError: true);
     } else {
@@ -125,6 +128,7 @@ class CartNotifier extends Notifier<CartState> {
         quantity: quantity,
         price: price ?? product.price,
         titleColor: product.titleColor,
+        product: product,
       );
       state = state.copyWith(items: [...state.items, newItem], clearError: true);
     }
@@ -148,6 +152,17 @@ class CartNotifier extends Notifier<CartState> {
 
   void removeItem(String itemId) {
     final updatedList = state.items.where((i) => i.id != itemId).toList();
+    state = state.copyWith(items: updatedList, clearError: true);
+  }
+
+  /// Restores a previously removed item back to the cart (e.g. for Undo operations).
+  void restoreItem(CartItem item, {int? index}) {
+    final updatedList = List<CartItem>.from(state.items);
+    if (index != null && index >= 0 && index <= updatedList.length) {
+      updatedList.insert(index, item);
+    } else {
+      updatedList.add(item);
+    }
     state = state.copyWith(items: updatedList, clearError: true);
   }
 

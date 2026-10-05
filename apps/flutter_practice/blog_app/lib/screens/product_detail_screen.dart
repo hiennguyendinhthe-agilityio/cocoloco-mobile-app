@@ -11,12 +11,14 @@ import 'package:shimmer/shimmer.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final Product product;
-  final Function(Product product, int quantity) onAddToCart;
+  final Function(Product product, int quantity)? onAddToCart;
+  final bool isEditingFromCart;
 
   const ProductDetailScreen({
     super.key,
     required this.product,
-    required this.onAddToCart,
+    this.onAddToCart,
+    this.isEditingFromCart = false,
   });
 
   @override
@@ -463,9 +465,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(AppRadii.pill),
                                   onTap: () {
-                                    Navigator.of(context, rootNavigator: true).push(
-                                      MaterialPageRoute(builder: (_) => const CartScreen()),
-                                    );
+                                    if (widget.isEditingFromCart && Navigator.of(context).canPop()) {
+                                      Navigator.of(context).pop();
+                                    } else {
+                                      Navigator.of(context, rootNavigator: true).push(
+                                        MaterialPageRoute(builder: (_) => const CartScreen()),
+                                      );
+                                    }
                                   },
                                   child: Icon(
                                     Icons.shopping_bag_outlined,
@@ -640,23 +646,31 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${_totalPrice.toStringAsFixed(_totalPrice.truncateToDouble() == _totalPrice ? 0 : 2)}\$',
+                          _quantity == 0
+                              ? r'$0'
+                              : '${_totalPrice.toStringAsFixed(_totalPrice.truncateToDouble() == _totalPrice ? 0 : 2)}\$',
                           style: TextStyle(
                             fontFamily: AppTypography.fontFamily,
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
-                            color: context.colorScheme.onSurface,
+                            color: _quantity == 0
+                                ? context.colorScheme.error
+                                : context.colorScheme.onSurface,
                             height: 1.0,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          '${_quantity}x ${widget.product.name}${_addonsSummary.isNotEmpty ? " • $_addonsSummary" : ""}',
+                          _quantity == 0
+                              ? 'Item will be removed from cart'
+                              : '${_quantity}x ${widget.product.name}${_addonsSummary.isNotEmpty ? " • $_addonsSummary" : ""}',
                           style: TextStyle(
                             fontFamily: AppTypography.fontFamily,
                             fontSize: 13.5,
                             fontWeight: FontWeight.w700,
-                            color: context.colorScheme.onSurfaceVariant,
+                            color: _quantity == 0
+                                ? context.colorScheme.error
+                                : context.colorScheme.onSurfaceVariant,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -667,42 +681,86 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
                   const SizedBox(width: 14),
 
-                  // Right: "View cart" Button (Proportional 176px width x 56px height matching CartScreen)
+                  // Right: "View cart" / "Update Cart" / "Remove" Button
                   SizedBox(
                     width: 176,
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).clearSnackBars();
+
+                        if (_quantity == 0) {
+                          ref.read(cartProvider.notifier).removeItem(widget.product.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${widget.product.name} removed from cart'),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                          if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                          }
+                          return;
+                        }
+
                         ref.read(cartProvider.notifier).setOrUpdateProduct(
                               widget.product,
                               quantity: _quantity,
                               customization: _addonsCustomizationString,
                               price: _unitPrice,
                             );
-                        widget.onAddToCart(widget.product, _quantity);
-                        Navigator.of(context, rootNavigator: true).push(
-                          MaterialPageRoute(
-                            builder: (_) => const CartScreen(),
-                          ),
-                        );
+                        widget.onAddToCart?.call(widget.product, _quantity);
+
+                        if (widget.isEditingFromCart) {
+                          Navigator.of(context).pop();
+                        } else {
+                          Navigator.of(context, rootNavigator: true).push(
+                            MaterialPageRoute(
+                              builder: (_) => const CartScreen(),
+                            ),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: context.colorScheme.primary,
-                        foregroundColor: context.colorScheme.onPrimary,
+                        backgroundColor: _quantity == 0
+                            ? context.colorScheme.error
+                            : context.colorScheme.primary,
+                        foregroundColor: _quantity == 0
+                            ? context.colorScheme.onError
+                            : context.colorScheme.onPrimary,
                         elevation: 0,
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
                         ),
                       ),
-                      child: Text(
-                        context.l10n.viewCart,
-                        style: TextStyle(
-                          fontFamily: AppTypography.fontFamily,
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.w700,
-                          color: context.colorScheme.onPrimary,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (_quantity == 0) ...[
+                                const Icon(Icons.delete_outline_rounded, size: 20),
+                                const SizedBox(width: 6),
+                              ],
+                              Text(
+                                _quantity == 0
+                                    ? 'Remove'
+                                    : (widget.isEditingFromCart ? 'Update Cart' : context.l10n.viewCart),
+                                style: TextStyle(
+                                  fontFamily: AppTypography.fontFamily,
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: _quantity == 0
+                                      ? context.colorScheme.onError
+                                      : context.colorScheme.onPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -716,8 +774,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     );
   }
 
-  // Exact Stepper layout from Figma: [-] (2x/cup) [+]
+  // Exact Stepper layout from Figma: [-] (2x/cup) [+] with zero removal support
   Widget _buildFigmaStepper() {
+    final isExistingInCart = ref.watch(cartProvider).items.any((i) => i.productId == widget.product.id);
+    final canReduceToZero = isExistingInCart || widget.isEditingFromCart;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(
@@ -725,10 +786,17 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         children: [
           // Minus Button
           _buildStepButton(
-            icon: Icons.remove,
+            icon: (_quantity == 1 && canReduceToZero)
+                ? Icons.delete_outline_rounded
+                : Icons.remove,
+            iconColor: (_quantity == 1 && canReduceToZero)
+                ? context.colorScheme.error
+                : (_quantity == 0 ? context.colorScheme.outlineVariant : null),
             onTap: () {
               if (_quantity > 1) {
                 setState(() => _quantity--);
+              } else if (_quantity == 1 && canReduceToZero) {
+                setState(() => _quantity = 0);
               }
             },
           ),
@@ -745,14 +813,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   fontFamily: AppTypography.fontFamily,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
-                  color: context.colorScheme.onSurface,
+                  color: _quantity == 0
+                      ? context.colorScheme.error
+                      : context.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 2),
               Icon(
-                _getStepperIcon(_productType),
+                _quantity == 0
+                    ? Icons.delete_forever_rounded
+                    : _getStepperIcon(_productType),
                 size: 20,
-                color: context.colorScheme.onSurface,
+                color: _quantity == 0
+                    ? context.colorScheme.error
+                    : context.colorScheme.onSurface,
               ),
             ],
           ),
@@ -774,6 +848,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Widget _buildStepButton({
     required IconData icon,
     required VoidCallback onTap,
+    Color? iconColor,
   }) {
     return Material(
       color: context.colorScheme.surfaceContainerHighest,
@@ -785,7 +860,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           width: 32,
           height: 32,
           child: Center(
-            child: Icon(icon, size: 16, color: context.colorScheme.onSurface),
+            child: Icon(
+              icon,
+              size: 16,
+              color: iconColor ?? context.colorScheme.onSurface,
+            ),
           ),
         ),
       ),

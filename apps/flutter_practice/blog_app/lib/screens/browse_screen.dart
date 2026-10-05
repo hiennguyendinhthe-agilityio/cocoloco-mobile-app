@@ -296,23 +296,38 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
                                 ? _buildLoadingCarousel()
                                 : filteredProducts.isEmpty
                                 ? _buildEmptyState()
-                                : ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    physics: const BouncingScrollPhysics(),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                    ),
-                                    itemCount: filteredProducts.length,
-                                    itemBuilder: (context, index) {
-                                      final product = filteredProducts[index];
-                                      return ProductCard(
-                                        product: product,
-                                        imageAlignment: _getProductAlignment(
-                                          product.id,
-                                        ),
-                                        onTap: () => _openProductDetail(product),
-                                      );
+                                : NotificationListener<ScrollNotification>(
+                                    onNotification: (scrollInfo) {
+                                      if (scrollInfo.metrics.pixels >=
+                                          scrollInfo.metrics.maxScrollExtent - 120) {
+                                        ref
+                                            .read(productsProvider.notifier)
+                                            .loadMoreProducts();
+                                      }
+                                      return false;
                                     },
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      physics: const BouncingScrollPhysics(),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                      ),
+                                      itemCount: filteredProducts.length +
+                                          (productsState.isLoadingMore ? 1 : 0),
+                                      itemBuilder: (context, index) {
+                                        if (index == filteredProducts.length) {
+                                          return _buildCarouselLoadingMoreItem();
+                                        }
+                                        final product = filteredProducts[index];
+                                        return ProductCard(
+                                          product: product,
+                                          imageAlignment: _getProductAlignment(
+                                            product.id,
+                                          ),
+                                          onTap: () => _openProductDetail(product),
+                                        );
+                                      },
+                                    ),
                                   ),
                           ),
 
@@ -457,6 +472,42 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCarouselLoadingMoreItem() {
+    return Container(
+      width: 140,
+      margin: const EdgeInsets.only(right: 18, bottom: 8),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surface.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(AppRadii.hero),
+        border: Border.all(
+          color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: context.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Loading...',
+              style: context.textTheme.labelMedium?.copyWith(
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
