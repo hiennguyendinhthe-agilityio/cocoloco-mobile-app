@@ -343,14 +343,43 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
                               ],
                             ),
                           )
-                        : ListView.separated(
-                            controller: scrollController,
-                            itemCount: filtered.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final product = filtered[index];
-                              return _buildProductRow(product);
+                        : NotificationListener<ScrollNotification>(
+                            onNotification: (scrollInfo) {
+                              if (scrollInfo.metrics.pixels >=
+                                  scrollInfo.metrics.maxScrollExtent - 150) {
+                                ref
+                                    .read(productsProvider.notifier)
+                                    .loadMoreProducts();
+                              }
+                              return false;
                             },
+                            child: ListView.separated(
+                              controller: scrollController,
+                              itemCount: filtered.length +
+                                  (productsState.isLoadingMore ? 1 : 0),
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (context, index) {
+                                if (index == filtered.length) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 16),
+                                      child: SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                final product = filtered[index];
+                                return _buildProductRow(product);
+                              },
+                            ),
                           ),
               ),
             ],

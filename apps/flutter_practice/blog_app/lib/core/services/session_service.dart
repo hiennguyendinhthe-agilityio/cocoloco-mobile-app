@@ -1,9 +1,11 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../models/user_profile.dart';
 import '../network/api_client.dart';
 import '../network/api_constants.dart';
-import '../../models/user_profile.dart';
 
 class SessionService extends ChangeNotifier {
   static final SessionService _instance = SessionService._internal();
@@ -61,7 +63,9 @@ class SessionService extends ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('⚠️ [SessionService] Failed to load session from storage: $e');
+        debugPrint(
+          '⚠️ [SessionService] Failed to load session from storage: $e',
+        );
       }
       _role = AppRole.guest;
       _user = null;
@@ -106,24 +110,26 @@ class SessionService extends ChangeNotifier {
     try {
       // 1. Temporarily set token to make the sync request
       ApiClient().setAuthToken(clerkToken);
-      
+
       // 2. Call FastAPI backend to sync user with optional metadata
       final Map<String, dynamic> body = {};
       if (email != null && email.isNotEmpty) body['email'] = email;
       if (fullName != null && fullName.isNotEmpty) body['full_name'] = fullName;
-      if (avatarUrl != null && avatarUrl.isNotEmpty) body['avatar_url'] = avatarUrl;
+      if (avatarUrl != null && avatarUrl.isNotEmpty) {
+        body['avatar_url'] = avatarUrl;
+      }
 
       final response = await ApiClient().dio.post(
         ApiConstants.authSync,
         data: body.isNotEmpty ? body : null,
       );
-      
+
       if (response.statusCode == 200) {
         final data = response.data;
-        
+
         final roleStr = data['role'] ?? 'USER';
         _role = roleStr == 'ADMIN' ? AppRole.admin : AppRole.user;
-        
+
         final resolvedEmail = (email != null && email.isNotEmpty)
             ? email
             : (data['email'] ?? '');
@@ -146,9 +152,11 @@ class SessionService extends ChangeNotifier {
         _hasLoggedOut = false;
 
         if (kDebugMode) {
-          debugPrint('🔑 [CLERK TOKEN FOR POSTMAN (${_user?.role})]: $clerkToken');
+          debugPrint(
+            '🔑 [CLERK TOKEN FOR POSTMAN (${_user?.role})]: $clerkToken',
+          );
         }
-        
+
         notifyListeners();
         await _persistSession();
         return true;
@@ -210,5 +218,15 @@ class SessionService extends ChangeNotifier {
     ApiClient().setAuthToken(null);
     notifyListeners();
     await _persistSession();
+  }
+
+  /// Safely invalidates session on HTTP 401 Unauthorized from backend.
+  /// Wipes token and resets state without throwing exceptions or making network calls.
+  Future<void> handleUnauthorized() async {
+    if (_role == AppRole.guest && _token == null) return;
+    if (kDebugMode) {
+      debugPrint('🔒 [SessionService] Token expired or invalid (HTTP 401). Invalidating session.');
+    }
+    await logout();
   }
 }

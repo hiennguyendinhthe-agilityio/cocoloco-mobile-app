@@ -54,6 +54,46 @@ void main() {
       expect(products[1].name, 'Croissant');
     });
 
+    test('getProductsPaged returns PaginatedResponse with pagination metadata on 200 OK', () async {
+      mockDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            return handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'items': [
+                    {
+                      'id': 'p1',
+                      'name': 'Espresso',
+                      'price': '2.50',
+                      'category': 'coffee',
+                      'is_available': true,
+                    },
+                  ],
+                  'total': 25,
+                  'page': 1,
+                  'size': 10,
+                  'pages': 3,
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      repository = ProductRepository(apiClient: ApiClient.withDio(mockDio));
+      final paged = await repository.getProductsPaged(page: 1, size: 10);
+
+      expect(paged.items.length, 1);
+      expect(paged.total, 25);
+      expect(paged.page, 1);
+      expect(paged.size, 10);
+      expect(paged.pages, 3);
+      expect(paged.hasMore, isTrue);
+    });
+
     test('getProducts falls back gracefully to MockData on network error', () async {
       mockDio.interceptors.add(
         InterceptorsWrapper(
