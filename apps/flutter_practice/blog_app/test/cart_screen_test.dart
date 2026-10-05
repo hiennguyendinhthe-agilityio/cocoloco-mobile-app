@@ -2,23 +2,62 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:blog_app/core/constants/mock_data.dart';
 import 'package:blog_app/core/localization/app_localizations.dart';
+import 'package:blog_app/core/services/session_service.dart';
 import 'package:blog_app/core/theme/app_theme.dart';
+import 'package:blog_app/core/providers/network_providers.dart';
 import 'package:blog_app/data/providers/cart_provider.dart';
+import 'package:blog_app/data/repositories/order_repository.dart';
+import 'package:blog_app/models/order.dart';
+import 'package:blog_app/models/user_profile.dart';
 import 'package:blog_app/screens/cart_screen.dart';
+import 'package:blog_app/screens/order_success_screen.dart';
 import 'package:blog_app/screens/product_detail_screen.dart';
 import 'package:blog_app/widgets/order_summary_card.dart';
 
+class MockCartOrderRepository extends OrderRepository {
+  @override
+  Future<OrderModel> createOrder({required List<Map<String, dynamic>> items}) async {
+    return OrderModel(
+      id: 'ord-test-success',
+      userId: 'usr-1',
+      status: 'PENDING',
+      totalAmount: 10.0,
+      createdAt: DateTime.now(),
+      items: const [],
+    );
+  }
+
+  @override
+  Future<List<OrderModel>> getMyOrders() async {
+    return [];
+  }
+}
+
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  tearDown(() async {
+    await SessionService.instance.logout();
+  });
+
   final testProduct1 = MockData.dailyProducts[0]; // Capuchino
   final testProduct2 = MockData.dailyProducts[1]; // Fruit Market Bowl
 
-
   Widget createCartTestWidget({ProviderContainer? container}) {
+    final cont = container ??
+        ProviderContainer(
+          overrides: [
+            orderRepositoryProvider.overrideWithValue(MockCartOrderRepository()),
+          ],
+        );
     return UncontrolledProviderScope(
-      container: container ?? ProviderContainer(),
+      container: cont,
       child: MaterialApp(
         theme: AppTheme.lightTheme,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -158,6 +197,69 @@ void main() {
       expect(checkoutBtn.onPressed, isNull);
 
       container.dispose();
+    });
+
+    testWidgets('Tapping back button pops CartScreen when route is on top',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CartScreen()),
+                    );
+                  },
+                  child: const Text('Open Cart'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Cart'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CartScreen), findsOneWidget);
+
+      final backButton = find.byIcon(Icons.arrow_back_rounded);
+      expect(backButton, findsOneWidget);
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CartScreen), findsNothing);
+    });
+
+    testWidgets('Logged in checkout flow navigates to OrderSuccessScreen',
+        (tester) async {
+      await SessionService.instance.loginAs(AppRole.user);
+
+      final container = ProviderContainer(
+        overrides: [
+          orderRepositoryProvider.overrideWithValue(MockCartOrderRepository()),
+        ],
+      );
+      container.read(cartProvider.notifier).addProduct(testProduct1, quantity: 2);
+
+      await tester.pumpWidget(createCartTestWidget(container: container));
+      await tester.pumpAndSettle();
+
+      // Tap Go to checkout
+      final checkoutButton = find.widgetWithText(ElevatedButton, 'Go to checkout');
+      expect(checkoutButton, findsOneWidget);
+      await tester.tap(checkoutButton);
+      await tester.pumpAndSettle();
+
+      // Should have navigated to OrderSuccessScreen
+      expect(find.byType(OrderSuccessScreen), findsOneWidget);
+
+      container.dispose();
+      await SessionService.instance.logout();
     });
   });
 }
