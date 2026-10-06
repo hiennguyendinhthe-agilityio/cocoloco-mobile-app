@@ -4,9 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/localization/app_localizations.dart';
 import '../core/services/session_service.dart';
 import '../core/theme/app_theme.dart';
-import '../data/repositories/order_repository.dart';
-import '../models/order.dart';
 import '../models/user_profile.dart';
+import '../widgets/admin_orders_bottom_sheet.dart';
 import 'admin_products_screen.dart';
 import 'clerk_webview_screen.dart';
 import 'settings_screen.dart';
@@ -20,7 +19,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final SessionService _session = SessionService.instance;
-  final OrderRepository _orderRepo = OrderRepository();
 
   @override
   void initState() {
@@ -91,21 +89,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       if (success) {
+        final role = SessionService.instance.role;
+        final name = SessionService.instance.user?.fullName ?? 'Coffee Lover';
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             content: Row(
               children: [
                 Icon(Icons.check_circle_rounded, color: AppPalette.pureWhite),
                 const SizedBox(width: 10),
-                const Text('Signed in and synced successfully!'),
+                Expanded(
+                  child: Text(
+                    role == AppRole.admin
+                        ? 'Welcome back, Admin! Opening Admin Hub...'
+                        : 'Welcome back, $name! Enjoy your coffee.',
+                  ),
+                ),
               ],
             ),
             backgroundColor: AppPalette.emeraldGreen,
           ),
         );
+
+        if (role == AppRole.admin) {
+          // Admin automatically enters Admin Orders Hub for immediate operational tasking
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              _openAdminOrdersManager();
+            }
+          });
+        } else {
+          // Regular customer automatically navigates back to Home (BrowseScreen) to start ordering
+          Future.delayed(const Duration(milliseconds: 600), () {
+            if (mounted && Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          });
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             content: const Text('Sync failed. Please try again.'),
             backgroundColor: context.colorScheme.error,
           ),
@@ -121,146 +150,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (ctx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.85,
-          maxChildSize: 0.95,
-          minChildSize: 0.5,
-          expand: false,
-          builder: (_, scrollController) {
-            return FutureBuilder<List<OrderModel>>(
-              future: _orderRepo.getAllOrders(),
-              builder: (context, snapshot) {
-                final orders = snapshot.data ?? [];
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'All Store Orders',
-                            style: TextStyle(
-                              fontFamily: AppTypography.fontFamily,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: context.colorScheme.onSurface,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: context.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'ADMIN HUB',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.colorScheme.onPrimary),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Tap a status button to quickly update order lifecycle',
-                        style: TextStyle(fontSize: 13, color: context.colorScheme.onSurfaceVariant),
-                      ),
-                      Divider(height: 24, color: context.colorScheme.outlineVariant),
-                      Expanded(
-                        child: snapshot.connectionState == ConnectionState.waiting
-                            ? Center(child: CircularProgressIndicator(color: context.colorScheme.primary))
-                            : orders.isEmpty
-                                ? const Center(child: Text('No orders yet.'))
-                                : ListView.separated(
-                                    controller: scrollController,
-                                    itemCount: orders.length,
-                                    separatorBuilder: (_, _) => const SizedBox(height: 12),
-                                    itemBuilder: (context, index) {
-                                      final ord = orders[index];
-                                      return _buildAdminOrderRow(ord, () {
-                                        Navigator.pop(ctx);
-                                        _openAdminOrdersManager();
-                                      });
-                                    },
-                                  ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildAdminOrderRow(OrderModel ord, VoidCallback onRefresh) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${ord.shortId} • \$${ord.totalAmount.toStringAsFixed(2)}',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: context.colorScheme.onSurface),
-              ),
-              PopupMenuButton<String>(
-                initialValue: ord.status,
-                onSelected: (newStatus) async {
-                  await _orderRepo.updateOrderStatus(ord.id, newStatus);
-                  onRefresh();
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: ord.statusBgColor,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        ord.statusLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: ord.statusTextColor,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.arrow_drop_down, size: 16, color: ord.statusTextColor),
-                    ],
-                  ),
-                ),
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'PENDING', child: Text('⏳ PENDING (Pending)')),
-                  PopupMenuItem(value: 'CONFIRMED', child: Text('☕ CONFIRMED (Brewing)')),
-                  PopupMenuItem(value: 'COMPLETED', child: Text('✅ COMPLETED (Done)')),
-                  PopupMenuItem(value: 'CANCELLED', child: Text('❌ CANCELLED (Cancelled)')),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            ord.items.map((i) => '${i.quantity}x ${i.productName}').join(', '),
-            style: TextStyle(fontSize: 13, color: context.colorScheme.onSurfaceVariant),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
+      builder: (ctx) => const AdminOrdersBottomSheet(),
     );
   }
 
