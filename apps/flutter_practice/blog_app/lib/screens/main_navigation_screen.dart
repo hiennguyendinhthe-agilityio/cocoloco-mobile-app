@@ -35,6 +35,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
       bottomNavigationBar: CocolocoBottomNavBar(
         currentIndex: _currentIndex,
         onIndexChanged: (index) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
           setState(() {
             _currentIndex = index;
           });

@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/localization/locale_provider.dart';
 import 'core/providers/theme_mode_provider.dart';
-import 'core/theme/app_theme.dart';
 import 'core/services/session_service.dart';
+import 'core/theme/app_theme.dart';
 import 'screens/main_navigation_screen.dart';
 
 void main() async {
