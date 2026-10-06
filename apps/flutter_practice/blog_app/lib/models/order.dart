@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../core/theme/tokens/app_primitives.dart';
 import '../core/theme/tokens/cocoloco_theme_extension.dart';
 
@@ -144,4 +145,24 @@ class OrderModel {
   }
 
   String get formattedTotal => '\$${totalAmount.toStringAsFixed(2)}';
+
+  String get formattedDateTime => DateFormat('MMM dd, hh:mm a').format(createdAt);
+
+  OrderModel copyWith({
+    String? id,
+    String? userId,
+    String? status,
+    double? totalAmount,
+    DateTime? createdAt,
+    List<OrderItemModel>? items,
+  }) {
+    return OrderModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      status: status ?? this.status,
+      totalAmount: totalAmount ?? this.totalAmount,
+      createdAt: createdAt ?? this.createdAt,
+      items: items ?? this.items,
+    );
+  }
 }

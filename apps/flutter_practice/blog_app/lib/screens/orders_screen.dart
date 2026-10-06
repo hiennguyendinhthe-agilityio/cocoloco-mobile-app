@@ -51,7 +51,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Widget build(BuildContext context) {
     final ordersState = ref.watch(ordersProvider);
     final filteredOrders = ordersState.filteredOrders;
-    final totalOrdersCount = ordersState.orders.length;
+    final totalOrdersCount = ordersState.totalVisibleCount;
     final isLoading = ordersState.isLoading;
     final selectedStatusFilter = ordersState.selectedFilter;
 
@@ -299,7 +299,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Order ID + Status Badge
+          // Header: Order ID + Status Badge + More Options
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -312,23 +312,56 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                   color: context.colorScheme.onSurface,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: order.getStatusBgColor(context),
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                ),
-                child: Text(
-                  order.statusLabel,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: order.getStatusTextColor(context),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: order.getStatusBgColor(context),
+                      borderRadius: BorderRadius.circular(AppRadii.pill),
+                    ),
+                    child: Text(
+                      order.statusLabel,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: order.getStatusTextColor(context),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_vert_rounded,
+                      size: 18,
+                      color: context.colorScheme.onSurfaceVariant,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Options',
+                    onSelected: (val) {
+                      if (val == 'hide') {
+                        _confirmHideOrder(order);
+                      }
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'hide',
+                        child: Row(
+                          children: [
+                            Icon(Icons.visibility_off_outlined, size: 18),
+                            SizedBox(width: 8),
+                            Text('Hide from history'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -414,8 +447,14 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               ),
               OutlinedButton.icon(
                 onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       content: Text(
                         'Items from ${order.shortId} added to cart!',
                       ),
@@ -612,6 +651,59 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _confirmHideOrder(OrderModel order) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hide Order'),
+        content: Text(
+          'Remove order ${order.shortId} from your order history view? You can still view receipts if needed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(ordersProvider.notifier).hideOrder(order.id);
+
+              final messenger = ScaffoldMessenger.of(context);
+              messenger.hideCurrentSnackBar();
+
+              late final ScaffoldFeatureController<SnackBar, SnackBarClosedReason> controller;
+              controller = messenger.showSnackBar(
+                SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  content: Text('Order ${order.shortId} hidden from your history.'),
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      ref.read(ordersProvider.notifier).unhideOrder(order.id);
+                    },
+                  ),
+                  onVisible: () {
+                    Future.delayed(const Duration(seconds: 2), () {
+                      try {
+                        controller.close();
+                      } catch (_) {}
+                    });
+                  },
+                ),
+              );
+            },
+            child: const Text('Hide'),
+          ),
+        ],
       ),
     );
   }
