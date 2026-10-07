@@ -187,7 +187,7 @@ void main() {
           child: MaterialApp(
             home: ProductDetailScreen(
               product: testProduct,
-              onAddToCart: (_, _) {},
+              onAddToCart: (_, __) {},
             ),
           ),
         ),

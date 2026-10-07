@@ -103,14 +103,14 @@ class ProductCard extends StatelessWidget {
         height: 138,
         fit: BoxFit.cover,
         alignment: imageAlignment,
-        placeholder: (_, _) => Shimmer.fromColors(
+        placeholder: (_, __) => Shimmer.fromColors(
           baseColor: context.colorScheme.surfaceContainerHighest,
           highlightColor: context.colorScheme.surface,
           child: Container(
             color: context.colorScheme.surface,
           ),
         ),
-        errorWidget: (_, _, _) => _buildAssetFallback(context),
+        errorWidget: (_, __, ___) => _buildAssetFallback(context),
       );
     }
 
@@ -124,7 +124,7 @@ class ProductCard extends StatelessWidget {
       height: 138,
       fit: BoxFit.cover,
       alignment: imageAlignment,
-      errorBuilder: (_, _, _) => Container(
+      errorBuilder: (_, __, ___) => Container(
         height: 138,
         color: context.colorScheme.surfaceContainerHighest,
         child: Center(
