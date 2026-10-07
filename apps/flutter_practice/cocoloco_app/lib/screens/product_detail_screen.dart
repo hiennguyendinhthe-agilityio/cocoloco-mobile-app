@@ -269,14 +269,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         imageUrl: url,
         fit: BoxFit.cover,
         alignment: const Alignment(0, 0.2),
-        placeholder: (_, _) => Shimmer.fromColors(
+        placeholder: (_, __) => Shimmer.fromColors(
           baseColor: context.colorScheme.surfaceContainerHighest,
           highlightColor: context.colorScheme.surface,
           child: Container(
             color: context.colorScheme.surface,
           ),
         ),
-        errorWidget: (_, _, _) => Image.asset(
+        errorWidget: (_, __, ___) => Image.asset(
           widget.product.imageAsset,
           fit: BoxFit.cover,
           alignment: const Alignment(0, 0.2),

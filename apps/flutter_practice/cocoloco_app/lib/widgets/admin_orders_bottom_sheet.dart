@@ -218,7 +218,7 @@ class _AdminOrdersBottomSheetState extends ConsumerState<AdminOrdersBottomSheet>
                               controller: scrollController,
                               physics: const AlwaysScrollableScrollPhysics(),
                               itemCount: filteredOrders.length,
-                              separatorBuilder: (_, _) => const SizedBox(height: 12),
+                              separatorBuilder: (_, __) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
                                 final ord = filteredOrders[index];
                                 final isUpdating = state.updatingOrderId == ord.id;

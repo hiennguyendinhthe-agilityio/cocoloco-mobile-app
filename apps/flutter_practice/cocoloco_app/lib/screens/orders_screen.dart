@@ -136,7 +136,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                     itemCount: statusFilters.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+                    separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       final filter = statusFilters[index];
                       final isSelected = filter['id'] == selectedStatusFilter;
@@ -198,7 +198,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                         ),
                         padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
                         itemCount: filteredOrders.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 16),
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
                         itemBuilder: (context, index) {
                           final order = filteredOrders[index];
                           return _buildOrderCard(order);
@@ -217,7 +217,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
       itemCount: 4,
-      separatorBuilder: (_, _) => const SizedBox(height: 16),
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         return Container(
           padding: const EdgeInsets.all(18),

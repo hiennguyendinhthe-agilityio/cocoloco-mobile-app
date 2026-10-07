@@ -37,7 +37,7 @@ class CocolocoHeader extends StatelessWidget {
               fit: BoxFit.contain,
               alignment: Alignment.centerLeft,
               color: isDark ? context.colorScheme.primary : null,
-              errorBuilder: (_, _, _) => _buildFigmaTextLogo(context),
+              errorBuilder: (_, __, ___) => _buildFigmaTextLogo(context),
             ),
           ),
 
