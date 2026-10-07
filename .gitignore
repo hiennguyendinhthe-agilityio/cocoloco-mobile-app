@@ -51,8 +51,8 @@ app.*.map.json
 apps/flutter_practice/immich/
 
 # Local documentation tracking
-apps/flutter_practice/blog_app/*.md
-!apps/flutter_practice/blog_app/README.md
-!apps/flutter_practice/blog_app/.agents/**/*.md
+apps/flutter_practice/cocoloco_app/*.md
+!apps/flutter_practice/cocoloco_app/README.md
+!apps/flutter_practice/cocoloco_app/.agents/**/*.md
 .agents
 
