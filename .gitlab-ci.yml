@@ -1,0 +1,57 @@
+# Cocoloco Mobile App — GitLab CI/CD Pipeline
+image: ghcr.io/cirruslabs/flutter:3.27.0
+
+stages:
+  - analyze
+  - test
+  - build
+
+variables:
+  APP_DIR: "apps/flutter_practice/cocoloco_app"
+  PUB_CACHE: "$CI_PROJECT_DIR/.pub-cache"
+
+cache:
+  key:
+    files:
+      - "apps/flutter_practice/cocoloco_app/pubspec.lock"
+  paths:
+    - .pub-cache/
+
+before_script:
+  - export PUB_CACHE=$CI_PROJECT_DIR/.pub-cache
+  - export PATH="$PATH:$PUB_CACHE/bin"
+  - cd $APP_DIR
+  - flutter pub get
+
+# 1. Static Analysis & Lint Gate
+flutter:analyze:
+  stage: analyze
+  script:
+    - flutter analyze
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "training-flutter-advance" || $CI_COMMIT_BRANCH =~ /^feature\//'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# 2. Automated Test Suite (197 Unit & Widget Tests)
+flutter:test:
+  stage: test
+  script:
+    - flutter test --coverage
+  coverage: '/Lines \s*:\s*(\d+.\d+)%/'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "training-flutter-advance" || $CI_COMMIT_BRANCH =~ /^feature\//'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# 3. Android Debug APK Smoke Build
+flutter:build:apk:
+  stage: build
+  script:
+    - flutter build apk --debug
+  artifacts:
+    name: "cocoloco-debug-apk-$CI_COMMIT_REF_SLUG"
+    paths:
+      - apps/flutter_practice/cocoloco_app/build/app/outputs/flutter-apk/app-debug.apk
+    expire_in: 1 week
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "training-flutter-advance"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

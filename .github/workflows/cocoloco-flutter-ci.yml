@@ -1,0 +1,73 @@
+name: Cocoloco Flutter CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - training-flutter-advance
+      - 'feature/**'
+    paths:
+      - 'apps/flutter_practice/cocoloco_app/**'
+      - '.github/workflows/cocoloco-flutter-ci.yml'
+  pull_request:
+    branches:
+      - main
+      - training-flutter-advance
+      - 'feature/**'
+    paths:
+      - 'apps/flutter_practice/cocoloco_app/**'
+      - '.github/workflows/cocoloco-flutter-ci.yml'
+
+jobs:
+  analyze_and_test:
+    name: Lint, Test & Quality Gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/flutter_practice/cocoloco_app
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🐦 Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.x'
+          channel: 'stable'
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+
+      - name: 📦 Cache Pub Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('apps/flutter_practice/cocoloco_app/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: 📥 Install Dependencies
+        run: flutter pub get
+
+      - name: 🔍 Static Code Analysis (Zero Warning Policy)
+        run: flutter analyze
+
+      - name: 🧪 Execute Unit & Widget Tests
+        run: flutter test --coverage
+
+      - name: 📱 Smoke Test: Build Android Debug APK
+        run: flutter build apk --debug
+
+      - name: 📤 Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: cocoloco-debug-apk
+          path: apps/flutter_practice/cocoloco_app/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
