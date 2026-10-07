@@ -1,5 +1,4 @@
-# Cocoloco Mobile App — GitLab CI/CD Pipeline
-image: ghcr.io/cirruslabs/flutter:3.27.0
+image: ghcr.io/cirruslabs/flutter:latest
 
 stages:
   - analyze
@@ -18,9 +17,11 @@ cache:
     - .pub-cache/
 
 before_script:
+  - git config --global --add safe.directory "*"
   - export PUB_CACHE=$CI_PROJECT_DIR/.pub-cache
   - export PATH="$PATH:$PUB_CACHE/bin"
   - cd $APP_DIR
+  - flutter config --no-analytics
   - flutter pub get
 
 # 1. Static Analysis & Lint Gate
