@@ -20,11 +20,13 @@ void main() {
     expect(MockData.specialOffers.first.title, contains('BREAKFAST'));
   });
 
-  testWidgets('CocolocoApp renders without crashing', (WidgetTester tester) async {
+  testWidgets('CocolocoApp renders without crashing and navigates to home', (WidgetTester tester) async {
     await tester.pumpWidget(const CocolocoApp());
+    expect(find.text("COCOLOCO"), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 2500));
+    await tester.pumpAndSettle();
     expect(find.text("Let’s get this day going"), findsOneWidget);
     expect(find.text("April special"), findsOneWidget);
-    await tester.pumpAndSettle();
     expect(find.text("Cappuccino"), findsOneWidget);
   });
 }

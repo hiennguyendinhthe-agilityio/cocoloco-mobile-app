@@ -8,7 +8,7 @@ import 'core/localization/locale_provider.dart';
 import 'core/providers/theme_mode_provider.dart';
 import 'core/services/session_service.dart';
 import 'core/theme/app_theme.dart';
-import 'screens/main_navigation_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,7 +48,7 @@ class CocolocoApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: const MainNavigationScreen(),
+            home: const SplashScreen(),
           );
         },
       ),
