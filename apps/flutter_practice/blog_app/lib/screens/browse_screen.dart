@@ -130,8 +130,10 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
 
   Alignment _getProductAlignment(String id) {
     switch (id) {
+      case 'f66fe585-6512-45f7-b66f-6bdbe11b146e':
       case 'prod_cappuccino':
         return const Alignment(0, 0.4);
+      case '87621d48-7a5a-49cc-b1b6-13ff420bf492':
       case 'prod_crossaint':
         return const Alignment(0, 0.05);
       default:

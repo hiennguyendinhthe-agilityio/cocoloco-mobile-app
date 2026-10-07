@@ -169,9 +169,10 @@ void main() {
       expect(sessionService.token, 'valid-clerk-token');
       expect(sessionService.user?.fullName, 'Admin Person');
       expect(sessionService.user?.avatarUrl, 'https://example.com/admin.jpg');
+      expect(sessionService.lastAuthError, isNull);
     });
 
-    test('loginWithClerkToken returns false and reverts token on HTTP failure or exception', () async {
+    test('loginWithClerkToken returns false, reverts token, and records lastAuthError on HTTP failure', () async {
       mockDio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) {
@@ -179,6 +180,7 @@ void main() {
               DioException(
                 requestOptions: options,
                 response: Response(requestOptions: options, statusCode: 500),
+                message: 'Internal server error',
               ),
             );
           },
@@ -188,6 +190,7 @@ void main() {
       final success = await sessionService.loginWithClerkToken('failing-token');
       expect(success, isFalse);
       expect(sessionService.role, AppRole.guest);
+      expect(sessionService.lastAuthError, isNotNull);
     });
   });
 }

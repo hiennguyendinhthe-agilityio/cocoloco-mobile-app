@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/mock_data.dart';
+import '../../core/errors/app_exception.dart';
 import '../../models/cart_item.dart';
 import '../../models/order.dart';
 import '../../models/product.dart';
@@ -27,12 +30,15 @@ class CartState {
 
   double get total => subtotal + deliveryFee;
 
-  /// Aggregates items by productId to satisfy FastAPI unique product constraint
+  /// Aggregates items by productId to satisfy FastAPI unique product constraint.
+  /// Automatically maps legacy mock IDs to production PostgreSQL UUIDs.
   List<Map<String, dynamic>> toOrderPayload() {
     final Map<String, int> aggregatedQuantities = {};
     for (final item in items) {
-      aggregatedQuantities[item.productId] =
-          (aggregatedQuantities[item.productId] ?? 0) + item.quantity;
+      final resolvedId =
+          MockData.legacyMockIdMap[item.productId] ?? item.productId;
+      aggregatedQuantities[resolvedId] =
+          (aggregatedQuantities[resolvedId] ?? 0) + item.quantity;
     }
     return aggregatedQuantities.entries
         .map((e) => {
@@ -184,9 +190,21 @@ class CartNotifier extends Notifier<CartState> {
       return order;
     } catch (e) {
       debugPrint('❌ [CartNotifier] Order checkout failed: $e');
+      String errorMsg =
+          'Checkout failed. Please check your connection and try again.';
+      if (e is DioException) {
+        final inner = e.error;
+        if (inner is AppException) {
+          errorMsg = inner.message;
+        } else if (e.message != null && e.message!.isNotEmpty) {
+          errorMsg = e.message!;
+        }
+      } else if (e is AppException) {
+        errorMsg = e.message;
+      }
       state = state.copyWith(
         isSubmitting: false,
-        errorMessage: 'Checkout failed. Please check your connection and try again.',
+        errorMessage: errorMsg,
       );
       return null;
     }

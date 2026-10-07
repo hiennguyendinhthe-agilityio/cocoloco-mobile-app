@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/user_profile.dart';
+import '../errors/app_exception.dart';
 import '../network/api_client.dart';
 import '../network/api_constants.dart';
 
@@ -22,16 +24,22 @@ class SessionService extends ChangeNotifier {
   AppRole _role = AppRole.guest;
   UserProfile? _user;
   String? _token;
+  String? _lastAuthError;
   bool _hasLoggedOut = false;
   bool _isInitialized = false;
 
   AppRole get role => _role;
   UserProfile? get user => _user;
   String? get token => _token;
+  String? get lastAuthError => _lastAuthError;
   bool get isLoggedIn => _role != AppRole.guest;
   bool get isAdmin => _role == AppRole.admin;
   bool get hasLoggedOut => _hasLoggedOut;
   bool get isInitialized => _isInitialized;
+
+  void clearAuthError() {
+    _lastAuthError = null;
+  }
 
   /// Restores session state from persistent local storage upon application launch.
   Future<void> init() async {
@@ -107,6 +115,7 @@ class SessionService extends ChangeNotifier {
     String? fullName,
     String? avatarUrl,
   }) async {
+    _lastAuthError = null;
     try {
       // 1. Temporarily set token to make the sync request
       ApiClient().setAuthToken(clerkToken);
@@ -150,6 +159,7 @@ class SessionService extends ChangeNotifier {
         );
         _token = clerkToken;
         _hasLoggedOut = false;
+        _lastAuthError = null;
 
         if (kDebugMode) {
           debugPrint(
@@ -161,10 +171,27 @@ class SessionService extends ChangeNotifier {
         await _persistSession();
         return true;
       }
+      _lastAuthError = 'Server returned unexpected status: ${response.statusCode}';
       return false;
     } catch (e) {
       if (kDebugMode) {
         print('❌ Sync Auth Failed: $e');
+      }
+      if (e is DioException) {
+        final inner = e.error;
+        if (inner is AppException) {
+          _lastAuthError = inner.message;
+        } else if (e.type == DioExceptionType.connectionError ||
+            e.type == DioExceptionType.connectionTimeout) {
+          _lastAuthError =
+              'Unable to connect to the server. Please check your network connection.';
+        } else {
+          _lastAuthError = e.message ?? 'Authentication sync failed.';
+        }
+      } else if (e is AppException) {
+        _lastAuthError = e.message;
+      } else {
+        _lastAuthError = e.toString();
       }
       // Revert token if failed
       ApiClient().setAuthToken(_token);
@@ -214,6 +241,7 @@ class SessionService extends ChangeNotifier {
     _role = AppRole.guest;
     _user = null;
     _token = null;
+    _lastAuthError = null;
     _hasLoggedOut = true;
     ApiClient().setAuthToken(null);
     notifyListeners();

@@ -3,9 +3,17 @@ import '../../models/product.dart';
 import '../../models/special_offer.dart';
 
 class MockData {
+  /// Backward-compatibility mapping from legacy mock IDs to production PostgreSQL UUIDs
+  static const Map<String, String> legacyMockIdMap = {
+    'prod_cappuccino': 'f66fe585-6512-45f7-b66f-6bdbe11b146e',
+    'prod_crossaint': '87621d48-7a5a-49cc-b1b6-13ff420bf492',
+    'prod_artisan_latte': 'c7d6bd66-9f93-4b6b-9cee-a0a1e79c029e',
+    'prod_fruit_plate': '3614af77-137a-4307-a86c-52a59c688d57',
+  };
+
   static const List<Product> dailyProducts = [
     Product(
-      id: 'prod_cappuccino',
+      id: 'f66fe585-6512-45f7-b66f-6bdbe11b146e',
       name: 'Cappuccino',
       priceDisplay: r'$3',
       price: 3.0,
@@ -18,7 +26,7 @@ class MockData {
       rating: 4.9,
     ),
     Product(
-      id: 'prod_crossaint',
+      id: '87621d48-7a5a-49cc-b1b6-13ff420bf492',
       name: 'Crossaint',
       priceDisplay: r'$3',
       price: 3.0,
@@ -31,7 +39,7 @@ class MockData {
       rating: 4.8,
     ),
     Product(
-      id: 'prod_artisan_latte',
+      id: 'c7d6bd66-9f93-4b6b-9cee-a0a1e79c029e',
       name: 'Artisan Latte',
       priceDisplay: r'$4',
       price: 4.0,
@@ -44,7 +52,7 @@ class MockData {
       rating: 4.9,
     ),
     Product(
-      id: 'prod_fruit_plate',
+      id: '3614af77-137a-4307-a86c-52a59c688d57',
       name: 'Fresh Fruits',
       priceDisplay: r'$3.50',
       price: 3.50,

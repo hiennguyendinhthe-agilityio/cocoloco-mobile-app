@@ -62,14 +62,65 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         }
 
         if (token.isNotEmpty) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: context.colorScheme.onPrimary,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(context.l10n.syncingWithBackend),
+                  ],
+                ),
+                backgroundColor: context.colorScheme.primary,
+                duration: const Duration(seconds: 10),
+              ),
+            );
+          }
+
           final success = await SessionService.instance.loginWithClerkToken(
             token,
             email: email,
             fullName: fullName,
             avatarUrl: avatarUrl,
           );
-          if (success && mounted) {
+
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+          if (success) {
             await _executeOrderPlacement();
+          } else {
+            final errorMsg =
+                SessionService.instance.lastAuthError ?? context.l10n.syncFailed;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                content: Row(
+                  children: [
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(errorMsg)),
+                  ],
+                ),
+                backgroundColor: context.colorScheme.error,
+              ),
+            );
           }
         }
       }

@@ -71,7 +71,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: CircularProgressIndicator(color: context.colorScheme.onPrimary, strokeWidth: 2),
             ),
             const SizedBox(width: 12),
-            const Text('Syncing with Cocoloco system...'),
+            Text(context.l10n.syncingWithBackend),
           ],
         ),
         backgroundColor: context.colorScheme.primary,
@@ -130,12 +130,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           });
         }
       } else {
+        final errorMsg =
+            SessionService.instance.lastAuthError ?? context.l10n.syncFailed;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 4),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            content: const Text('Sync failed. Please try again.'),
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(errorMsg)),
+              ],
+            ),
             backgroundColor: context.colorScheme.error,
           ),
         );
