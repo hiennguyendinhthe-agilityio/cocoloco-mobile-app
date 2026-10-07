@@ -558,7 +558,7 @@ class _StickyCategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
         itemCount: categories.length,
-        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
           final cat = categories[index];
           final isSelected = cat['id'] == selectedCategory;

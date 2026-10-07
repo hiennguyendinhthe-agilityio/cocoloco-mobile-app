@@ -245,7 +245,7 @@ class _AdminProductFormModalState extends ConsumerState<AdminProductFormModal> {
                               child: Image.network(
                                 item['url']!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => Container(
+                                errorBuilder: (_, __, ___) => Container(
                                   color: Colors.grey[200],
                                   child: const Icon(Icons.broken_image, size: 20),
                                 ),

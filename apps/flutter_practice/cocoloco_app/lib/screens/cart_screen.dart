@@ -286,7 +286,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         physics: const BouncingScrollPhysics(),
                         padding: EdgeInsets.zero,
                         itemCount: cartState.items.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
+                        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.lg),
                         itemBuilder: (context, index) {
                           final item = cartState.items[index];
                           return Dismissible(

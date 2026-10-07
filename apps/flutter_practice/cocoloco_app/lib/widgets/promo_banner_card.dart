@@ -35,7 +35,7 @@ class PromoBannerCard extends StatelessWidget {
                 offer.imageAsset,
                 fit: BoxFit.cover,
                 alignment: imageAlignment,
-                errorBuilder: (_, _, _) => Container(
+                errorBuilder: (_, __, ___) => Container(
                   color: context.colorScheme.primaryContainer,
                   child: const Center(
                     child: Icon(
