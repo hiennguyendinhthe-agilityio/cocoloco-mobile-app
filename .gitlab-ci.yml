@@ -1,9 +1,12 @@
-image: ghcr.io/cirruslabs/flutter:latest
+# Pinned (not :latest) so the ~2.3 GB image is pulled once and reused from the runner cache
+image: ghcr.io/cirruslabs/flutter:3.44.0
 
 # Route all jobs to the company instance runner (tagged "shared")
 default:
   tags:
     - shared
+  # Fail fast instead of hanging silently until the 1h project timeout
+  timeout: 30m
 
 stages:
   - analyze
