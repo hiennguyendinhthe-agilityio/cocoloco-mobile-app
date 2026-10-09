@@ -1,5 +1,10 @@
 image: ghcr.io/cirruslabs/flutter:latest
 
+# Route all jobs to the company instance runner (tagged "shared")
+default:
+  tags:
+    - shared
+
 stages:
   - analyze
   - test
