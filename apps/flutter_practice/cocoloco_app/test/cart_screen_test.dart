@@ -16,11 +16,13 @@ import 'package:cocoloco_app/models/user_profile.dart';
 import 'package:cocoloco_app/screens/cart_screen.dart';
 import 'package:cocoloco_app/screens/order_success_screen.dart';
 import 'package:cocoloco_app/screens/product_detail_screen.dart';
+import 'package:cocoloco_app/widgets/guest_checkout_modal.dart';
 import 'package:cocoloco_app/widgets/order_summary_card.dart';
 
 class MockCartOrderRepository extends OrderRepository {
   @override
-  Future<OrderModel> createOrder({required List<Map<String, dynamic>> items}) async {
+  Future<OrderModel> createOrder(
+      {required List<Map<String, dynamic>> items}) async {
     return OrderModel(
       id: 'ord-test-success',
       userId: 'usr-1',
@@ -53,7 +55,8 @@ void main() {
     final cont = container ??
         ProviderContainer(
           overrides: [
-            orderRepositoryProvider.overrideWithValue(MockCartOrderRepository()),
+            orderRepositoryProvider
+                .overrideWithValue(MockCartOrderRepository()),
           ],
         );
     return UncontrolledProviderScope(
@@ -76,8 +79,12 @@ void main() {
     testWidgets('renders all items, subtotals, and Go to checkout button',
         (tester) async {
       final container = ProviderContainer();
-      container.read(cartProvider.notifier).addProduct(testProduct1, quantity: 2);
-      container.read(cartProvider.notifier).addProduct(testProduct2, quantity: 2);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct1, quantity: 2);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct2, quantity: 2);
 
       await tester.pumpWidget(createCartTestWidget(container: container));
       await tester.pumpAndSettle();
@@ -97,11 +104,16 @@ void main() {
       container.dispose();
     });
 
-    testWidgets('Swipe to delete item removes it and displays SnackBar with Undo',
+    testWidgets(
+        'Swipe to delete item removes it and displays SnackBar with Undo',
         (tester) async {
       final container = ProviderContainer();
-      container.read(cartProvider.notifier).addProduct(testProduct1, quantity: 2);
-      container.read(cartProvider.notifier).addProduct(testProduct2, quantity: 1);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct1, quantity: 2);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct2, quantity: 1);
 
       await tester.pumpWidget(createCartTestWidget(container: container));
       await tester.pumpAndSettle();
@@ -119,17 +131,23 @@ void main() {
       expect(container.read(cartProvider).items.length, equals(1));
 
       // SnackBar with Undo action should appear
-      expect(find.text('${testProduct1.name} removed from cart'), findsOneWidget);
+      expect(
+          find.text('${testProduct1.name} removed from cart'), findsOneWidget);
       expect(find.text('Undo'), findsOneWidget);
 
       container.dispose();
     });
 
-    testWidgets('Tapping Undo in SnackBar restores the deleted item at original position',
+    testWidgets(
+        'Tapping Undo in SnackBar restores the deleted item at original position',
         (tester) async {
       final container = ProviderContainer();
-      container.read(cartProvider.notifier).addProduct(testProduct1, quantity: 2);
-      container.read(cartProvider.notifier).addProduct(testProduct2, quantity: 1);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct1, quantity: 2);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct2, quantity: 1);
 
       await tester.pumpWidget(createCartTestWidget(container: container));
       await tester.pumpAndSettle();
@@ -147,7 +165,8 @@ void main() {
       expect(find.text(testProduct1.name), findsOneWidget);
       expect(find.text(testProduct2.name), findsOneWidget);
       expect(container.read(cartProvider).items.length, equals(2));
-      expect(container.read(cartProvider).items[0].name, equals(testProduct1.name));
+      expect(container.read(cartProvider).items[0].name,
+          equals(testProduct1.name));
       expect(container.read(cartProvider).items[0].quantity, equals(2));
 
       container.dispose();
@@ -156,7 +175,9 @@ void main() {
     testWidgets('Tapping on a cart item opens ProductDetailScreen in edit mode',
         (tester) async {
       final container = ProviderContainer();
-      container.read(cartProvider.notifier).addProduct(testProduct1, quantity: 2);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct1, quantity: 2);
 
       await tester.pumpWidget(createCartTestWidget(container: container));
       await tester.pumpAndSettle();
@@ -178,7 +199,9 @@ void main() {
     testWidgets('When all items are removed, CartScreen displays empty state',
         (tester) async {
       final container = ProviderContainer();
-      container.read(cartProvider.notifier).addProduct(testProduct1, quantity: 1);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct1, quantity: 1);
 
       await tester.pumpWidget(createCartTestWidget(container: container));
       await tester.pumpAndSettle();
@@ -244,13 +267,16 @@ void main() {
           orderRepositoryProvider.overrideWithValue(MockCartOrderRepository()),
         ],
       );
-      container.read(cartProvider.notifier).addProduct(testProduct1, quantity: 2);
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct1, quantity: 2);
 
       await tester.pumpWidget(createCartTestWidget(container: container));
       await tester.pumpAndSettle();
 
       // Tap Go to checkout
-      final checkoutButton = find.widgetWithText(ElevatedButton, 'Go to checkout');
+      final checkoutButton =
+          find.widgetWithText(ElevatedButton, 'Go to checkout');
       expect(checkoutButton, findsOneWidget);
       await tester.tap(checkoutButton);
       await tester.pumpAndSettle();
@@ -260,6 +286,45 @@ void main() {
 
       container.dispose();
       await SessionService.instance.logout();
+    });
+
+    testWidgets(
+        'Guest checkout prompts GuestCheckoutModal and dismissing leaves cart open',
+        (tester) async {
+      await SessionService.instance.logout();
+
+      final container = ProviderContainer();
+      container
+          .read(cartProvider.notifier)
+          .addProduct(testProduct1, quantity: 1);
+
+      await tester.pumpWidget(createCartTestWidget(container: container));
+      await tester.pumpAndSettle();
+
+      // Tap Go to checkout as guest
+      final checkoutButton =
+          find.widgetWithText(ElevatedButton, 'Go to checkout');
+      expect(checkoutButton, findsOneWidget);
+      await tester.tap(checkoutButton);
+      await tester.pumpAndSettle();
+
+      // GuestCheckoutModal should be visible with perks and options
+      expect(find.byType(GuestCheckoutModal), findsOneWidget);
+      expect(find.text('Sign in to complete your order'), findsOneWidget);
+      expect(find.text('Live brewing & delivery updates'), findsOneWidget);
+      expect(find.text('Sign In with Clerk'), findsOneWidget);
+      expect(find.text('Maybe Later'), findsOneWidget);
+
+      // Tap Maybe Later to dismiss
+      await tester.tap(find.text('Maybe Later'));
+      await tester.pumpAndSettle();
+
+      // Modal is dismissed, user remains on CartScreen with item intact
+      expect(find.byType(GuestCheckoutModal), findsNothing);
+      expect(find.byType(CartScreen), findsOneWidget);
+      expect(find.text(testProduct1.name), findsOneWidget);
+
+      container.dispose();
     });
   });
 }

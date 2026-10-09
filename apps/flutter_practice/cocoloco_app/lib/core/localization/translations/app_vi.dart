@@ -44,7 +44,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get comingSoon => 'Sắp ra mắt';
 
   @override
-  String get comingSoonMsg => 'Tính năng này đang được phát triển và sẽ sớm ra mắt!';
+  String get comingSoonMsg =>
+      'Tính năng này đang được phát triển và sẽ sớm ra mắt!';
 
   @override
   String get ok => 'Đồng ý';
@@ -134,7 +135,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get noProductsFound => 'Không có món nào trong danh mục này';
 
   @override
-  String get noProductsSub => 'Thử chọn danh mục khác hoặc xóa từ khóa tìm kiếm.';
+  String get noProductsSub =>
+      'Thử chọn danh mục khác hoặc xóa từ khóa tìm kiếm.';
 
   // Product Detail
   @override
@@ -296,8 +298,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get savedAddresses => 'Sổ địa chỉ đã lưu';
 
   @override
-  String get savedAddressesSub =>
-      'Quản lý địa chỉ giao nhận cà phê & bánh';
+  String get savedAddressesSub => 'Quản lý địa chỉ giao nhận cà phê & bánh';
 
   @override
   String get paymentMethods => 'Phương thức thanh toán';
@@ -366,7 +367,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get signOut => 'Đăng xuất';
 
   @override
-  String get signOutConfirm => 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?';
+  String get signOutConfirm =>
+      'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?';
 
   @override
   String get signedOutSuccessfully => 'Đã đăng xuất thành công.';
@@ -438,6 +440,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get guestCheckoutPrompt => 'Đăng nhập để hoàn tất đơn hàng';
+
+  @override
+  String get guestCheckoutSubtext =>
+      'Đăng nhập để theo dõi đơn hàng thời gian thực, tích hạt đậu thưởng và lưu lịch sử hóa đơn.';
+
+  @override
+  String get guestBenefitTracking =>
+      'Cập nhật tiến độ pha chế & giao hàng trực tiếp';
+
+  @override
+  String get guestBenefitRewards => 'Tích hạt đậu thưởng & đổi quà thành viên';
+
+  @override
+  String get guestBenefitReceipt =>
+      'Lưu hóa đơn điện tử & đặt lại nhanh 1 chạm';
+
+  @override
+  String get maybeLater => 'Để sau';
 
   @override
   String get syncingWithBackend => 'Đang đồng bộ với hệ thống Cocoloco...';

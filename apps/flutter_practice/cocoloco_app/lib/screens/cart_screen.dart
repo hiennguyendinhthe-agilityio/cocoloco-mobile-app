@@ -10,6 +10,7 @@ import '../models/cart_item.dart';
 import '../models/product.dart';
 import '../data/providers/products_provider.dart';
 import '../widgets/cart_item_card.dart';
+import '../widgets/guest_checkout_modal.dart';
 import '../widgets/order_summary_card.dart';
 import 'clerk_webview_screen.dart';
 import 'order_success_screen.dart';
@@ -42,6 +43,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     final session = SessionService.instance;
     if (!session.isLoggedIn) {
+      final shouldSignIn = await GuestCheckoutModal.show(context);
+      if (shouldSignIn != true || !mounted) return;
+
       final result = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const ClerkWebViewScreen()),
@@ -98,8 +102,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           if (success) {
             await _executeOrderPlacement();
           } else {
-            final errorMsg =
-                SessionService.instance.lastAuthError ?? context.l10n.syncFailed;
+            final errorMsg = SessionService.instance.lastAuthError ??
+                context.l10n.syncFailed;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 behavior: SnackBarBehavior.floating,
@@ -145,8 +149,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         ),
       );
     } else {
-      final errorMsg = ref.read(cartProvider).errorMessage ??
-          context.l10n.orderFailed;
+      final errorMsg =
+          ref.read(cartProvider).errorMessage ?? context.l10n.orderFailed;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg),
@@ -286,7 +290,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         physics: const BouncingScrollPhysics(),
                         padding: EdgeInsets.zero,
                         itemCount: cartState.items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.lg),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: AppSpacing.lg),
                         itemBuilder: (context, index) {
                           final item = cartState.items[index];
                           return Dismissible(
@@ -294,10 +299,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             direction: DismissDirection.endToStart,
                             background: Container(
                               alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: AppSpacing.xxl),
+                              padding:
+                                  const EdgeInsets.only(right: AppSpacing.xxl),
                               decoration: BoxDecoration(
                                 color: context.colorScheme.error,
-                                borderRadius: BorderRadius.circular(AppRadii.cardLg),
+                                borderRadius:
+                                    BorderRadius.circular(AppRadii.cardLg),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -323,11 +330,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             onDismissed: (_) {
                               final removedItem = item;
                               final removedIndex = index;
-                              ref.read(cartProvider.notifier).removeItem(item.id);
+                              ref
+                                  .read(cartProvider.notifier)
+                                  .removeItem(item.id);
                               ScaffoldMessenger.of(context).clearSnackBars();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('${removedItem.name} removed from cart'),
+                                  content: Text(
+                                      '${removedItem.name} removed from cart'),
                                   duration: const Duration(seconds: 4),
                                   action: SnackBarAction(
                                     label: 'Undo',
@@ -335,7 +345,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     onPressed: () {
                                       ref
                                           .read(cartProvider.notifier)
-                                          .restoreItem(removedItem, index: removedIndex);
+                                          .restoreItem(removedItem,
+                                              index: removedIndex);
                                     },
                                   ),
                                 ),

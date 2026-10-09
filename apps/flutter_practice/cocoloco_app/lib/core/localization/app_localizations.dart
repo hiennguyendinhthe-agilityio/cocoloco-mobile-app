@@ -203,6 +203,11 @@ abstract class AppLocalizations {
   String get enterEmailAddress;
   String get sendOtpCode;
   String get guestCheckoutPrompt;
+  String get guestCheckoutSubtext;
+  String get guestBenefitTracking;
+  String get guestBenefitRewards;
+  String get guestBenefitReceipt;
+  String get maybeLater;
   String get syncingWithBackend;
   String get signedInSuccessfully;
   String get syncFailed;

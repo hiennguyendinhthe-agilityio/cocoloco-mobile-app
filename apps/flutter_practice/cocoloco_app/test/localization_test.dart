@@ -208,6 +208,11 @@ void main() {
       expect(l10n.enterEmailAddress.isNotEmpty, isTrue);
       expect(l10n.sendOtpCode.isNotEmpty, isTrue);
       expect(l10n.guestCheckoutPrompt.isNotEmpty, isTrue);
+      expect(l10n.guestCheckoutSubtext.isNotEmpty, isTrue);
+      expect(l10n.guestBenefitTracking.isNotEmpty, isTrue);
+      expect(l10n.guestBenefitRewards.isNotEmpty, isTrue);
+      expect(l10n.guestBenefitReceipt.isNotEmpty, isTrue);
+      expect(l10n.maybeLater.isNotEmpty, isTrue);
       expect(l10n.syncingWithBackend.isNotEmpty, isTrue);
       expect(l10n.signedInSuccessfully.isNotEmpty, isTrue);
       expect(l10n.syncFailed.isNotEmpty, isTrue);
@@ -229,7 +234,9 @@ void main() {
       assertAllGetters(vi);
     });
 
-    test('LocalizationsDelegate supports en and vi, rejects unsupported and loads correctly', () async {
+    test(
+        'LocalizationsDelegate supports en and vi, rejects unsupported and loads correctly',
+        () async {
       const delegate = AppLocalizations.delegate;
 
       expect(delegate.isSupported(const Locale('en')), isTrue);
@@ -275,7 +282,9 @@ void main() {
                             Text(innerContext.l10n.navHome),
                             ElevatedButton(
                               onPressed: () {
-                                ref.read(localeProvider.notifier).toggleLocale();
+                                ref
+                                    .read(localeProvider.notifier)
+                                    .toggleLocale();
                               },
                               child: const Text('Toggle Language'),
                             ),

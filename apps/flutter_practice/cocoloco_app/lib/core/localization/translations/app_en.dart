@@ -134,7 +134,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noProductsFound => 'No items found in this category';
 
   @override
-  String get noProductsSub => 'Try selecting another category or clear search query.';
+  String get noProductsSub =>
+      'Try selecting another category or clear search query.';
 
   // Product Detail
   @override
@@ -379,8 +380,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminProductsTitle => 'Product Management';
 
   @override
-  String get adminProductsSubtitle =>
-      'Manage store menu and availability';
+  String get adminProductsSubtitle => 'Manage store menu and availability';
 
   @override
   String get addProduct => 'Add New Product';
@@ -438,6 +438,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guestCheckoutPrompt => 'Sign in to complete your order';
+
+  @override
+  String get guestCheckoutSubtext =>
+      'Sign in to track your order in real time, earn reward beans, and save your receipt history.';
+
+  @override
+  String get guestBenefitTracking => 'Live brewing & delivery updates';
+
+  @override
+  String get guestBenefitRewards => 'Earn member beans & loyalty rewards';
+
+  @override
+  String get guestBenefitReceipt => 'Save digital receipts & 1-tap reorder';
+
+  @override
+  String get maybeLater => 'Maybe Later';
 
   @override
   String get syncingWithBackend => 'Syncing with Cocoloco system...';
