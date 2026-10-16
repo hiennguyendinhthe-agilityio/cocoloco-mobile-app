@@ -53,6 +53,7 @@ apps/flutter_practice/immich/
 # Local documentation tracking
 apps/flutter_practice/cocoloco_app/*.md
 !apps/flutter_practice/cocoloco_app/README.md
+!apps/flutter_practice/cocoloco_app/CLAUDE.md
 !apps/flutter_practice/cocoloco_app/.agents/**/*.md
 .agents
 
